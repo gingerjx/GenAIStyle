@@ -17,11 +17,6 @@ class Configuration():
     # Models
     HAR_DIR = Path("hardir")
     GEMINI_COOKIES = HAR_DIR / "gemini_cookies.json"
-
-    GEMINI_PRO_DATA_DIR = RES_DIR / "gemini-pro"
-    GPT_4_DATA_DIR = RES_DIR / "gpt-4"
-    GPT_3_5_TURBO_PRO_DATA_DIR = RES_DIR / "gpt-3.5-turbo"
-
     PROMPTS_FILEPATH = RES_DIR / "prompts"
 
     MODELS = [
@@ -29,6 +24,11 @@ class Configuration():
         "gpt-4",
         "gpt-3.5-turbo",
     ]
+    MODELS_DATA_DIR = {
+        "gemini-pro": RES_DIR / "gemini-pro",
+        "gpt-4": RES_DIR / "gpt-4",
+        "gpt-3.5-turbo": RES_DIR / "gpt-3.5-turbo"         
+    }
     PROVIDERS = {
         "gemini-pro": Gemini,
         "mistralai/Mixtral-8x7B-Instruct-v0.1": DeepInfra,
@@ -36,3 +36,4 @@ class Configuration():
         "gpt-3.5-turbo": You    
     }
     RESPONSE_LENGTH = 5000
+    SIZE_ANALYSIS = 30000
