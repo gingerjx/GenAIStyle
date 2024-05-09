@@ -36,4 +36,4 @@ class Configuration():
         "gpt-3.5-turbo": You    
     }
     RESPONSE_LENGTH = 5000
-    SIZE_ANALYSIS = 30000
+    SIZE_ANALYSIS = 10000
