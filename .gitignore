@@ -2,3 +2,4 @@ res/**
 hardir/**
 .venv/**
 .vscode/**
+**/__pycache__/**
