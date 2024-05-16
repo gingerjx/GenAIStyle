@@ -9,7 +9,7 @@ class Author():
         self.collections: List[Collection] = []
 
     def read_book_collection(self, books_dir: str) -> None:
-        books = Collection("Books")
+        books = Collection("books")
         books.read_books(self.name, books_dir)
         self.collections.append(books)
 
