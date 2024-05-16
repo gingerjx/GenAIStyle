@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 import nltk
 
 from src import Author
@@ -13,7 +13,7 @@ class Analysis():
     def __init__(self, size: int = None):
         self.size = size
 
-    def analyze(self, authors: List[Author]):
+    def analyze(self, authors: List[Author]) -> Dict[str, List[AnalysisData]]:
         data = {}
         for author in authors:
             data[author.name] = []
@@ -25,12 +25,15 @@ class Analysis():
     def _analyze(self, text: str) -> dict:
         data = {}
         words = text.split()
-        if self.size: words = words[:self.size]
+        if self.size: 
+            words = words[:self.size]
+            text = " ".join(words)
 
         data["word_count"] = len(words)
         data["unique_word_count"] = len(set(words))
         data["average_word_length"] = sum(len(word) for word in words) / len(words)
+
         sentences = sent_tokenize(text)
-        data["average_sentence_length"] = len(sentences) / len(words)
+        data["average_sentence_length"] = len(words) / len(sentences)
 
         return data
