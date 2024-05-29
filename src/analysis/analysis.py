@@ -9,9 +9,6 @@ from nltk.tokenize import sent_tokenize
 from src.analysis.alanysis_data import AnalysisData
 
 class Analysis():
-    EXLUDED_FUNCTION_WORDS = [
-        "the"
-    ]
 
     def __init__(self, size: int = None):
         self.size = size
@@ -53,11 +50,5 @@ class Analysis():
     def _get_top_function_words(self, text: str, n: int) -> Dict[str, int]:
         fw = FunctionWords(function_words_list="english")
         fw_frequency = dict(zip(fw.get_feature_names(), fw.transform(text)))
-        fw_frequency_filtered = self._exlude_function_words(fw_frequency)
-        sorted_fw_frequency_filtered = sorted(fw_frequency_filtered.items(), key=lambda x: x[1], reverse=True)
-        return dict(sorted_fw_frequency_filtered[:n])
-    
-    def _exlude_function_words(self, fw_frequency: dict) -> dict:
-        for word in self.EXLUDED_FUNCTION_WORDS:
-            fw_frequency.pop(word, None)
-        return fw_frequency
+        sorted_fw_frequency = sorted(fw_frequency.items(), key=lambda x: x[1], reverse=True)
+        return dict(sorted_fw_frequency[:n])
