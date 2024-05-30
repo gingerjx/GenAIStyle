@@ -14,14 +14,12 @@ class Analysis():
         self.size = size
 
     def analyze(self, authors: List[Author]) -> Dict[str, List[AnalysisData]]:
-        data = {}  # Initialize an empty dictionary to store the results
+        data = {}
 
         for author in authors:
             for collection in author.collections:
                 merged_text = collection.get_merged_text()
                 analysis_data = AnalysisData(author.name, collection.name, **self._analyze(merged_text))
-
-                # Use collection name (model) as the key
                 model_name = collection.name
                 if model_name not in data:
                     data[model_name] = []
