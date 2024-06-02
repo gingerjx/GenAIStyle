@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 from src.author.collection import Collection
 
 class Author():
@@ -13,7 +13,7 @@ class Author():
         books.read_books(self.name, books_dir)
         self.collections.append(books)
 
-    def read_generated_texts(self, models_data_dirs: List[Path]) -> None:
+    def read_generated_texts(self, models_data_dirs: Dict[str, Path]) -> None:
         for model, model_data_dir in models_data_dirs.items():
             collection = Collection(f"{model}")
             collection.read_generated_texts(self.name, model_data_dir)
