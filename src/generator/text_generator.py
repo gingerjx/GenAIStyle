@@ -12,8 +12,8 @@ class TextGenerator:
                  authors_path: str,
                  response_length: int = 5000):
         self.models = models
-        self.authors = open(authors_path, 'r', encoding='utf-8').read().split('\n')[:2]
-        self.queries = open(queries_path, 'r', encoding='utf-8').read().split('\n')[:2]
+        self.authors = open(authors_path, 'r', encoding='utf-8').read().split('\n')[:1]
+        self.queries = open(queries_path, 'r', encoding='utf-8').read().split('\n')[:1]
         self.response_length = response_length
 
     def generate(self) -> List[GeneratedText]:

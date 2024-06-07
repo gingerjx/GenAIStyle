@@ -26,7 +26,6 @@ class GeneratedText:
     def save(self, res_path: str):
         filename = str(self.data["id"]) + ".json"
         path = Path(res_path) / self.data["model"] / self.data["author"] / filename
-        print("Path: ", path)
         path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, 'w', encoding='utf-8') as f:
             f.write(json.dumps(self.data, indent=4))

@@ -34,7 +34,7 @@ class Configuration(BaseModel):
     selected_books_csv_filepath: Path = Field(Path("res/books/selected/books.csv"), 
                                              description="Path to the file containing selected books")
     
-    response_length: int = Field(5000, 
+    response_length: int = Field(3000, 
                                  description="Length of the response")
     analysis_size: int = Field(10000,
                                  description="Size of the analysis")
