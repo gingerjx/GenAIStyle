@@ -36,6 +36,8 @@ class Configuration(BaseModel):
     
     response_length: int = Field(3000, 
                                  description="Length of the response")
+    max_tokens: int = Field(4096,
+                            description="Maximum tokens of LLM output")
     analysis_size: int = Field(10000,
                                  description="Size of the analysis")
     model_dirs: Dict[str, Path] = Field({

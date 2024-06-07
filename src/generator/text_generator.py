@@ -10,10 +10,12 @@ class TextGenerator:
                  models: Dict[str, BaseChatModel],
                  queries_path: str,
                  authors_path: str,
+                 res_directory: str,
                  response_length: int = 5000):
         self.models = models
-        self.authors = open(authors_path, 'r', encoding='utf-8').read().split('\n')[:1]
-        self.queries = open(queries_path, 'r', encoding='utf-8').read().split('\n')[:1]
+        self.authors = open(authors_path, 'r', encoding='utf-8').read().split('\n')
+        self.queries = open(queries_path, 'r', encoding='utf-8').read().split('\n')
+        self.res_directory = res_directory
         self.response_length = response_length
 
     def generate(self) -> List[GeneratedText]:
@@ -21,18 +23,19 @@ class TextGenerator:
         for model_name, model in self.models.items():
             for author_name in self.authors:
                 for query in self.queries:
+                    print(f"Generating [{model_name}]-[{author_name}] {query}")
                     prompt_template = self._get_prompt_template()
                     generated_text = self._generate_internal(model, 
                                                              prompt_template, 
                                                              query,
                                                              author_name)
-                    generated_texts.append(
-                        self._transform(generated_text.content,
+                    genereated_text_transformed = self._transform(generated_text.content,
                                         model_name,
                                         author_name,
                                         query
-                        )
                     )
+                    genereated_text_transformed.save(self.res_directory)
+                    generated_texts.append(genereated_text_transformed)
         return generated_texts
     
     def _generate_internal(self, 
