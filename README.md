@@ -14,6 +14,6 @@ Notebook `book_stats` explores the dataset of books from [Guthenberg](https://ac
 
 Notebook `generator` contains the code to generate text for different models
 
-Notebook `analysis` explores and presents the insights on the texts (books and generated texts).
+Notebook `analysis` explores and presents the insights on the books and genereted texts (**work in progress**).
 
 **Note: notebooks should be run in the corresponding to above order.*
