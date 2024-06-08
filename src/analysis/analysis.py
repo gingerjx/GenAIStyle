@@ -30,11 +30,11 @@ class Analysis():
     def _analyze(self, text: str) -> dict:
         data = {}
         words = text.split()
+        data["word_count"] = len(words)
         if self.size: 
             words = words[:self.size]
             text = " ".join(words)
 
-        data["word_count"] = len(words)
         data["unique_word_count"] = len(set(words))
         data["average_word_length"] = sum(len(word) for word in words) / len(words)
 

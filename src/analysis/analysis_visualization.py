@@ -4,9 +4,9 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 class AnalysisVisualization():
-    LEGEND_COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
+    LEGEND_COLORS = ["#3498db", "#e74c3c", "#2ecc71", "#f1c40f", "#9b59b6", "#e67e22"]
     LEGEND_TITLE = "Text source"
-    SUBPLOT_TITLES = ("Word counts", "Unique word count", "Average word length", "Average sentence length")
+    SUBPLOT_TITLES = ("Word counts", "Average word length", "Unique word count", "Average sentence length")
     X_AXIS_FONT_SIZE = 10
 
     def visualize(self, data: Dict[str, List[AnalysisData]]):
@@ -23,18 +23,19 @@ class AnalysisVisualization():
             average_word_lengths = [d.average_word_length for d in analysis_data]
             average_sentence_lengths = [d.average_sentence_length for d in analysis_data]
 
-            fig.add_trace(go.Bar(
-                name=model_name, 
-                x=author_names, 
-                y=word_counts, 
-                marker_color=AnalysisVisualization.LEGEND_COLORS[i],
-                showlegend=False
-            ), row=1, col=1)
+            if model_name != "books":
+                fig.add_trace(go.Bar(
+                    name=model_name, 
+                    x=author_names, 
+                    y=word_counts, 
+                    marker_color=AnalysisVisualization.LEGEND_COLORS[i],
+                    showlegend=False
+                ), row=1, col=1)
             fig.add_trace(go.Bar(
                 name=model_name, 
                 x=author_names, 
                 y=unique_word_counts, 
-                marker_color=AnalysisVisualization.LEGEND_COLORS[i]
+                marker_color=AnalysisVisualization.LEGEND_COLORS[i],
             ), row=2, col=1)
             fig.add_trace(go.Bar(
                 name=model_name, 
@@ -58,7 +59,7 @@ class AnalysisVisualization():
     def _visualize_function_words(self, data: Dict[str, List[AnalysisData]]):
         _, first_data = next(iter(data.items()))
         fig = make_subplots(
-            rows=4, 
+            rows=6, 
             cols=5, 
             subplot_titles=[data.author_name for data in first_data]
         )

@@ -41,12 +41,12 @@ class Configuration(BaseModel):
     analysis_size: int = Field(10000,
                                  description="Size of the analysis")
     model_dirs: Dict[str, Path] = Field({
-        # "gpt-3.5-turbo-0125": Path("res/gpt-3.5-turbo-0125"),
-        # "gpt-4o": Path("res/gpt-4o"),
-        # "gemini-1.5-flash": Path("res/gemini-1.5-flash"),
-        # "open-mixtral-8x7b": Path("res/open-mixtral-8x7b"),
-        # "claude-3-haiku": Path("res/claude-3-haiku")
-        "geminipro": Path("res/gemini-pro"),
-        "gpt-4": Path("res/gpt-4"),
-        "gpt-3.5-turbo": Path("res/gpt-3.5-turbo")
+        "gpt-3.5-turbo-0125": Path("res/gpt-3.5-turbo-0125"),
+        "gpt-4o": Path("res/gpt-4o"),
+        "gemini-1.5-flash": Path("res/gemini-1.5-flash"),
+        "open-mixtral-8x7b": Path("res/open-mixtral-8x7b"),
+        "claude-3-haiku-20240307": Path("res/claude-3-haiku-20240307")
+        # "geminipro": Path("res/gemini-pro"),
+        # "gpt-4": Path("res/gpt-4"),
+        # "gpt-3.5-turbo": Path("res/gpt-3.5-turbo")
     }, description="List of models' directories")

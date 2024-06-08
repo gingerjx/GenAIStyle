@@ -8,8 +8,8 @@ class LLMResponse(Text):
             response = json.load(f)
         self.text = response["response"]
         self.id = id
-        self.prompt = response["prompt"]
-        self.system_spec = response["system_spec"]
+        self.query = response["query"]
+        self.prompt_template = response["prompt_template"]
         self.created_at = response["created_at"]
         self.model = response["model"]
 
