@@ -11,10 +11,12 @@ class Book(Text):
             self.text = f.read()
     
     def text(self):
+        """Get the text of the book"""
         return self.text
     
     @staticmethod
     def _extract_title(path: str) -> str:
+        """Extract title from a file path"""
         return os.path.basename(path) \
                 .split(Book.AUTHOR_NAME_TITLE_SEPARATOR)[1] \
                 .split(".")[0]

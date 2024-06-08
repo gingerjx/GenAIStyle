@@ -24,6 +24,7 @@ class GeneratedText:
             self.data["response"]=text
     
     def save(self, res_path: str):
+        """Save generated text to a file"""
         filename = str(self.data["id"]) + ".json"
         path = Path(res_path) / self.data["model"] / self.data["author"] / filename
         path.parent.mkdir(parents=True, exist_ok=True)

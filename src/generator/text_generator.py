@@ -19,6 +19,7 @@ class TextGenerator:
         self.response_length = response_length
 
     def generate(self) -> List[GeneratedText]:
+        """Generate and save texts for all models, authors and queries"""
         generated_texts = []
         for model_name, model in self.models.items():
             for author_name in self.authors:
@@ -43,6 +44,7 @@ class TextGenerator:
                            prompt_template: ChatPromptTemplate, 
                            query: str, 
                            author_name: str):
+        """Generate text using model and prompt template"""
         chain = prompt_template | model
         return chain.invoke(
             {
@@ -53,6 +55,7 @@ class TextGenerator:
         )
     
     def _get_prompt_template(self):
+        """Get prompt template for the text generation"""
         return ChatPromptTemplate.from_messages([
             ("system", 
             "Come up with the answer in {author}'s writing style. Don't use direct references and citations of {author}. Answer in plain text format. Use {response_length} words."),
@@ -65,6 +68,7 @@ class TextGenerator:
                    model_name: str, 
                    author_name: str,
                    query: str) -> GeneratedText:
+        """Transform generated text to the GeneratedText format"""
         return GeneratedText(
             text=generated_text,
             requested_response_length=self.response_length,

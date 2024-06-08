@@ -14,6 +14,7 @@ class Analysis():
         self.size = size
 
     def analyze(self, authors: List[Author]) -> Dict[str, List[AnalysisData]]:
+        """Analyze the authors and their collections"""
         data = {}
 
         for author in authors:
@@ -28,6 +29,7 @@ class Analysis():
         return data
 
     def _analyze(self, text: str) -> dict:
+        """Analyze the text and return the word_counts, unique_word_counts, average_word_lengths and average_sentence_lengths"""
         data = {}
         words = text.split()
         data["word_count"] = len(words)
@@ -46,6 +48,7 @@ class Analysis():
         return data
     
     def _get_top_function_words(self, text: str, n: int) -> Dict[str, int]:
+        """Get the top n function words from the text"""
         fw = FunctionWords(function_words_list="english")
         fw_frequency = dict(zip(fw.get_feature_names(), fw.transform(text)))
         sorted_fw_frequency = sorted(fw_frequency.items(), key=lambda x: x[1], reverse=True)

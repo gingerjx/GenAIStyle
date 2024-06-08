@@ -14,5 +14,6 @@ class LLMResponse(Text):
         self.model = response["model"]
 
     def text(self):
+        """Get the text of the response"""
         return self.text()
         

@@ -10,10 +10,12 @@ class AnalysisVisualization():
     X_AXIS_FONT_SIZE = 10
 
     def visualize(self, data: Dict[str, List[AnalysisData]]):
+        """Visualize the analysis data for the authors and models"""
         self._visualize(data)
         self._visualize_function_words(data)
 
     def _visualize(self, data: Dict[str, List[AnalysisData]]):
+        """Visualize the word_counts, unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""
         fig = make_subplots(rows=2, cols=2, subplot_titles=AnalysisVisualization.SUBPLOT_TITLES)
 
         for i, (model_name, analysis_data) in enumerate(data.items()):
@@ -57,6 +59,7 @@ class AnalysisVisualization():
         fig.show()
 
     def _visualize_function_words(self, data: Dict[str, List[AnalysisData]]):
+        """Visualize the top 10 function words for the authors and models"""
         _, first_data = next(iter(data.items()))
         fig = make_subplots(
             rows=6, 
