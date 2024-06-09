@@ -11,12 +11,12 @@ class TextGenerator:
                  queries_path: str,
                  authors_path: str,
                  res_directory: str,
-                 response_length: int = 5000):
+                 response_number_of_words: int = 5000):
         self.models = models
         self.authors = open(authors_path, 'r', encoding='utf-8').read().split('\n')
-        self.queries = open(queries_path, 'r', encoding='utf-8').read().split('\n')
+        self.queries = open(queries_path, 'r', encoding='utf-8').read().split('\n')[3:5]
         self.res_directory = res_directory
-        self.response_length = response_length
+        self.response_number_of_words = response_number_of_words
 
     def generate(self) -> List[GeneratedText]:
         """Generate and save texts for all models, authors and queries"""
@@ -52,7 +52,7 @@ class TextGenerator:
         return chain.invoke(
             {
                 "author": author_name,
-                "response_length": self.response_length,
+                "response_number_of_words": self.response_number_of_words,
                 "query": query
             }
         )
@@ -61,7 +61,7 @@ class TextGenerator:
         """Get prompt template for the text generation"""
         return ChatPromptTemplate.from_messages([
             ("system", 
-            "Come up with the answer in {author}'s writing style. Don't use direct references and citations of {author}. Answer in plain text format. Use {response_length} words."),
+            "Come up with the answer in {author}'s writing style. Don't use direct references and citations of {author}. Answer in plain text format. Use {response_number_of_words} words."),
             ("human", 
             "{query}"),
         ])
@@ -74,7 +74,7 @@ class TextGenerator:
         """Transform generated text to the GeneratedText format"""
         return GeneratedText(
             text=generated_text,
-            requested_response_length=self.response_length,
+            requested_number_of_words=self.response_number_of_words,
             model_name=model_name,
             author_name=author_name,
             prompt_template=self._get_prompt_template(),

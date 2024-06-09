@@ -7,14 +7,14 @@ class GeneratedText:
     
     def __init__(self,
                  text: str,
-                 requested_response_length: int,
+                 requested_number_of_words: int,
                  model_name: str,
                  author_name: str,
                  prompt_template: ChatPromptTemplate,
                  query: str):
             self.data = {}
             self.data['id'] = int(datetime.now().timestamp())  
-            self.data["requested_response_length"]=requested_response_length
+            self.data["requested_number_of_words"]=requested_number_of_words
             self.data["response_length"]=len(text)
             self.data["model"]=model_name
             self.data["created_at"]=datetime.now().isoformat()

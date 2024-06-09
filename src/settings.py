@@ -34,7 +34,7 @@ class Configuration(BaseModel):
     selected_books_csv_filepath: Path = Field(Path("res/books/selected/books.csv"), 
                                              description="Path to the file containing selected books")
     
-    response_length: int = Field(3000, 
+    response_number_of_words: int = Field(3000, 
                                  description="Length of the response")
     max_tokens: int = Field(4096,
                             description="Maximum tokens of LLM output")
