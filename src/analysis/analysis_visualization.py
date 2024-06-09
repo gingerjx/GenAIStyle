@@ -7,7 +7,7 @@ class AnalysisVisualization():
     LEGEND_COLORS = ["#3498db", "#e74c3c", "#2ecc71", "#f1c40f", "#9b59b6", "#e67e22"]
     LEGEND_TITLE = "Text source"
     SUBPLOT_TITLES = ("Word counts", "Average word length", "Unique word count", "Average sentence length")
-    X_AXIS_FONT_SIZE = 10
+    FONT_SIZE = 10
 
     def visualize(self, data: Dict[str, List[AnalysisData]]):
         """Visualize the analysis data for the authors and models"""
@@ -54,7 +54,7 @@ class AnalysisVisualization():
                 showlegend=False
             ), row=2, col=2)
 
-        fig.update_xaxes(tickfont_size=AnalysisVisualization.X_AXIS_FONT_SIZE)
+        fig.update_xaxes(tickfont_size=AnalysisVisualization.FONT_SIZE)
         fig.update_layout(legend_title_text=AnalysisVisualization.LEGEND_TITLE)
         fig.show()
 
@@ -63,7 +63,7 @@ class AnalysisVisualization():
         _, first_data = next(iter(data.items()))
         fig = make_subplots(
             rows=6, 
-            cols=5, 
+            cols=10, 
             subplot_titles=[data.author_name for data in first_data]
         )
         max_freq_overall = 0
@@ -84,6 +84,8 @@ class AnalysisVisualization():
                 ), row=i+1, col=j+1)
 
         fig.update_yaxes(range=[0, max_freq_overall])
-        fig.update_xaxes(tickfont_size=AnalysisVisualization.X_AXIS_FONT_SIZE)
+        fig.update_xaxes(tickfont_size=AnalysisVisualization.FONT_SIZE)
+        fig.update_annotations(font_size=AnalysisVisualization.FONT_SIZE)
+        fig.update_layout(title_text="Top 10 function words", title_x=0.5)
         fig['layout'].update(height=800)
         fig.show()
