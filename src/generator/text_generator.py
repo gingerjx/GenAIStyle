@@ -21,10 +21,12 @@ class TextGenerator:
     def generate(self) -> List[GeneratedText]:
         """Generate and save texts for all models, authors and queries"""
         generated_texts = []
-        for model_name, model in self.models.items():
-            for author_name in self.authors:
-                for query in self.queries:
-                    print(f"Generating [{model_name}]-[{author_name}] {query}")
+        i = 1
+        total = len(self.authors) * len(self.queries) * len(self.models)
+        for author_name in self.authors:
+            for query in self.queries:
+                for model_name, model in self.models.items():
+                    print(f"[{i}/{total}] Generating [{model_name}]-[{author_name}] {query}")
                     prompt_template = self._get_prompt_template()
                     generated_text = self._generate_internal(model, 
                                                              prompt_template, 
@@ -37,6 +39,7 @@ class TextGenerator:
                     )
                     genereated_text_transformed.save(self.res_directory)
                     generated_texts.append(genereated_text_transformed)
+                    i += 1
         return generated_texts
     
     def _generate_internal(self, 
