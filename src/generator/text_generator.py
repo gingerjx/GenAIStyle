@@ -43,7 +43,7 @@ class TextGenerator:
                         generated_texts.append(genereated_text_transformed)
                         i += 1
                     except Exception as e:
-                        print(f"Error: {e}")
+                        print(f"Generation failed due to: {e}")
                         unprocessed_requests.append((model_name, author_name, query))
         return generated_texts, unprocessed_requests
     

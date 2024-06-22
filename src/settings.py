@@ -36,8 +36,6 @@ class Configuration(BaseModel):
     
     response_number_of_words: int = Field(3000, 
                                  description="Length of the response")
-    max_tokens: int = Field(4096,
-                            description="Maximum tokens of LLM output")
     analysis_size: int = Field(10000,
                                  description="Size of the analysis")
     model_dirs: Dict[str, Path] = Field({
@@ -46,7 +44,4 @@ class Configuration(BaseModel):
         "gemini-1.5-flash": Path("res/gemini-1.5-flash"),
         "open-mixtral-8x7b": Path("res/open-mixtral-8x7b"),
         "claude-3-haiku-20240307": Path("res/claude-3-haiku-20240307")
-        # "geminipro": Path("res/gemini-pro"),
-        # "gpt-4": Path("res/gpt-4"),
-        # "gpt-3.5-turbo": Path("res/gpt-3.5-turbo")
     }, description="List of models' directories")
