@@ -16,7 +16,7 @@ class AnalysisVisualization():
 
     def _visualize(self, data: Dict[str, List[AnalysisData]]):
         """Visualize the word_counts, unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""
-        fig = make_subplots(rows=2, cols=2, subplot_titles=AnalysisVisualization.SUBPLOT_TITLES)
+        fig = make_subplots(rows=2, cols=2, subplot_titles=AnalysisVisualization.SUBPLOT_TITLES, vertical_spacing=0.4)
 
         for i, (model_name, analysis_data) in enumerate(data.items()):
             author_names = [d.author_name for d in analysis_data]
