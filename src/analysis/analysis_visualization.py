@@ -89,3 +89,53 @@ class AnalysisVisualization():
         fig.update_layout(title_text="Top 10 function words", title_x=0.5)
         fig['layout'].update(height=800)
         fig.show()
+
+    def _visualize_function_words_large(self, data: Dict[str, List[AnalysisData]]):
+        """Visualize the top 10 function words for the authors and models"""
+        _, first_data = next(iter(data.items()))
+        author_names = [d.author_name for d in first_data]
+        params = {}
+        for y_idx in range(1, 10*6+1, 6):
+            params[f'yaxis{y_idx}'] = go.YAxis(
+                title=author_names[y_idx//6], 
+                titlefont=go.Font(size=AnalysisVisualization.FONT_SIZE_EXTRA_LARGE)
+            )
+        layout = go.Layout(**params)
+        fig = make_subplots(
+            rows=5, 
+            cols=6, 
+            subplot_titles=[model_name for model_name in data.keys()],
+            figure=go.Figure(layout=layout),
+            vertical_spacing=0.02 
+        )
+        max_freq_overall = 0
+
+        for i, (model_name, analysis_data) in enumerate(data.items()):
+            author_names = [d.author_name for d in analysis_data]
+            function_words = [d.top_10_function_words for d in analysis_data]
+            authors_function_words = dict(zip(author_names, function_words))
+
+            for j, (_, function_words) in enumerate(authors_function_words.items()):
+                max_freq_overall = max([max_freq_overall] + list(function_words.values()))
+                fig.add_trace(go.Bar(
+                    name=model_name, 
+                    y=list(reversed(list(function_words.keys()))), 
+                    x=list(reversed(list(function_words.values()))), 
+                    marker_color=AnalysisVisualization.LEGEND_COLORS[i],
+                    orientation='h',
+                    showlegend=False
+                ), row=j+1, col=i+1)
+
+        fig.update_xaxes(
+            range=[0, max_freq_overall],
+            tickfont_size=AnalysisVisualization.FONT_SIZE_MEDIUM
+        )
+        fig.update_yaxes(tickfont_size=AnalysisVisualization.FONT_SIZE_EXTRA_LARGE)
+        fig.update_annotations(font_size=AnalysisVisualization.FONT_SIZE_LARGE)
+        fig.update_layout(
+            title_text="Top 10 function words", 
+            title_x=0.5,
+            title_font_size=AnalysisVisualization.FONT_SIZE_TITLE,
+            height=3000,
+        )
+        fig.show()
