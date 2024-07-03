@@ -1,4 +1,6 @@
 from typing import Dict, List
+
+import numpy as np
 from src.analysis.alanysis_data import AnalysisData
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -12,7 +14,7 @@ class AnalysisVisualization():
     def visualize(self, data: Dict[str, List[AnalysisData]]):
         """Visualize the analysis data for the authors and models"""
         self._visualize(data)
-        self._visualize_function_words(data)
+        self._visualize_function_words_heatmap(data)
 
     def _visualize(self, data: Dict[str, List[AnalysisData]]):
         """Visualize the word_counts, unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""
@@ -88,6 +90,65 @@ class AnalysisVisualization():
         fig.update_annotations(font_size=AnalysisVisualization.FONT_SIZE)
         fig.update_layout(title_text="Top 10 function words", title_x=0.5)
         fig['layout'].update(height=800)
+        fig.show()
+
+    def _visualize_function_words_heatmap(self, data: Dict[str, List[AnalysisData]]):
+        _, first_data = next(iter(data.items()))
+        model_names = list(data.keys())
+        params = {}
+        for y_idx in range(1, 10*3+1, 10):
+            params[f'yaxis{y_idx}'] = go.YAxis(
+                title=model_names[3 + y_idx//10], 
+                titlefont=go.Font(size=25)
+            )
+        layout = go.Layout(**params)
+        fig = make_subplots(
+            rows=3, 
+            cols=10, 
+            horizontal_spacing=0.075,
+            vertical_spacing=0.05,
+            subplot_titles=[data.author_name for data in first_data],
+            figure=go.Figure(layout=layout),
+        )
+        init_legend = True
+
+        for i, (model_name, analysis_data) in enumerate(data.items()):
+            author_names = [d.author_name for d in analysis_data]
+            function_words = [d.top_10_function_words for d in analysis_data]
+            authors_function_words = dict(zip(author_names, function_words))
+            if i < 3:
+                continue
+
+            for j, (_, function_words) in enumerate(authors_function_words.items()):
+                values = list(reversed(list(function_words.values())))
+                values_matrix = np.array(values[:10]).reshape(10, 1)    
+                fig.add_trace(go.Heatmap(
+                    z=values_matrix,
+                    y=list(reversed(list(function_words.keys()))),
+                    zmin=0,
+                    zmax=1000,
+                    showscale=init_legend, 
+                ), row=i+1-3, col=j+1)
+
+                init_legend = False
+
+        # fig.update_traces(showlegend=True, showscale=False)
+        fig.update_xaxes(showticklabels=False)
+        fig.update_yaxes(tickfont_size=20)
+        fig.update_traces(colorbar_orientation='h',
+                            selector=dict(type='heatmap'),
+                            colorscale='oranges',
+                            colorbar=dict(
+                                x=0.5, 
+                                y=1.3,
+                                tickfont=dict(size=16)  
+                            )
+                        )
+        fig.update_annotations(font=dict(size=20),  # Optional: Adjust font size as needed
+                            textangle=65)  #
+        fig.update_layout(
+            height=1500,
+        )
         fig.show()
 
     def _visualize_function_words_large(self, data: Dict[str, List[AnalysisData]]):
