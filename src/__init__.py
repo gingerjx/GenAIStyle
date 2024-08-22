@@ -4,5 +4,5 @@ from src.models.collection import Collection
 from src.analysis.analysis import Analysis
 from src.analysis.analysis_visualization import AnalysisVisualization
 from src.settings import Secrets, Configuration
-from src.generator.text_generator import TextGenerator
-from src.generator.generated_text import GeneratedText
+from src.generation.text_generator import TextGenerator
+from src.generation.generated_text import GeneratedText

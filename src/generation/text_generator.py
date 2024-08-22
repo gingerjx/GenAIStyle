@@ -2,7 +2,7 @@ from typing import Dict, List
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.prompts import ChatPromptTemplate
 
-from src.generator.generated_text import GeneratedText
+from src.generation.generated_text import GeneratedText
 
 class TextGenerator:
     
