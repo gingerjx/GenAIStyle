@@ -45,6 +45,9 @@ class Settings:
                 "open-mixtral-8x7b": cleaned_models_dir / "open-mixtral-8x7b",
                 "claude-3-haiku-20240307": cleaned_models_dir / "claude-3-haiku-20240307"
             }
+        
+        results_dir: Path = res_dir / "results"
+        analysis_filepath: Path = results_dir / "analysis.json"
           
     class Configuration:
 

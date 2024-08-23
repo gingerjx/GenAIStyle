@@ -1,4 +1,5 @@
-from typing import Dict
+import json
+from typing import Any, Dict
 
 
 class AnalysisData():
@@ -18,5 +19,3 @@ class AnalysisData():
         self.average_word_length = average_word_length
         self.average_sentence_length = average_sentence_length
         self.top_10_function_words = top_10_function_words
-
-    

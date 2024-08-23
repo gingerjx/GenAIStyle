@@ -1,9 +1,13 @@
 from typing import Dict, List
 import nltk
+import json
+import os
 from functionwords import FunctionWords
 from src import Author
+from src.file_utils import FileUtils
 from src.settings import Settings
 from src.models.collection import Collection
+import jsonpickle
 
 nltk.download('punkt')
 
@@ -13,6 +17,7 @@ from src.analysis.alanysis_data import AnalysisData
 class Analysis():
 
     def __init__(self, settings: Settings, authors: List[Author]) -> None:
+        self.paths = settings.paths
         self.configuration = settings.configuration
         self.authors = authors
 
@@ -23,6 +28,11 @@ class Analysis():
             raw_words_count += self._get_words_count(author.raw_collections)
             cleaned_words_count += self._get_words_count(author.cleaned_collections)
         return raw_words_count, cleaned_words_count
+    
+    def get_analysis(self, authors: List[Author], read_from_file=False) -> Dict[str, List[AnalysisData]]:    
+        if read_from_file:
+            return FileUtils.read_analysis_data(self.paths.analysis_filepath)
+        return self.analyze(authors)
     
     def analyze(self, authors: List[Author]) -> Dict[str, List[AnalysisData]]:
         """Analyze the authors and their collections"""
@@ -37,9 +47,19 @@ class Analysis():
                     data[model_name] = []
 
                 data[model_name].append(analysis_data)
+
+        self._save_analysis_data(data)
         return data
 
+    def _save_analysis_data(self, data: Dict[str, List[AnalysisData]]) -> None:
+        """Save the analysis data to a file"""
+        self.paths.analysis_filepath.parent.mkdir(parents=True, exist_ok=True)
+        with open(self.paths.analysis_filepath, 'w', encoding='utf-8') as f:
+            json_data = jsonpickle.encode(data)
+            json.dump(json_data, f, indent=4)
+
     def _get_words_count(self, collections: List[Collection]) -> int:
+        """Get the total number of words in the collections"""
         all_text = " ".join([collection.get_merged_text() for collection in collections])
         return len(all_text.split())
     
@@ -50,15 +70,17 @@ class Analysis():
         words = text.split()
         data["word_count"] = len(words)
 
+        sampled_words = self._get_words_sample(words)
         data.update(self._analyze_sample(
-            text=self._merge_words(words), 
-            words=self._get_words_sample(words)
+                text=self._merge_words(sampled_words), 
+                words=sampled_words
             )
         )
 
         return data
     
     def _analyze_sample(self, text: str, words: List[str]) -> dict:
+        """Analyze the sample of words and return the unique_word_counts, average_word_lengths and average_sentence_lengths"""
         data = {}
         data["unique_word_count"] = self._get_unique_word_count(words)
         data["average_word_length"] = self._get_average_word_length(words)
@@ -94,5 +116,9 @@ class Analysis():
         """Get the top n function words from the text"""
         fw = FunctionWords(function_words_list="english")
         fw_frequency = dict(zip(fw.get_feature_names(), fw.transform(text)))
+        return self._sort_fw_frequency(fw_frequency)
+    
+    def _sort_fw_frequency(self, fw_frequency: Dict[str, int]) -> Dict[str, int]:
+        """Sort the function words frequency"""
         sorted_fw_frequency = sorted(fw_frequency.items(), key=lambda x: x[1], reverse=True)
         return dict(sorted_fw_frequency[:self.configuration.n_top_function_words])

@@ -5,11 +5,16 @@ from src.analysis.alanysis_data import AnalysisData
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+from src.settings import Settings
+
 class AnalysisVisualization():
     LEGEND_COLORS = ["#3498db", "#e74c3c", "#2ecc71", "#f1c40f", "#9b59b6", "#e67e22"]
     LEGEND_TITLE = "Text source"
     SUBPLOT_TITLES = ("Word counts", "Average word length", "Unique word count", "Average sentence length")
     FONT_SIZE = 10
+
+    def __init__(self, settings: Settings) -> None:
+        self.configuration = settings.configuration
 
     def visualize(self, data: Dict[str, List[AnalysisData]]):
         """Visualize the analysis data for the authors and models"""
@@ -72,7 +77,8 @@ class AnalysisVisualization():
 
         for i, (model_name, analysis_data) in enumerate(data.items()):
             author_names = [d.author_name for d in analysis_data]
-            function_words = [d.top_10_function_words for d in analysis_data]
+            function_words = [self._sort_and_trim_fw_frequency(d.top_10_function_words)
+                              for d in analysis_data]
             authors_function_words = dict(zip(author_names, function_words))
 
             for j, (_, function_words) in enumerate(authors_function_words.items()):
@@ -92,6 +98,11 @@ class AnalysisVisualization():
         fig['layout'].update(height=800)
         fig.show()
 
+    def _sort_and_trim_fw_frequency(self, fw_frequency: Dict[str, int]) -> Dict[str, int]:
+        """Sort the function words frequency"""
+        sorted_fw_frequency = sorted(fw_frequency.items(), key=lambda x: x[1], reverse=True)
+        return dict(sorted_fw_frequency[:self.configuration.n_top_function_words])
+    
     def _visualize_function_words_heatmap(self, data: Dict[str, List[AnalysisData]]):
         _, first_data = next(iter(data.items()))
         model_names = list(data.keys())
