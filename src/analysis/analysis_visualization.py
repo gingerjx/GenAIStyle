@@ -14,7 +14,7 @@ class AnalysisVisualization():
     def visualize(self, data: Dict[str, List[AnalysisData]]):
         """Visualize the analysis data for the authors and models"""
         self._visualize(data)
-        self._visualize_function_words_heatmap(data)
+        self._visualize_function_words(data)
 
     def _visualize(self, data: Dict[str, List[AnalysisData]]):
         """Visualize the word_counts, unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""

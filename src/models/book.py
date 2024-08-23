@@ -1,4 +1,4 @@
-from src.author.text import Text
+from src.models.text import Text
 import os
 
 class Book(Text):
