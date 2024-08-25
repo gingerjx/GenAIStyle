@@ -26,7 +26,8 @@ class Analysis():
                     average_word_length: float,
                     average_sentence_length: float,
                     top_10_function_words: Dict[str, int],
-                    punctuation_frequency: Dict[str, int]) -> None:
+                    punctuation_frequency: Dict[str, int],
+                    average_syllables_per_word: float) -> None:
             self.author_name = author_name
             self.collection_name = collection_name
             self.unique_word_count = unique_word_count
@@ -34,6 +35,7 @@ class Analysis():
             self.average_sentence_length = average_sentence_length
             self.top_10_function_words = top_10_function_words
             self.punctuation_frequency = punctuation_frequency
+            self.average_syllables_per_word = average_syllables_per_word
 
     def __init__(self, 
                  settings: Settings, 
@@ -68,11 +70,7 @@ class Analysis():
                 if model_name not in data:
                     data[model_name] = []
 
-                collection_data = self.preprocessing_data[author][collection]
-                collection_metrics = self._analyze(
-                        words=collection_data.words,
-                        text=collection_data.text
-                    )
+                collection_metrics = self._analyze(self.preprocessing_data[author][collection])
                 analysis_data = Analysis.AnalysisData(
                     author_name=author.name, 
                     collection_name=collection.name, 
@@ -96,14 +94,29 @@ class Analysis():
             json_data = jsonpickle.encode(data)
             json.dump(json_data, f, indent=4)
     
-    def _analyze(self, words: List[str], text: str) -> dict:
+    def _analyze(self, preprocessing_data: Preprocessing.Data) -> dict:
         """Analyze the sample of words and return the unique_word_counts, average_word_lengths and average_sentence_lengths"""
         data = {}
-        data["unique_word_count"] = self._get_unique_word_count(words)
-        data["average_word_length"] = self._get_average_word_length(words)
-        data["average_sentence_length"] = self._get_average_sentence_length(text, words)
-        data["top_10_function_words"] = self._get_top_function_words(text)
-        data["punctuation_frequency"] = self._get_punctuation_frequency(text)
+        data["unique_word_count"] = self._get_unique_word_count(
+            words=preprocessing_data.words
+        )
+        data["average_word_length"] = self._get_average_word_length(
+            words=preprocessing_data.words
+        )
+        data["average_sentence_length"] = self._get_average_sentence_length(
+            text=preprocessing_data.text, 
+            words=preprocessing_data.words
+        )
+        data["top_10_function_words"] = self._get_top_function_words(
+            text=preprocessing_data.text
+        )
+        data["punctuation_frequency"] = self._get_punctuation_frequency(
+            text=preprocessing_data.text
+        )
+        data["average_syllables_per_word"] = self._average_syllables_per_word(
+            words=preprocessing_data.words, 
+            syllables_count=preprocessing_data.syllables_count
+        )
         return data
 
     def _get_unique_word_count(self, words: List[str]) -> int:
@@ -136,3 +149,7 @@ class Analysis():
         missing_punctiation = set(punctuation) - set(result.keys())
         result.update({k:0 for k in missing_punctiation})
         return result
+    
+    def _average_syllables_per_word(self, words: List[str], syllables_count) -> float:
+        """Get the average syllables per word"""
+        return syllables_count / len(words)

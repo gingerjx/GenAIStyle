@@ -10,7 +10,7 @@ from src.settings import Settings
 class AnalysisVisualization():
     LEGEND_COLORS = ["#3498db", "#e74c3c", "#2ecc71", "#f1c40f", "#9b59b6", "#e67e22"]
     LEGEND_TITLE = "Text source"
-    SUBPLOT_TITLES = ("Average word length", "Unique word count", "Average sentence length")
+    SUBPLOT_TITLES = ("Average word length", "Unique word count", "Average sentence length", "Average syllables per word")
     FONT_SIZE = 10
 
     def __init__(self, settings: Settings) -> None:
@@ -24,13 +24,14 @@ class AnalysisVisualization():
 
     def _visualize(self, data: Dict[str, List[AnalysisData]]):
         """Visualize the unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""
-        fig = make_subplots(rows=3, cols=1, subplot_titles=AnalysisVisualization.SUBPLOT_TITLES)
+        fig = make_subplots(rows=4, cols=1, subplot_titles=AnalysisVisualization.SUBPLOT_TITLES)
 
         for i, (model_name, analysis_data) in enumerate(data.items()):
             author_names = [d.author_name for d in analysis_data]
             unique_word_counts = [d.unique_word_count for d in analysis_data]
             average_word_lengths = [d.average_word_length for d in analysis_data]
             average_sentence_lengths = [d.average_sentence_length for d in analysis_data]
+            average_syllables_per_words = [d.average_syllables_per_word for d in analysis_data]
 
             fig.add_trace(go.Bar(
                 name=model_name, 
@@ -52,6 +53,13 @@ class AnalysisVisualization():
                 marker_color=AnalysisVisualization.LEGEND_COLORS[i], 
                 showlegend=False
             ), row=3, col=1)
+            fig.add_trace(go.Bar(
+                name=model_name, 
+                x=author_names, 
+                y=average_syllables_per_words, 
+                marker_color=AnalysisVisualization.LEGEND_COLORS[i], 
+                showlegend=False
+            ), row=4, col=1)
 
         fig.update_xaxes(tickfont_size=AnalysisVisualization.FONT_SIZE)
         fig.update_layout(
