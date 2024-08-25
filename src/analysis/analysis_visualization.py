@@ -10,7 +10,7 @@ from src.settings import Settings
 class AnalysisVisualization():
     LEGEND_COLORS = ["#3498db", "#e74c3c", "#2ecc71", "#f1c40f", "#9b59b6", "#e67e22"]
     LEGEND_TITLE = "Text source"
-    SUBPLOT_TITLES = ("Word counts", "Average word length", "Unique word count", "Average sentence length")
+    SUBPLOT_TITLES = ("Average word length", "Unique word count", "Average sentence length")
     FONT_SIZE = 10
 
     def __init__(self, settings: Settings) -> None:
@@ -20,49 +20,44 @@ class AnalysisVisualization():
         """Visualize the analysis data for the authors and models"""
         self._visualize(data)
         self._visualize_function_words(data)
+        self._visualize_punctuation_frequency(data)
 
     def _visualize(self, data: Dict[str, List[AnalysisData]]):
-        """Visualize the word_counts, unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""
-        fig = make_subplots(rows=2, cols=2, subplot_titles=AnalysisVisualization.SUBPLOT_TITLES, vertical_spacing=0.4)
+        """Visualize the unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""
+        fig = make_subplots(rows=3, cols=1, subplot_titles=AnalysisVisualization.SUBPLOT_TITLES)
 
         for i, (model_name, analysis_data) in enumerate(data.items()):
             author_names = [d.author_name for d in analysis_data]
-            word_counts = [d.word_count for d in analysis_data]
             unique_word_counts = [d.unique_word_count for d in analysis_data]
             average_word_lengths = [d.average_word_length for d in analysis_data]
             average_sentence_lengths = [d.average_sentence_length for d in analysis_data]
 
-            if model_name != "books":
-                fig.add_trace(go.Bar(
-                    name=model_name, 
-                    x=author_names, 
-                    y=word_counts, 
-                    marker_color=AnalysisVisualization.LEGEND_COLORS[i],
-                    showlegend=False
-                ), row=1, col=1)
             fig.add_trace(go.Bar(
                 name=model_name, 
                 x=author_names, 
                 y=unique_word_counts, 
                 marker_color=AnalysisVisualization.LEGEND_COLORS[i],
-            ), row=2, col=1)
+            ), row=1, col=1)
             fig.add_trace(go.Bar(
                 name=model_name, 
                 x=author_names, 
                 y=average_word_lengths, 
                 marker_color=AnalysisVisualization.LEGEND_COLORS[i], 
                 showlegend=False
-            ), row=1, col=2)
+            ), row=2, col=1)
             fig.add_trace(go.Bar(
                 name=model_name, 
                 x=author_names, 
                 y=average_sentence_lengths, 
                 marker_color=AnalysisVisualization.LEGEND_COLORS[i], 
                 showlegend=False
-            ), row=2, col=2)
+            ), row=3, col=1)
 
         fig.update_xaxes(tickfont_size=AnalysisVisualization.FONT_SIZE)
-        fig.update_layout(legend_title_text=AnalysisVisualization.LEGEND_TITLE)
+        fig.update_layout(
+            legend_title_text=AnalysisVisualization.LEGEND_TITLE,
+            height=800
+        )
         fig.show()
 
     def _visualize_function_words(self, data: Dict[str, List[AnalysisData]]):
@@ -96,6 +91,43 @@ class AnalysisVisualization():
         fig.update_annotations(font_size=AnalysisVisualization.FONT_SIZE)
         fig.update_layout(title_text="Top 10 function words", title_x=0.5)
         fig['layout'].update(height=800)
+        fig.show()
+
+    def _visualize_punctuation_frequency(self, data: Dict[str, List[AnalysisData]]):
+        total_rows = 4
+        total_cols = 3
+        _, first_data = next(iter(data.items()))
+        show_legend = True
+        fig = make_subplots(
+            rows=total_rows, 
+            cols=total_cols,
+            subplot_titles=[data.author_name for data in first_data],
+        )
+
+        for i, (model_name, analysis_data) in enumerate(data.items()):
+            for j, analysis in enumerate(analysis_data):
+                row = j // total_cols + 1
+                col = j % total_cols + 1
+                punctuation_frequency = analysis.punctuation_frequency
+                sorted_keys = sorted(punctuation_frequency.keys())
+                sorted_values = [punctuation_frequency[key] for key in sorted_keys]
+                fig.add_trace(go.Scatter(
+                        name=model_name, 
+                        x=list(sorted_keys), 
+                        y=list(sorted_values), 
+                        marker_color=AnalysisVisualization.LEGEND_COLORS[i],
+                        showlegend=show_legend,
+                        mode='markers' 
+                    ), row=row, col=col
+                )
+                show_legend = False
+            show_legend = True
+
+        fig.update_layout(
+            height=1500,
+            title_text="Punctuation frequency",
+            title_x=0.5
+        )     
         fig.show()
 
     def _sort_and_trim_fw_frequency(self, fw_frequency: Dict[str, int]) -> Dict[str, int]:
