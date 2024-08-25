@@ -5,7 +5,7 @@ from typing import Dict, List
 
 import jsonpickle
 
-from src.analysis.alanysis_data import AnalysisData
+from src.analysis.analysis_data import AnalysisData
 
 class FileUtils():
 

@@ -1,16 +1,24 @@
 from typing import Dict, List
 
 import numpy as np
-from src.analysis.alanysis_data import AnalysisData
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+from src.analysis.analysis_data import AnalysisData
 from src.settings import Settings
 
 class AnalysisVisualization():
     LEGEND_COLORS = ["#3498db", "#e74c3c", "#2ecc71", "#f1c40f", "#9b59b6", "#e67e22"]
     LEGEND_TITLE = "Text source"
-    SUBPLOT_TITLES = ("Average word length", "Unique word count", "Average sentence length", "Average syllables per word")
+    SUBPLOT_TITLES = (
+        "Unique word count", 
+        "Average word length", 
+        "Average sentence length", 
+        "Average syllables per word", 
+        "Flesch reading ease",
+        "Flesch Kincaid Grade Level",
+        "Gunning Fog Index"
+    )
     FONT_SIZE = 10
 
     def __init__(self, settings: Settings) -> None:
@@ -24,47 +32,33 @@ class AnalysisVisualization():
 
     def _visualize(self, data: Dict[str, List[AnalysisData]]):
         """Visualize the unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""
-        fig = make_subplots(rows=4, cols=1, subplot_titles=AnalysisVisualization.SUBPLOT_TITLES)
+        fig = make_subplots(rows=7, cols=1, subplot_titles=AnalysisVisualization.SUBPLOT_TITLES)
 
         for i, (model_name, analysis_data) in enumerate(data.items()):
             author_names = [d.author_name for d in analysis_data]
-            unique_word_counts = [d.unique_word_count for d in analysis_data]
-            average_word_lengths = [d.average_word_length for d in analysis_data]
-            average_sentence_lengths = [d.average_sentence_length for d in analysis_data]
-            average_syllables_per_words = [d.average_syllables_per_word for d in analysis_data]
+            metrics = {
+                "Unique word count": [d.unique_word_count for d in analysis_data], 
+                "Average word length": [d.average_word_length for d in analysis_data], 
+                "Average sentence length": [d.average_sentence_length for d in analysis_data],
+                "Average syllables per word": [d.average_syllables_per_word for d in analysis_data], 
+                "Flesch Reading Ease": [d.flesch_reading_ease for d in analysis_data], 
+                "Flesch Kincaid Grade Level": [d.flesch_kincaid_grade_level for d in analysis_data], 
+                "Gunning Fog Index": [d.gunning_fog_index for d in analysis_data]
+            }
 
-            fig.add_trace(go.Bar(
-                name=model_name, 
-                x=author_names, 
-                y=unique_word_counts, 
-                marker_color=AnalysisVisualization.LEGEND_COLORS[i],
-            ), row=1, col=1)
-            fig.add_trace(go.Bar(
-                name=model_name, 
-                x=author_names, 
-                y=average_word_lengths, 
-                marker_color=AnalysisVisualization.LEGEND_COLORS[i], 
-                showlegend=False
-            ), row=2, col=1)
-            fig.add_trace(go.Bar(
-                name=model_name, 
-                x=author_names, 
-                y=average_sentence_lengths, 
-                marker_color=AnalysisVisualization.LEGEND_COLORS[i], 
-                showlegend=False
-            ), row=3, col=1)
-            fig.add_trace(go.Bar(
-                name=model_name, 
-                x=author_names, 
-                y=average_syllables_per_words, 
-                marker_color=AnalysisVisualization.LEGEND_COLORS[i], 
-                showlegend=False
-            ), row=4, col=1)
+            for j, (name, value) in enumerate(metrics.items()):
+                fig.add_trace(go.Bar(
+                    name=model_name, 
+                    x=author_names, 
+                    marker_color=AnalysisVisualization.LEGEND_COLORS[i],
+                    y=value, 
+                    showlegend=j==0
+                ), row=j+1, col=1)
 
         fig.update_xaxes(tickfont_size=AnalysisVisualization.FONT_SIZE)
         fig.update_layout(
             legend_title_text=AnalysisVisualization.LEGEND_TITLE,
-            height=800
+            height=1000,
         )
         fig.show()
 

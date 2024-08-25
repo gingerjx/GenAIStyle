@@ -2,9 +2,10 @@ from typing import Dict, List
 import nltk
 import json
 from functionwords import FunctionWords
-from src import Author
-from src.analysis.preprocessing import Preprocessing
+from src.analysis.analysis_data import AnalysisData
+from src.analysis.preprocessing_data import PreprocessingData
 from src.file_utils import FileUtils
+from src.models.author import Author
 from src.settings import Settings
 from src.models.collection import Collection
 import jsonpickle
@@ -17,30 +18,10 @@ from nltk.tokenize import sent_tokenize
 
 class Analysis():
 
-    class AnalysisData():
-
-        def __init__(self, 
-                    author_name: str, 
-                    collection_name: str, 
-                    unique_word_count: int,
-                    average_word_length: float,
-                    average_sentence_length: float,
-                    top_10_function_words: Dict[str, int],
-                    punctuation_frequency: Dict[str, int],
-                    average_syllables_per_word: float) -> None:
-            self.author_name = author_name
-            self.collection_name = collection_name
-            self.unique_word_count = unique_word_count
-            self.average_word_length = average_word_length
-            self.average_sentence_length = average_sentence_length
-            self.top_10_function_words = top_10_function_words
-            self.punctuation_frequency = punctuation_frequency
-            self.average_syllables_per_word = average_syllables_per_word
-
     def __init__(self, 
                  settings: Settings, 
                  authors: List[Author], 
-                 preprocessing_data: Preprocessing.Data
+                 preprocessing_data: PreprocessingData
             ) -> None:
         self.paths = settings.paths
         self.configuration = settings.configuration
@@ -71,7 +52,7 @@ class Analysis():
                     data[model_name] = []
 
                 collection_metrics = self._analyze(self.preprocessing_data[author][collection])
-                analysis_data = Analysis.AnalysisData(
+                analysis_data = AnalysisData(
                     author_name=author.name, 
                     collection_name=collection.name, 
                     **collection_metrics
@@ -94,18 +75,20 @@ class Analysis():
             json_data = jsonpickle.encode(data)
             json.dump(json_data, f, indent=4)
     
-    def _analyze(self, preprocessing_data: Preprocessing.Data) -> dict:
+    def _analyze(self, preprocessing_data: PreprocessingData) -> dict:
         """Analyze the sample of words and return the unique_word_counts, average_word_lengths and average_sentence_lengths"""
         data = {}
+        
         data["unique_word_count"] = self._get_unique_word_count(
             words=preprocessing_data.words
         )
         data["average_word_length"] = self._get_average_word_length(
-            words=preprocessing_data.words
+            words=preprocessing_data.words,
+            num_of_words=preprocessing_data.num_of_words
         )
         data["average_sentence_length"] = self._get_average_sentence_length(
-            text=preprocessing_data.text, 
-            words=preprocessing_data.words
+            num_of_words=preprocessing_data.num_of_words, 
+            num_of_sentences=preprocessing_data.num_of_sentences
         )
         data["top_10_function_words"] = self._get_top_function_words(
             text=preprocessing_data.text
@@ -114,26 +97,38 @@ class Analysis():
             text=preprocessing_data.text
         )
         data["average_syllables_per_word"] = self._average_syllables_per_word(
-            words=preprocessing_data.words, 
-            syllables_count=preprocessing_data.syllables_count
+            num_of_words=preprocessing_data.num_of_words, 
+            num_of_syllabes=preprocessing_data.num_of_syllabes
         )
+        data["flesch_reading_ease"] = self._get_flesch_reading_ease(
+            num_of_words=preprocessing_data.num_of_words, 
+            num_of_sentences=preprocessing_data.num_of_sentences, 
+            num_of_syllabes=preprocessing_data.num_of_syllabes
+        )
+        data["flesch_kincaid_grade_level"] = self._get_flesch_kincaid_grade_level(
+            num_of_words=preprocessing_data.num_of_words, 
+            num_of_sentences=preprocessing_data.num_of_sentences, 
+            num_of_syllabes=preprocessing_data.num_of_syllabes
+        )
+        data["gunning_fog_index"] = self._gunning_fog_index(
+            num_of_words=preprocessing_data.num_of_words, 
+            num_of_sentences=preprocessing_data.num_of_sentences, 
+            num_of_complex_words=preprocessing_data.num_of_complex_words
+        )
+
         return data
 
     def _get_unique_word_count(self, words: List[str]) -> int:
         """Get the unique word count from the text"""
         return len(set(words))
 
-    def _get_average_word_length(self, words: List[str]) -> float:
+    def _get_average_word_length(self, words: List[str], num_of_words: int) -> float:
         """Get the average word length from the text"""
-        return sum(len(word) for word in words) / len(words)
+        return sum(len(word) for word in words) / num_of_words
     
-    def _get_average_sentence_length(self, text: str, words: List[str]) -> float:
+    def _get_average_sentence_length(self, num_of_words: int, num_of_sentences: int) -> float:
         """Get the average word length from the text"""
-        try:
-            sentences = sent_tokenize(text)
-        except:
-            pass
-        return len(words) / len(sentences)
+        return num_of_words / num_of_sentences
     
     def _get_top_function_words(self, text: str) -> Dict[str, int]:
         """Get the top n function words from the text"""
@@ -150,6 +145,18 @@ class Analysis():
         result.update({k:0 for k in missing_punctiation})
         return result
     
-    def _average_syllables_per_word(self, words: List[str], syllables_count) -> float:
+    def _average_syllables_per_word(self, num_of_words: int, num_of_syllabes: int) -> float:
         """Get the average syllables per word"""
-        return syllables_count / len(words)
+        return num_of_syllabes / num_of_words
+    
+    def _get_flesch_reading_ease(self, num_of_words: int, num_of_sentences: List[str], num_of_syllabes: int) -> float:
+        """Get the Flesch Reading Ease score"""
+        return 206.835 - 1.015 * (num_of_words / num_of_sentences) - 84.6 * (num_of_syllabes / num_of_words)
+    
+    def _get_flesch_kincaid_grade_level(self, num_of_words: int, num_of_sentences: List[str], num_of_syllabes: int) -> float:
+        """Get the Flesch-Kincaid Grade Level score"""
+        return 0.39 * (num_of_words / num_of_sentences) + 11.8 * (num_of_syllabes / num_of_words) - 15.59
+    
+    def _gunning_fog_index(self, num_of_words: int, num_of_sentences: int, num_of_complex_words: int) -> float:
+        """Get the Gunning Fog Index score"""
+        return 0.4 * ((num_of_words / num_of_sentences) + 100 * (num_of_complex_words / num_of_words))
