@@ -1,7 +1,6 @@
-from typing import Dict
+from typing import Dict, List
 
-
-class AnalysisData():
+class MetricData():
 
     def __init__(self, 
                 author_name: str, 
@@ -26,3 +25,17 @@ class AnalysisData():
         self.flesch_reading_ease = flesch_reading_ease
         self.flesch_kincaid_grade_level = flesch_kincaid_grade_level
         self.gunning_fog_index = gunning_fog_index
+
+class AnalysisData():
+
+    def __init__(self, 
+                 author_names: List[str],
+                 collection_names: List[str],
+                 all_top_function_words: List[str] = []) -> None:
+        self.author_names = author_names
+        self.collection_names = collection_names
+        self.all_top_function_words = all_top_function_words
+
+        self.collection_metrics = {}
+        for collection_name in collection_names:
+            self.collection_metrics[collection_name] = []

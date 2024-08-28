@@ -33,3 +33,6 @@ class Author():
             cleaned_collection = Collection(f"{model}")
             cleaned_collection.read_generated_texts(self.name, model_data_dir)
             self.cleaned_collections.append(cleaned_collection)
+
+    def __repr__(self) -> str:
+        return f"Author({self.name})"

@@ -2,7 +2,7 @@ from typing import Dict, List
 import nltk
 import json
 from functionwords import FunctionWords
-from src.analysis.analysis_data import AnalysisData
+from src.analysis.analysis_data import AnalysisData, MetricData
 from src.analysis.preprocessing_data import PreprocessingData
 from src.file_utils import FileUtils
 from src.models.author import Author
@@ -43,25 +43,33 @@ class Analysis():
     
     def analyze(self, authors: List[Author]) -> Dict[str, List[AnalysisData]]:
         """Analyze the authors and their collections"""
-        data = {}
+        analysis_data = AnalysisData(
+            author_names=[author.name for author in authors],
+            collection_names=[collection.name for collection in authors[0].cleaned_collections]
+        )
 
         for author in authors:
             for collection in author.cleaned_collections:
                 model_name = collection.name
-                if model_name not in data:
-                    data[model_name] = []
-
                 collection_metrics = self._analyze(self.preprocessing_data[author][collection])
-                analysis_data = AnalysisData(
+                metrics = MetricData(
                     author_name=author.name, 
                     collection_name=collection.name, 
                     **collection_metrics
                 )
+                analysis_data.collection_metrics[model_name].append(metrics)
 
-                data[model_name].append(analysis_data)
+        analysis_data.all_top_function_words = self._get_all_top_function_words(analysis_data)
+        self._save_analysis_data(analysis_data)
+        return analysis_data
 
-        self._save_analysis_data(data)
-        return data
+    def _get_all_top_function_words(self, analysis_data: AnalysisData) -> List[str]:
+        """Get the top n function words from all the collections"""
+        all_top_function_words = []
+        for collection_name in analysis_data.collection_names:
+            for metrics in analysis_data.collection_metrics[collection_name]:
+                all_top_function_words.extend(list(metrics.top_10_function_words.keys()))
+        return list(set(all_top_function_words))
 
     def _get_text_length(self, collections: List[Collection]) -> int:
         """Get the total number of words in the collections"""

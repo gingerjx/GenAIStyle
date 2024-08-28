@@ -46,3 +46,6 @@ class Collection():
         book_titles = df[df["author"] == author_name]["book"].tolist()
         return [Path(books_dir / (author_name + "___" + title + ".txt"))
                            for title in book_titles]
+    
+    def __repr__(self) -> str:
+        return f"Collection({self.name})"

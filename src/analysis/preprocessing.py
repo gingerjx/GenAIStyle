@@ -11,9 +11,13 @@ nltk.download('cmudict')
 nltk.download('punkt')
 from nltk.corpus import cmudict
 from nltk.tokenize import sent_tokenize
+from nltk.tokenize.treebank import TreebankWordDetokenizer
+from string import punctuation
 
 class Preprocessing:
-             
+    
+    MAX_WORD_LENGTH = 50
+
     def __init__(self, settings: Settings, authors: List[Author]) -> None:
         self.paths = settings.paths
         self.configuration = settings.configuration
@@ -28,7 +32,7 @@ class Preprocessing:
             for collection in author.cleaned_collections:
                 all_text = collection.get_merged_text()[:200000] # TODO: Remove the limit afterwards
                 split = self._get_split(all_text)[:self.configuration.analysis_size]
-                text = self._get_text(split, all_text)
+                text = self._get_text(split)
                 words = self._get_words(split)
                 try:
                     sentences = sent_tokenize(text)
@@ -53,23 +57,8 @@ class Preprocessing:
         split = nltk.word_tokenize(text)
         return split
     
-    def _get_text(self, split: List[str], all_text: str) -> str:
-        """Get the text from the split"""
-        if len(split) == 0:
-            return ""
-        
-        positions = []
-        current_pos = 0
-
-        for token in split:
-            # Find the starting index of the current token in the text
-            start_index = all_text.find(token, current_pos)
-            positions.append((token, start_index))
-            # Update current position to the end of the current token
-            current_pos = start_index + len(token)
-
-        end_index = start_index + len(token)
-        return all_text[:end_index]
+    def _get_text(self, split: List[str]) -> str:
+        return TreebankWordDetokenizer().detokenize(split)
     
     def _get_words(self, split: List[str]) -> List[str]:
         """Get the words from the split"""
