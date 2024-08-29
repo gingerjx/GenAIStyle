@@ -33,7 +33,8 @@ class AnalysisVisualization():
                                     "Flesch reading ease",
                                     "Flesch Kincaid Grade Level",
                                     "Gunning Fog Index"
-                                )
+                                ),
+                                vertical_spacing=0.1
                             )
 
         for i, (model_name, metrics) in enumerate(analysis_data.collection_metrics.items()):

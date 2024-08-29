@@ -11,9 +11,10 @@ from src.models.collection import Collection
 import jsonpickle
 from string import punctuation
 from collections import Counter
+import pandas as pd
+from dataclasses import fields
 
 nltk.download('punkt')
-
 from nltk.tokenize import sent_tokenize
 
 class Analysis():
@@ -60,8 +61,27 @@ class Analysis():
                 analysis_data.collection_metrics[model_name].append(metrics)
 
         analysis_data.all_top_function_words = self._get_all_top_function_words(analysis_data)
+        analysis_data.pca = self._get_pca(analysis_data)
         self._save_analysis_data(analysis_data)
         return analysis_data
+
+    def _get_pca(self, analysis_data: AnalysisData) -> pd.DataFrame:
+        """Get the PCA of the analysis data"""
+        processed_columns = [f.name for f in fields(MetricData)]
+        processed_columns.remove("top_10_function_words")
+        processed_columns.remove("punctuation_frequency")
+        punctuation_columns = list(punctuation) 
+        top_function_words_column = analysis_data.all_top_function_words
+        all_columns = processed_columns + punctuation_columns + top_function_words_column
+        df = pd.DataFrame([], columns=all_columns)
+
+        for collection_name in analysis_data.collection_names:
+            for metrics in analysis_data.collection_metrics[collection_name]:
+                serie = [getattr(metrics, column) for column in processed_columns]
+                serie.extend([metrics.punctuation_frequency[column] for column in punctuation_columns])
+                serie.extend([metrics.top_10_function_words.get(column, 0)for column in top_function_words_column])
+                df.loc[len(df)] = serie
+        return df
 
     def _get_all_top_function_words(self, analysis_data: AnalysisData) -> List[str]:
         """Get the top n function words from all the collections"""
