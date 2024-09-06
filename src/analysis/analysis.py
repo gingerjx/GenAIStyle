@@ -55,9 +55,14 @@ class Analysis():
                 analysis_data.collection_metrics[model_name].append(metrics)
 
         analysis_data.all_top_function_words = self._get_all_top_function_words(analysis_data)
-        analysis_data.pca_data = self._get_pca_data(analysis_data)
-        analysis_data.pca_results = self._get_pca(analysis_data)
+        analysis_data.pca.data = self._get_pca_data(analysis_data)
+        pca_results, top_10_pca_features, explained_variance_ratio_ = self._get_pca(analysis_data)
+        analysis_data.pca.results = pca_results
+        analysis_data.pca.top_10_features = top_10_pca_features
+        analysis_data.pca.pc_variance = [explained_variance_ratio_[0], explained_variance_ratio_[1]]
+
         self._save_analysis_data(analysis_data)
+        
         return analysis_data
     
     def _get_percentage_of_removed_text(self) -> float:
@@ -89,17 +94,22 @@ class Analysis():
     def _get_pca(self, analysis_data: AnalysisData) -> Dict[str, pd.DataFrame]:
         """Get the PCA of the analysis data"""
         targets = ["collection_name", "author_name"]
-        features = [column for column in analysis_data.pca_data.columns if column not in targets]
+        features = [column for column in analysis_data.pca.data.columns if column not in targets]
 
-        x = analysis_data.pca_data.loc[:, features].values
+        x = analysis_data.pca.data.loc[:, features].values
         x_scaled = StandardScaler().fit_transform(x)
         pca = PCA(n_components=2)
         principal_components = pca.fit_transform(x_scaled)
-        pc_df = pd.DataFrame(data = principal_components   
-             , columns = [f"PC1 [{pca.explained_variance_ratio_[0]:.2%}]", 
-                          f"PC2 [{pca.explained_variance_ratio_[1]:.2%}]"])
-        pca_df = pd.concat([pc_df, analysis_data.pca_data[targets]], axis = 1) 
-        return pca_df
+        pc_df = pd.DataFrame(data = principal_components, columns = ["PC1", "PC2"])
+        pca_df = pd.concat([pc_df, analysis_data.pca.data[targets]], axis = 1) 
+
+        loadings = pd.DataFrame(pca.components_.T, columns=['PC1', 'PC2'], index=features)
+        top_10_features = {
+            'PC1': loadings['PC1'].abs().sort_values(ascending=False).index.tolist()[:10],
+            'PC2': loadings['PC2'].abs().sort_values(ascending=False).index.tolist()[:10]
+        }
+
+        return pca_df, top_10_features, pca.explained_variance_ratio_
     
     def _get_all_top_function_words(self, analysis_data: AnalysisData) -> List[str]:
         """Get the top n function words from all the collections"""

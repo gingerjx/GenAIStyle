@@ -161,17 +161,14 @@ class AnalysisVisualization():
 
     def _visualize_pca_by_collections(self, analysis_data: AnalysisData):
         """Visualize the PCA data for the authors and models"""
-        # Create the scatter plot
         fig = go.Figure()
-        df = analysis_data.pca_results
-        pc1_column = next(column for column in df.columns if column.startswith('PC1'))
-        pc2_column = next(column for column in df.columns if column.startswith('PC2'))
+        df = analysis_data.pca.results
 
         for collection_name in analysis_data.collection_names:
             mask = df['collection_name'] == collection_name
             fig.add_trace(go.Scatter(
-                x=df.loc[mask, pc1_column],
-                y=df.loc[mask, pc2_column],
+                x=df.loc[mask, 'PC1'],
+                y=df.loc[mask, 'PC2'],
                 mode='markers',
                 marker=dict(color=AnalysisVisualization.COLLECTION_COLORS[collection_name]),
                 name=collection_name,
@@ -179,30 +176,24 @@ class AnalysisVisualization():
                 hoverinfo='text'
             ))
 
-        # Update layout with buttons
         fig.update_layout(
             title='PCA Analysis',
-            xaxis_title='PC1 [25.32%]',
-            yaxis_title='PC2 [10.03%]',
+            xaxis_title=f'PC1 [{analysis_data.pca.pc_variance[0]:.2%}]',
+            yaxis_title=f'PC2 [{analysis_data.pca.pc_variance[1]:.2%}]',
             legend_title='Collection Name',
         )
-
-        # Show the plot
         fig.show()
 
     def _visualize_pca_by_authors(self, analysis_data: AnalysisData):
         """Visualize the PCA data for the authors and models"""
-        # Create the scatter plot
         fig = go.Figure()
-        df = analysis_data.pca_results
-        pc1_column = next(column for column in df.columns if column.startswith('PC1'))
-        pc2_column = next(column for column in df.columns if column.startswith('PC2'))
+        df = analysis_data.pca.results
 
         for author_name in analysis_data.author_names:
             mask = df['author_name'] == author_name
             fig.add_trace(go.Scatter(
-                x=df.loc[mask, pc1_column],
-                y=df.loc[mask, pc2_column],
+                x=df.loc[mask, 'PC1'],
+                y=df.loc[mask, 'PC2'],
                 mode='markers',
                 marker=dict(color=AnalysisVisualization.AUTHOR_COLORS[author_name]),
                 name=author_name,
@@ -210,15 +201,12 @@ class AnalysisVisualization():
                 hoverinfo='text'
             ))
 
-        # Update layout with buttons
         fig.update_layout(
             title='PCA Analysis',
-            xaxis_title='PC1 [25.32%]',
-            yaxis_title='PC2 [10.03%]',
+            xaxis_title=f'PC1 [{analysis_data.pca.pc_variance[0]:.2%}]',
+            yaxis_title=f'PC2 [{analysis_data.pca.pc_variance[1]:.2%}]',
             legend_title='Author Name',
         )
-
-        # Show the plot
         fig.show()
 
     def _sort_and_trim_fw_frequency(self, fw_frequency: Dict[str, int]) -> Dict[str, int]:

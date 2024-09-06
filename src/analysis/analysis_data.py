@@ -17,14 +17,20 @@ class MetricData:
     gunning_fog_index: float
 
 @dataclass
+class PCAData:
+    data: dict = None
+    results: pd.DataFrame = None
+    pc_variance: List[float] = None
+    top_10_features: Dict[str, List[str]] = None
+
+@dataclass
 class AnalysisData:
     author_names: List[str]
     collection_names: List[str]
     percentage_of_removed_text: float
     all_top_function_words: List[str] = field(default_factory=list)
     collection_metrics: Dict[str, List] = field(init=False, default_factory=dict)
-    pca_data: Optional[dict] = None
-    pca_results: Optional[Dict[str, pd.DataFrame]] = None
+    pca: PCAData = field(default_factory=PCAData)
 
     def __post_init__(self):
         for collection_name in self.collection_names:
