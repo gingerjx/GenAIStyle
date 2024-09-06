@@ -9,6 +9,14 @@ from src.settings import Settings
 
 class AnalysisVisualization():
     LEGEND_COLORS = ["#3498db", "#e74c3c", "#2ecc71", "#f1c40f", "#9b59b6", "#e67e22"]
+    COLLECTION_COLORS = {
+        "books": "#3498db", 
+        "gpt-3.5-turbo-0125": "#e74c3c",
+        "gpt-4o": "#2ecc71", 
+        "gemini-1.5-flash": "#f1c40f", 
+        "open-mixtral-8x7b": "#9b59b6", 
+        "claude-3-haiku-20240307": "#e67e22",
+    }
     LEGEND_TITLE = "Text source"
     FONT_SIZE = 10
 
@@ -17,9 +25,10 @@ class AnalysisVisualization():
 
     def visualize(self, analysis_data: AnalysisData):
         """Visualize the analysis data for the authors and models"""
-        self._visualize(analysis_data)
-        self._visualize_function_words(analysis_data)
-        self._visualize_punctuation_frequency(analysis_data)
+        self._visualize_pca(analysis_data)
+        # self._visualize(analysis_data)
+        # self._visualize_function_words(analysis_data)
+        # self._visualize_punctuation_frequency(analysis_data)
 
     def _visualize(self, analysis_data: AnalysisData):
         """Visualize the unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""
@@ -124,7 +133,7 @@ class AnalysisVisualization():
                         y=list(sorted_values), 
                         marker_color=AnalysisVisualization.LEGEND_COLORS[i],
                         showlegend=show_legend,
-                        mode='markers' 
+                        mode="markers" 
                     ), row=row, col=col
                 )
                 show_legend = False
@@ -133,6 +142,51 @@ class AnalysisVisualization():
         fig.update_layout(
             height=fig_height,
             title_text="Punctuation frequency",
+            title_x=0.5
+        )     
+        fig.show()
+
+    def _visualize_pca(self, analysis_data: AnalysisData):
+        """Visualize the PCA data for the authors and models"""
+        fig_height = 1500
+        total_cols = 3
+        total_rows = 4
+        fig = make_subplots(
+            rows=total_rows, 
+            cols=total_cols,
+            subplot_titles=analysis_data.author_names,
+        )
+        target = "collection_name"
+        features = [column for column in analysis_data.pca_data.columns if column not in [target]]
+        features.remove("author_name")
+
+        color_map = {name: AnalysisVisualization.LEGEND_COLORS[i % len(AnalysisVisualization.LEGEND_COLORS)] 
+                     for i, name in enumerate(analysis_data.collection_names)}
+
+        show_legend = True
+        for i, (author_name, pca) in enumerate(analysis_data.pca_results.items()):
+            row = i // total_cols + 1
+            col = i % total_cols + 1
+            for collection_name in pca[target].unique():
+                mask = pca[target] == collection_name
+                fig.add_trace(go.Scatter(
+                    name=collection_name, 
+                    x=pca.loc[mask, "PC 1"], 
+                    y=pca.loc[mask, "PC 2"], 
+                    marker=dict(
+                        color=color_map[collection_name],  # Set the color of each point
+                    ),
+                    text=pca.loc[mask, target],  # Set the text for each point
+                    showlegend=show_legend,
+                    mode="markers" 
+                ), row=row, col=col)
+            show_legend = False
+
+        fig.update_xaxes(title_text="PC 1")
+        fig.update_yaxes(title_text="PC 2")
+        fig.update_layout(
+            height=fig_height,
+            title_text="PCA per author",
             title_x=0.5
         )     
         fig.show()
@@ -147,7 +201,7 @@ class AnalysisVisualization():
         model_names = list(data.keys())
         params = {}
         for y_idx in range(1, 10*3+1, 10):
-            params[f'yaxis{y_idx}'] = go.YAxis(
+            params[f"yaxis{y_idx}"] = go.YAxis(
                 title=model_names[3 + y_idx//10], 
                 titlefont=go.Font(size=25)
             )
@@ -185,9 +239,9 @@ class AnalysisVisualization():
         # fig.update_traces(showlegend=True, showscale=False)
         fig.update_xaxes(showticklabels=False)
         fig.update_yaxes(tickfont_size=20)
-        fig.update_traces(colorbar_orientation='h',
-                            selector=dict(type='heatmap'),
-                            colorscale='oranges',
+        fig.update_traces(colorbar_orientation="h",
+                            selector=dict(type="heatmap"),
+                            colorscale="oranges",
                             colorbar=dict(
                                 x=0.5, 
                                 y=1.3,
@@ -207,7 +261,7 @@ class AnalysisVisualization():
         author_names = [d.author_name for d in first_data]
         params = {}
         for y_idx in range(1, 10*6+1, 6):
-            params[f'yaxis{y_idx}'] = go.YAxis(
+            params[f"yaxis{y_idx}"] = go.YAxis(
                 title=author_names[y_idx//6], 
                 titlefont=go.Font(size=AnalysisVisualization.FONT_SIZE_EXTRA_LARGE)
             )
@@ -233,7 +287,7 @@ class AnalysisVisualization():
                     y=list(reversed(list(function_words.keys()))), 
                     x=list(reversed(list(function_words.values()))), 
                     marker_color=AnalysisVisualization.LEGEND_COLORS[i],
-                    orientation='h',
+                    orientation="h",
                     showlegend=False
                 ), row=j+1, col=i+1)
 
