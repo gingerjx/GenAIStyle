@@ -1,5 +1,6 @@
 from typing import Dict, List, Optional
 from dataclasses import dataclass, field
+import pandas as pd
 
 @dataclass
 class MetricData:
@@ -23,6 +24,7 @@ class AnalysisData:
     all_top_function_words: List[str] = field(default_factory=list)
     collection_metrics: Dict[str, List] = field(init=False, default_factory=dict)
     pca_data: Optional[dict] = None
+    pca_results: Optional[Dict[str, pd.DataFrame]] = None
 
     def __post_init__(self):
         for collection_name in self.collection_names:

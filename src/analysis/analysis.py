@@ -13,6 +13,8 @@ from string import punctuation
 from collections import Counter
 import pandas as pd
 from dataclasses import fields
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 
 class Analysis():
 
@@ -54,6 +56,7 @@ class Analysis():
 
         analysis_data.all_top_function_words = self._get_all_top_function_words(analysis_data)
         analysis_data.pca_data = self._get_pca_data(analysis_data)
+        analysis_data.pca_results = self._get_pca(analysis_data)
         self._save_analysis_data(analysis_data)
         return analysis_data
     
@@ -64,7 +67,7 @@ class Analysis():
             raw_text_length += self._get_text_length(author.raw_collections)
             cleaned_text_length += self._get_text_length(author.cleaned_collections)
         return 100 * (raw_text_length - cleaned_text_length) / raw_text_length
-
+    
     def _get_pca_data(self, analysis_data: AnalysisData) -> pd.DataFrame:
         """Get the PCA of the analysis data"""
         processed_columns = [f.name for f in fields(MetricData)]
@@ -83,6 +86,29 @@ class Analysis():
                 df.loc[len(df)] = serie
         return df
 
+    def _get_pca(self, analysis_data: AnalysisData) -> Dict[str, pd.DataFrame]:
+        """Get the PCA of the analysis data"""
+        target = ["collection_name"]
+        features = [column for column in analysis_data.pca_data.columns if column not in target]
+        features.remove("author_name")
+
+        pca_results = {}
+        pca = PCA(n_components=2)
+        for author_name in analysis_data.author_names:
+            author_pca_data = analysis_data.pca_data[analysis_data.pca_data["author_name"] == author_name]
+            y = author_pca_data[target]
+            x = author_pca_data[features]
+            x_scaled = StandardScaler().fit_transform(x)
+
+            components = pca.fit_transform(x_scaled)
+            components_df = pd.DataFrame(data = components, columns = ['PC 1', 'PC 2'])
+
+            components_df.reset_index(drop=True, inplace=True)
+            y.reset_index(drop=True, inplace=True)
+            pca_results[author_name] = pd.concat([components_df, y], axis = 1)
+        
+        return pca_results
+    
     def _get_all_top_function_words(self, analysis_data: AnalysisData) -> List[str]:
         """Get the top n function words from all the collections"""
         all_top_function_words = []
