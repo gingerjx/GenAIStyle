@@ -15,6 +15,10 @@ class MetricData:
     flesch_reading_ease: float
     flesch_kincaid_grade_level: float
     gunning_fog_index: float
+    yules_characteristic_k: float
+    herdans_c: float
+    maas: float
+    simpsons_index: float
 
 @dataclass
 class PCAData:

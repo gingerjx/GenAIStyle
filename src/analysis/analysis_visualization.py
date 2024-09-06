@@ -46,17 +46,21 @@ class AnalysisVisualization():
     def _visualize(self, analysis_data: AnalysisData):
         """Visualize the unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""
         fig_xaxes_font_size = 10
-        fig_height = 1000
-        fig = make_subplots(rows=7, cols=1, subplot_titles=(
+        fig_height = 1500
+        fig = make_subplots(rows=11, cols=1, subplot_titles=(
                                     "Unique word count", 
                                     "Average word length", 
                                     "Average sentence length", 
                                     "Average syllables per word", 
                                     "Flesch reading ease",
                                     "Flesch Kincaid Grade Level",
-                                    "Gunning Fog Index"
+                                    "Gunning Fog Index",
+                                    "Yules Characteristic K",
+                                    "Herdan's C",
+                                    "Maas",
+                                    "Simpsons_index"
                                 ),
-                                vertical_spacing=0.1
+                                # vertical_spacing=0.1
                             )
 
         for i, (model_name, metrics) in enumerate(analysis_data.collection_metrics.items()):
@@ -67,7 +71,11 @@ class AnalysisVisualization():
                 "Average syllables per word": [d.average_syllables_per_word for d in metrics], 
                 "Flesch Reading Ease": [d.flesch_reading_ease for d in metrics], 
                 "Flesch Kincaid Grade Level": [d.flesch_kincaid_grade_level for d in metrics], 
-                "Gunning Fog Index": [d.gunning_fog_index for d in metrics]
+                "Gunning Fog Index": [d.gunning_fog_index for d in metrics],
+                "Yules Characteristic K": [d.yules_characteristic_k for d in metrics],
+                "Herdan's C": [d.herdans_c for d in metrics],
+                "Maas": [d.maas for d in metrics],
+                "Simpsons Index": [d.simpsons_index for d in metrics]
             }
 
             for j, (_, value) in enumerate(metrics_subset.items()):
