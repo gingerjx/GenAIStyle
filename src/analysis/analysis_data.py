@@ -19,9 +19,10 @@ class MetricData:
 class AnalysisData:
     author_names: List[str]
     collection_names: List[str]
+    percentage_of_removed_text: float
     all_top_function_words: List[str] = field(default_factory=list)
     collection_metrics: Dict[str, List] = field(init=False, default_factory=dict)
-    pca: Optional[object] = None
+    pca_data: Optional[dict] = None
 
     def __post_init__(self):
         for collection_name in self.collection_names:

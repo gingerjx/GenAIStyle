@@ -50,7 +50,8 @@ class Settings:
         analysis_filepath: Path = results_dir / "analysis.json"
           
     class Configuration:
-
+        
+        read_analysis_from_file: bool = False   # Read analysis data from file
         response_number_of_words: int = 3000    # Expected number of words used during reposnse generation
         analysis_size: int = 10000              # Number of words used during analysis   
         min_response_text_length: int = 100     # Minimum number of words of the response text to be considered

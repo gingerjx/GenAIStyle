@@ -14,39 +14,31 @@ from collections import Counter
 import pandas as pd
 from dataclasses import fields
 
-nltk.download('punkt')
-from nltk.tokenize import sent_tokenize
-
 class Analysis():
 
     def __init__(self, 
                  settings: Settings, 
                  authors: List[Author], 
-                 preprocessing_data: PreprocessingData
+                 preprocessing_data: PreprocessingData,
+                 read_from_file: bool = False
             ) -> None:
         self.paths = settings.paths
         self.configuration = settings.configuration
         self.authors = authors
         self.preprocessing_data = preprocessing_data
-
-    def text_length(self) -> int:
-        raw_text_length = 0
-        cleaned_text_length = 0
-        for author in self.authors:
-            raw_text_length += self._get_text_length(author.raw_collections)
-            cleaned_text_length += self._get_text_length(author.cleaned_collections)
-        return raw_text_length, cleaned_text_length
+        self.read_from_file = read_from_file
     
-    def get_analysis(self, authors: List[Author], read_from_file=False) -> Dict[str, List[AnalysisData]]:    
-        if read_from_file:
+    def get_analysis(self, authors: List[Author]) -> AnalysisData:    
+        if self.read_from_file:
             return FileUtils.read_analysis_data(self.paths.analysis_filepath)
         return self.analyze(authors)
     
-    def analyze(self, authors: List[Author]) -> Dict[str, List[AnalysisData]]:
+    def analyze(self, authors: List[Author]) -> AnalysisData:
         """Analyze the authors and their collections"""
         analysis_data = AnalysisData(
             author_names=[author.name for author in authors],
-            collection_names=[collection.name for collection in authors[0].cleaned_collections]
+            collection_names=[collection.name for collection in authors[0].cleaned_collections],
+            percentage_of_removed_text=self._get_percentage_of_removed_text()
         )
 
         for author in authors:
@@ -61,11 +53,19 @@ class Analysis():
                 analysis_data.collection_metrics[model_name].append(metrics)
 
         analysis_data.all_top_function_words = self._get_all_top_function_words(analysis_data)
-        analysis_data.pca = self._get_pca(analysis_data)
+        analysis_data.pca_data = self._get_pca_data(analysis_data)
         self._save_analysis_data(analysis_data)
         return analysis_data
+    
+    def _get_percentage_of_removed_text(self) -> float:
+        raw_text_length = 0
+        cleaned_text_length = 0
+        for author in self.authors:
+            raw_text_length += self._get_text_length(author.raw_collections)
+            cleaned_text_length += self._get_text_length(author.cleaned_collections)
+        return 100 * (raw_text_length - cleaned_text_length) / raw_text_length
 
-    def _get_pca(self, analysis_data: AnalysisData) -> pd.DataFrame:
+    def _get_pca_data(self, analysis_data: AnalysisData) -> pd.DataFrame:
         """Get the PCA of the analysis data"""
         processed_columns = [f.name for f in fields(MetricData)]
         processed_columns.remove("top_10_function_words")
