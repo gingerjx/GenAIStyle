@@ -88,26 +88,18 @@ class Analysis():
 
     def _get_pca(self, analysis_data: AnalysisData) -> Dict[str, pd.DataFrame]:
         """Get the PCA of the analysis data"""
-        target = ["collection_name"]
-        features = [column for column in analysis_data.pca_data.columns if column not in target]
-        features.remove("author_name")
+        targets = ["collection_name", "author_name"]
+        features = [column for column in analysis_data.pca_data.columns if column not in targets]
 
-        pca_results = {}
+        x = analysis_data.pca_data.loc[:, features].values
+        x_scaled = StandardScaler().fit_transform(x)
         pca = PCA(n_components=2)
-        for author_name in analysis_data.author_names:
-            author_pca_data = analysis_data.pca_data[analysis_data.pca_data["author_name"] == author_name]
-            y = author_pca_data[target]
-            x = author_pca_data[features]
-            x_scaled = StandardScaler().fit_transform(x)
-
-            components = pca.fit_transform(x_scaled)
-            components_df = pd.DataFrame(data = components, columns = ['PC 1', 'PC 2'])
-
-            components_df.reset_index(drop=True, inplace=True)
-            y.reset_index(drop=True, inplace=True)
-            pca_results[author_name] = pd.concat([components_df, y], axis = 1)
-        
-        return pca_results
+        principal_components = pca.fit_transform(x_scaled)
+        pc_df = pd.DataFrame(data = principal_components   
+             , columns = [f"PC1 [{pca.explained_variance_ratio_[0]:.2%}]", 
+                          f"PC2 [{pca.explained_variance_ratio_[1]:.2%}]"])
+        pca_df = pd.concat([pc_df, analysis_data.pca_data[targets]], axis = 1) 
+        return pca_df
     
     def _get_all_top_function_words(self, analysis_data: AnalysisData) -> List[str]:
         """Get the top n function words from all the collections"""

@@ -17,6 +17,18 @@ class AnalysisVisualization():
         "open-mixtral-8x7b": "#9b59b6", 
         "claude-3-haiku-20240307": "#e67e22",
     }
+    AUTHOR_COLORS = {
+        "Mark Twain": "#3498db",          # Blue
+        "Zane Grey": "#e74c3c",           # Red
+        "Joseph Conrad": "#2ecc71",       # Green
+        "George Eliot": "#f1c40f",        # Yellow
+        "Benjamin Disraeli": "#9b59b6",   # Purple
+        "Lucy Maud Montgomery": "#e67e22",# Orange
+        "William Henry Hudson": "#1abc9c",# Turquoise
+        "Howard Pyle": "#34495e",         # Dark Blue
+        "Virginia Woolf": "#d35400",      # Dark Orange
+        "Lewis Carroll": "#7f8c8d"        # Gray
+    }
     LEGEND_TITLE = "Text source"
     FONT_SIZE = 10
 
@@ -25,10 +37,11 @@ class AnalysisVisualization():
 
     def visualize(self, analysis_data: AnalysisData):
         """Visualize the analysis data for the authors and models"""
-        self._visualize_pca(analysis_data)
-        # self._visualize(analysis_data)
-        # self._visualize_function_words(analysis_data)
-        # self._visualize_punctuation_frequency(analysis_data)
+        self._visualize(analysis_data)
+        self._visualize_function_words(analysis_data)
+        self._visualize_punctuation_frequency(analysis_data)
+        self._visualize_pca_by_collections(analysis_data)
+        self._visualize_pca_by_authors(analysis_data)
 
     def _visualize(self, analysis_data: AnalysisData):
         """Visualize the unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""
@@ -146,49 +159,66 @@ class AnalysisVisualization():
         )     
         fig.show()
 
-    def _visualize_pca(self, analysis_data: AnalysisData):
+    def _visualize_pca_by_collections(self, analysis_data: AnalysisData):
         """Visualize the PCA data for the authors and models"""
-        fig_height = 1500
-        total_cols = 3
-        total_rows = 4
-        fig = make_subplots(
-            rows=total_rows, 
-            cols=total_cols,
-            subplot_titles=analysis_data.author_names,
-        )
-        target = "collection_name"
-        features = [column for column in analysis_data.pca_data.columns if column not in [target]]
-        features.remove("author_name")
+        # Create the scatter plot
+        fig = go.Figure()
+        df = analysis_data.pca_results
+        pc1_column = next(column for column in df.columns if column.startswith('PC1'))
+        pc2_column = next(column for column in df.columns if column.startswith('PC2'))
 
-        color_map = {name: AnalysisVisualization.LEGEND_COLORS[i % len(AnalysisVisualization.LEGEND_COLORS)] 
-                     for i, name in enumerate(analysis_data.collection_names)}
+        for collection_name in analysis_data.collection_names:
+            mask = df['collection_name'] == collection_name
+            fig.add_trace(go.Scatter(
+                x=df.loc[mask, pc1_column],
+                y=df.loc[mask, pc2_column],
+                mode='markers',
+                marker=dict(color=AnalysisVisualization.COLLECTION_COLORS[collection_name]),
+                name=collection_name,
+                text=df.loc[mask, 'author_name'], 
+                hoverinfo='text'
+            ))
 
-        show_legend = True
-        for i, (author_name, pca) in enumerate(analysis_data.pca_results.items()):
-            row = i // total_cols + 1
-            col = i % total_cols + 1
-            for collection_name in pca[target].unique():
-                mask = pca[target] == collection_name
-                fig.add_trace(go.Scatter(
-                    name=collection_name, 
-                    x=pca.loc[mask, "PC 1"], 
-                    y=pca.loc[mask, "PC 2"], 
-                    marker=dict(
-                        color=color_map[collection_name],  # Set the color of each point
-                    ),
-                    text=pca.loc[mask, target],  # Set the text for each point
-                    showlegend=show_legend,
-                    mode="markers" 
-                ), row=row, col=col)
-            show_legend = False
-
-        fig.update_xaxes(title_text="PC 1")
-        fig.update_yaxes(title_text="PC 2")
+        # Update layout with buttons
         fig.update_layout(
-            height=fig_height,
-            title_text="PCA per author",
-            title_x=0.5
-        )     
+            title='PCA Analysis',
+            xaxis_title='PC1 [25.32%]',
+            yaxis_title='PC2 [10.03%]',
+            legend_title='Collection Name',
+        )
+
+        # Show the plot
+        fig.show()
+
+    def _visualize_pca_by_authors(self, analysis_data: AnalysisData):
+        """Visualize the PCA data for the authors and models"""
+        # Create the scatter plot
+        fig = go.Figure()
+        df = analysis_data.pca_results
+        pc1_column = next(column for column in df.columns if column.startswith('PC1'))
+        pc2_column = next(column for column in df.columns if column.startswith('PC2'))
+
+        for author_name in analysis_data.author_names:
+            mask = df['author_name'] == author_name
+            fig.add_trace(go.Scatter(
+                x=df.loc[mask, pc1_column],
+                y=df.loc[mask, pc2_column],
+                mode='markers',
+                marker=dict(color=AnalysisVisualization.AUTHOR_COLORS[author_name]),
+                name=author_name,
+                text=df.loc[mask, 'collection_name'], 
+                hoverinfo='text'
+            ))
+
+        # Update layout with buttons
+        fig.update_layout(
+            title='PCA Analysis',
+            xaxis_title='PC1 [25.32%]',
+            yaxis_title='PC2 [10.03%]',
+            legend_title='Author Name',
+        )
+
+        # Show the plot
         fig.show()
 
     def _sort_and_trim_fw_frequency(self, fw_frequency: Dict[str, int]) -> Dict[str, int]:
