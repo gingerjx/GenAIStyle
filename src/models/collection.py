@@ -7,7 +7,12 @@ import pandas as pd
 from src.models.book import Book
 from src.models.llm_response import LLMResponse
 from src.models.text import Text
-from src.settings import Settings
+import random
+import nltk
+from nltk.tokenize import sent_tokenize
+
+nltk.download('punkt')
+random.seed(42) # Fixed seed for reproducibility
 
 class Collection():
     
@@ -26,11 +31,59 @@ class Collection():
         generated_texts_files = Collection._get_generated_texts_filepaths(author_name, model_data_dir)
         for filepath in generated_texts_files:
             self.texts.append(LLMResponse(filepath))
-    
+
     def get_merged_text(self) -> str:
         """Get the merged text of all texts in the collection"""
         return " ".join([text.text for text in self.texts])
+       
+    def get_text_chunks(self, book_chunk_size: int) -> List[List[str]]:
+        """Get the text chunks for the collection"""
+        if self.name == "books":
+            return self._get_shuffled_books_chunks(book_chunk_size)
+        else:
+            return self._get_models_chunks()
     
+    def _get_shuffled_books_chunks(self, book_chunk_size: int) -> List[List[str]]:
+        """Get shuffled chunks of the merged text"""
+        chunks = []
+        for t in self.texts:
+            chunks.extend(Collection._chunk_text(t.text, book_chunk_size))
+        random.shuffle(chunks)
+        return chunks
+    
+    def _get_models_chunks(self) -> List[List[str]]:
+        """Get the chunks of the generated texts"""
+        chunks = []
+        for t in self.texts:
+            chunks.extend(Collection._chunk_text(t.text, len(t.text)))
+        return chunks
+    
+    @staticmethod
+    def _chunk_text(text: str, max_chunk_size: int) -> List[List[str]]:
+        try:
+            sentences = sent_tokenize(text)
+        except Exception as e:
+            pass
+        chunks = []
+        current_chunk = []
+        current_chunk_size = 0
+
+        for sentence in sentences:
+            # Check if adding the next sentence would exceed the chunk size
+            if current_chunk_size <= max_chunk_size:
+                current_chunk.append(sentence)
+                current_chunk_size += len(sentence)
+            else:
+                chunks.append(current_chunk)
+                current_chunk = [sentence]
+                current_chunk_size = len(sentence)
+        
+        # Append the last chunk
+        if current_chunk:
+            chunks.append(current_chunk)
+        
+        return chunks
+
     @staticmethod
     def _get_generated_texts_filepaths(author_name: str, model_data_dir: Path) -> List[str]:
         """Get all generated texts filepaths for a given author"""

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 import pyphen
 from src.analysis.preprocessing_data import PreprocessingData
@@ -30,14 +30,10 @@ class Preprocessing:
         for author in self.authors:
             data.update({author: {}})
             for collection in author.cleaned_collections:
-                all_text = collection.get_merged_text()[:200000] # TODO: Remove the limit afterwards
-                split = self._get_split(all_text)[:self.configuration.analysis_size]
-                text = self._get_text(split)
+                text_chunks = collection.get_text_chunks(self.configuration.book_chunk_size)
+                split, sentences = self._get_split(text_chunks)
+                text = self._get_text(sentences)
                 words = self._get_words(split)
-                try:
-                    sentences = sent_tokenize(text)
-                except:
-                    pass
                 num_of_syllabes, complex_words = self._get_num_of_syllabes_and_complex_words(words)
                 
                 data[author].update({
@@ -52,13 +48,25 @@ class Preprocessing:
 
         return data
 
-    def _get_split(self, text: str) -> List[str]:
+    def _get_split(self, text_chunks: List[List[str]]) -> Tuple[List[str], List[str]]:
         """Get the split from the text"""
-        split = nltk.word_tokenize(text)
-        return split
+        split = []
+        sentences = []
+        split_size = 0
+        
+        for chunk in text_chunks:
+            for sentence in chunk:
+                if split_size > self.configuration.analysis_size:
+                    return split, sentences
+                sentence_split = nltk.word_tokenize(sentence)
+                split_size += len(sentence_split)
+                split.extend(sentence_split)
+                sentences.append(sentence)
+
+        return split, sentences
     
-    def _get_text(self, split: List[str]) -> str:
-        return TreebankWordDetokenizer().detokenize(split)
+    def _get_text(self, sentences: List[str]) -> str:
+        return " ".join(sentences)
     
     def _get_words(self, split: List[str]) -> List[str]:
         """Get the words from the split"""
