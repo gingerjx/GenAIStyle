@@ -21,8 +21,9 @@ class Settings:
         query_filepath: Path = metadata_dir / "queries"
         all_authors_filepath: Path = metadata_dir / "all/author_list"
         all_books_csv_filepath: Path = metadata_dir / "all/books.csv"
-        selected_authors_filepath: Path = metadata_dir / "selected/author_list"
-        selected_books_csv_filepath: Path = metadata_dir / "selected/books.csv"
+        selected_dir_path = metadata_dir / "selected"
+        selected_authors_filepath: Path = selected_dir_path / "author_list"
+        selected_books_csv_filepath: Path = selected_dir_path / "books.csv"
 
         raw_dir: Path = res_dir / "raw"
         raw_books_dir: Path = raw_dir / "books"
