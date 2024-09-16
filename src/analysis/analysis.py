@@ -61,11 +61,18 @@ class Analysis():
         analysis_data.pca.results = pca_results
         analysis_data.pca.top_10_features = top_10_pca_features
         analysis_data.pca.pc_variance = [explained_variance_ratio_[0], explained_variance_ratio_[1]]
-
+        self._set_author_metrics(analysis_data)
+        
         self._save_analysis_data(analysis_data)
 
         return analysis_data
     
+    def _set_author_metrics(self, analysis_data: AnalysisData) -> None:
+        """Set the author metrics"""
+        for collection_name, metrics in analysis_data.collection_metrics.items():
+             for metric in metrics:
+                analysis_data.author_metrics[metric.author_name].append(metric)
+
     def _get_percentage_of_removed_text(self) -> float:
         raw_text_length = 0
         cleaned_text_length = 0

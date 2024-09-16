@@ -34,8 +34,11 @@ class AnalysisData:
     percentage_of_removed_text: float
     all_top_function_words: List[str] = field(default_factory=list)
     collection_metrics: Dict[str, List] = field(init=False, default_factory=dict)
+    author_metrics: Dict[str, List] = field(init=False, default_factory=dict)
     pca: PCAData = field(default_factory=PCAData)
 
     def __post_init__(self):
         for collection_name in self.collection_names:
             self.collection_metrics[collection_name] = []
+        for author_name in self.author_names:
+            self.author_metrics[author_name] = []
