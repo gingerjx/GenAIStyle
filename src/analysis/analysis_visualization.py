@@ -1,14 +1,14 @@
+from dataclasses import fields
 from typing import Dict, List
 
 import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-from src.analysis.analysis_data import AnalysisData
+from src.analysis.analysis_data import AnalysisData, MetricData
 from src.settings import Settings
 
 class AnalysisVisualization():
-    LEGEND_COLORS = ["#3498db", "#e74c3c", "#2ecc71", "#f1c40f", "#9b59b6", "#e67e22"]
     COLLECTION_COLORS = {
         "books": "#3498db", 
         "gpt-3.5-turbo-0125": "#e74c3c",
@@ -17,6 +17,7 @@ class AnalysisVisualization():
         "open-mixtral-8x7b": "#9b59b6", 
         "claude-3-haiku-20240307": "#e67e22",
     }
+    COLLECTION_COLORS_LIST = list(COLLECTION_COLORS.values())
     AUTHOR_COLORS = {
         "Mark Twain": "#3498db",          # Blue
         "Zane Grey": "#e74c3c",           # Red
@@ -42,6 +43,7 @@ class AnalysisVisualization():
         self._visualize_punctuation_frequency(analysis_data)
         self._visualize_pca_by_collections(analysis_data)
         self._visualize_pca_by_authors(analysis_data)
+        self._visualize_metrics_of_two(analysis_data)
 
     def _visualize(self, analysis_data: AnalysisData):
         """Visualize the unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""
@@ -82,7 +84,7 @@ class AnalysisVisualization():
                 fig.add_trace(go.Bar(
                     name=model_name, 
                     x=analysis_data.author_names, 
-                    marker_color=AnalysisVisualization.LEGEND_COLORS[i],
+                    marker_color=AnalysisVisualization.COLLECTION_COLORS_LIST[i],
                     y=value, 
                     showlegend=j==0
                 ), row=j+1, col=1)
@@ -116,7 +118,7 @@ class AnalysisVisualization():
                     name=model_name, 
                     x=list(function_words.keys()), 
                     y=list(function_words.values()), 
-                    marker_color=AnalysisVisualization.LEGEND_COLORS[i],
+                    marker_color=AnalysisVisualization.COLLECTION_COLORS_LIST[i],
                     showlegend=j==0
                 ), row=i+1, col=j+1)
 
@@ -152,7 +154,7 @@ class AnalysisVisualization():
                         name=model_name, 
                         x=list(sorted_keys), 
                         y=list(sorted_values), 
-                        marker_color=AnalysisVisualization.LEGEND_COLORS[i],
+                        marker_color=AnalysisVisualization.COLLECTION_COLORS_LIST[i],
                         showlegend=show_legend,
                         mode="markers" 
                     ), row=row, col=col
@@ -217,6 +219,49 @@ class AnalysisVisualization():
         )
         fig.show()
 
+    def _visualize_metrics_of_two(self, analysis_data: AnalysisData):
+        """Visualize the unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""
+        fig = go.Figure()
+        excluded_metrics = ["author_name", "collection_name", "top_10_function_words", "punctuation_frequency"]
+        included_metrics = [f.name for f in fields(MetricData) if f.name not in excluded_metrics]
+        buttons = []
+        for i, metric_name in enumerate(included_metrics):
+            button = dict(
+                label=metric_name,
+                method='update',
+                args=[{'visible': [j == i for j in range(len(included_metrics))]},
+                    {'title': metric_name}]
+            )
+            buttons.append(button)
+
+        for i, (collection_name, metrics) in enumerate(analysis_data.collection_metrics.items()):
+        
+            colleciton_metrics_per_metric = {metric_name: [] for metric_name in included_metrics}
+            for metrics in metrics:
+                for metric_name in colleciton_metrics_per_metric.keys():
+                    colleciton_metrics_per_metric[metric_name].append(getattr(metrics, metric_name))
+            
+            for metric_name, value in colleciton_metrics_per_metric.items():
+                fig.add_trace(go.Scatter(
+                        name=collection_name, 
+                        x=analysis_data.author_names, 
+                        marker_color=AnalysisVisualization.COLLECTION_COLORS_LIST[i],
+                        y=value,
+                        mode="markers",
+                        visible=(metric_name == included_metrics[0])
+                    )
+                )
+
+        fig.update_layout(
+            updatemenus=[dict(
+                type='dropdown',
+                direction='down',
+                buttons=buttons,
+            )],
+            title=included_metrics[0],
+        )
+        fig.show()
+    
     def _sort_and_trim_fw_frequency(self, fw_frequency: Dict[str, int]) -> Dict[str, int]:
         """Sort the function words frequency"""
         sorted_fw_frequency = sorted(fw_frequency.items(), key=lambda x: x[1], reverse=True)
@@ -312,7 +357,7 @@ class AnalysisVisualization():
                     name=model_name, 
                     y=list(reversed(list(function_words.keys()))), 
                     x=list(reversed(list(function_words.values()))), 
-                    marker_color=AnalysisVisualization.LEGEND_COLORS[i],
+                    marker_color=AnalysisVisualization.COLLECTION_COLORS_LIST[i],
                     orientation="h",
                     showlegend=False
                 ), row=j+1, col=i+1)
