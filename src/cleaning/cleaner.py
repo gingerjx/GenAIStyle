@@ -29,7 +29,7 @@ class Cleaner:
                     with open(file, "r", encoding="utf-8") as f:
                         json_content = json.load(f)
 
-                    cleaned_text = self._clean_text(json_content["response"])
+                    cleaned_text = self._clean_generated_text(json_content["response"])
                     if cleaned_text is None:
                         continue
                     
@@ -50,7 +50,9 @@ class Cleaner:
             if file.is_file():
                 with open(file, "r", encoding="utf-8") as f:
                     text = f.read()       
-                # No cleaning needed        
+
+                text = self._clean_books_text(text)
+
                 cleaned_filepath = Path(
                     self.paths.cleaned_dir,
                     os.path.relpath(file, self.paths.raw_dir)
@@ -61,7 +63,7 @@ class Cleaner:
                     f.write(text)
 
 
-    def _clean_text(self, text: str) -> str:
+    def _clean_generated_text(self, text: str) -> str:
         """Clean the text"""
         if self._is_too_small(text):
             return None
@@ -70,6 +72,13 @@ class Cleaner:
         text = self._remove_emojis(text)
         return text
 
+    def _clean_books_text(self, text: str) -> str:
+        """Clean the text"""
+        text = Cleaner._remove_italic(text)
+        text = Cleaner._remove_dividers(text)
+        text = Cleaner._remove_illustration_annotations(text)
+        return text
+    
     def _is_too_small(self, text: str) -> bool:
         """Check if the text is too small"""
         words = text.split()
@@ -120,3 +129,21 @@ class Cleaner:
             u"\u3030"
                         "]+", re.UNICODE)
         return re.sub(emoj, '', text)
+    
+    @staticmethod
+    def _remove_italic(text: str) -> str:
+        """Remove italic text from the text"""
+        pattern = r'_(.*?)_'
+        return re.sub(pattern, r'\1', text)
+    
+    @staticmethod
+    def _remove_dividers(text: str) -> str:
+        """Remove dividers from the text"""
+        pattern = r'(\s*\*\s*)+'
+        return re.sub(pattern, '', text)
+
+    @staticmethod
+    def _remove_illustration_annotations(text: str) -> str:
+        """Remove dividers from the text"""
+        pattern = r'\[Illustration:.*?\]'
+        return re.sub(pattern, '', text, flags=re.DOTALL)
