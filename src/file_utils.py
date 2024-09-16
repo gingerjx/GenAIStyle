@@ -70,7 +70,7 @@ class FileUtils():
         return generated_text
     
     @staticmethod
-    def read_analysis_data(filepath: str) -> Dict[str, List[AnalysisData]]:
+    def read_analysis_data(filepath: str) -> AnalysisData:
         """Read analysis data from a file"""
         with open(filepath, 'r', encoding='utf-8') as f:
             json_data = json.load(f)

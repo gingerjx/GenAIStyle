@@ -1,5 +1,6 @@
 from typing import Dict, List, Optional
 from dataclasses import dataclass, field
+import pandas as pd
 
 @dataclass
 class MetricData:
@@ -14,15 +15,30 @@ class MetricData:
     flesch_reading_ease: float
     flesch_kincaid_grade_level: float
     gunning_fog_index: float
+    yules_characteristic_k: float
+    herdans_c: float
+    maas: float
+    simpsons_index: float
+
+@dataclass
+class PCAData:
+    data: dict = None
+    results: pd.DataFrame = None
+    pc_variance: List[float] = None
+    top_10_features: Dict[str, List[str]] = None
 
 @dataclass
 class AnalysisData:
     author_names: List[str]
     collection_names: List[str]
+    percentage_of_removed_text: float
     all_top_function_words: List[str] = field(default_factory=list)
     collection_metrics: Dict[str, List] = field(init=False, default_factory=dict)
-    pca: Optional[object] = None
+    author_metrics: Dict[str, List] = field(init=False, default_factory=dict)
+    pca: PCAData = field(default_factory=PCAData)
 
     def __post_init__(self):
         for collection_name in self.collection_names:
             self.collection_metrics[collection_name] = []
+        for author_name in self.author_names:
+            self.author_metrics[author_name] = []

@@ -1,14 +1,35 @@
+from dataclasses import fields
 from typing import Dict, List
 
 import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-from src.analysis.analysis_data import AnalysisData
+from src.analysis.analysis_data import AnalysisData, MetricData
 from src.settings import Settings
 
 class AnalysisVisualization():
-    LEGEND_COLORS = ["#3498db", "#e74c3c", "#2ecc71", "#f1c40f", "#9b59b6", "#e67e22"]
+    COLLECTION_COLORS = {
+        "books": "#3498db", 
+        "gpt-3.5-turbo-0125": "#e74c3c",
+        "gpt-4o": "#2ecc71", 
+        "gemini-1.5-flash": "#f1c40f", 
+        "open-mixtral-8x7b": "#9b59b6", 
+        "claude-3-haiku-20240307": "#e67e22",
+    }
+    COLLECTION_COLORS_LIST = list(COLLECTION_COLORS.values())
+    AUTHOR_COLORS = {
+        "Mark Twain": "#3498db",          # Blue
+        "Zane Grey": "#e74c3c",           # Red
+        "Joseph Conrad": "#2ecc71",       # Green
+        "George Eliot": "#f1c40f",        # Yellow
+        "Benjamin Disraeli": "#9b59b6",   # Purple
+        "Lucy Maud Montgomery": "#e67e22",# Orange
+        "William Henry Hudson": "#1abc9c",# Turquoise
+        "Howard Pyle": "#34495e",         # Dark Blue
+        "Virginia Woolf": "#d35400",      # Dark Orange
+        "Lewis Carroll": "#7f8c8d"        # Gray
+    }
     LEGEND_TITLE = "Text source"
     FONT_SIZE = 10
 
@@ -20,21 +41,28 @@ class AnalysisVisualization():
         self._visualize(analysis_data)
         self._visualize_function_words(analysis_data)
         self._visualize_punctuation_frequency(analysis_data)
+        self._visualize_pca_by_collections(analysis_data)
+        self._visualize_pca_by_authors(analysis_data)
+        self._visualize_metrics_of_two(analysis_data)
 
     def _visualize(self, analysis_data: AnalysisData):
         """Visualize the unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""
         fig_xaxes_font_size = 10
-        fig_height = 1000
-        fig = make_subplots(rows=7, cols=1, subplot_titles=(
+        fig_height = 1500
+        fig = make_subplots(rows=11, cols=1, subplot_titles=(
                                     "Unique word count", 
                                     "Average word length", 
                                     "Average sentence length", 
                                     "Average syllables per word", 
                                     "Flesch reading ease",
                                     "Flesch Kincaid Grade Level",
-                                    "Gunning Fog Index"
+                                    "Gunning Fog Index",
+                                    "Yules Characteristic K",
+                                    "Herdan's C",
+                                    "Maas",
+                                    "Simpsons_index"
                                 ),
-                                vertical_spacing=0.1
+                                # vertical_spacing=0.1
                             )
 
         for i, (model_name, metrics) in enumerate(analysis_data.collection_metrics.items()):
@@ -45,14 +73,18 @@ class AnalysisVisualization():
                 "Average syllables per word": [d.average_syllables_per_word for d in metrics], 
                 "Flesch Reading Ease": [d.flesch_reading_ease for d in metrics], 
                 "Flesch Kincaid Grade Level": [d.flesch_kincaid_grade_level for d in metrics], 
-                "Gunning Fog Index": [d.gunning_fog_index for d in metrics]
+                "Gunning Fog Index": [d.gunning_fog_index for d in metrics],
+                "Yules Characteristic K": [d.yules_characteristic_k for d in metrics],
+                "Herdan's C": [d.herdans_c for d in metrics],
+                "Maas": [d.maas for d in metrics],
+                "Simpsons Index": [d.simpsons_index for d in metrics]
             }
 
             for j, (_, value) in enumerate(metrics_subset.items()):
                 fig.add_trace(go.Bar(
                     name=model_name, 
                     x=analysis_data.author_names, 
-                    marker_color=AnalysisVisualization.LEGEND_COLORS[i],
+                    marker_color=AnalysisVisualization.COLLECTION_COLORS_LIST[i],
                     y=value, 
                     showlegend=j==0
                 ), row=j+1, col=1)
@@ -86,7 +118,7 @@ class AnalysisVisualization():
                     name=model_name, 
                     x=list(function_words.keys()), 
                     y=list(function_words.values()), 
-                    marker_color=AnalysisVisualization.LEGEND_COLORS[i],
+                    marker_color=AnalysisVisualization.COLLECTION_COLORS_LIST[i],
                     showlegend=j==0
                 ), row=i+1, col=j+1)
 
@@ -122,9 +154,9 @@ class AnalysisVisualization():
                         name=model_name, 
                         x=list(sorted_keys), 
                         y=list(sorted_values), 
-                        marker_color=AnalysisVisualization.LEGEND_COLORS[i],
+                        marker_color=AnalysisVisualization.COLLECTION_COLORS_LIST[i],
                         showlegend=show_legend,
-                        mode='markers' 
+                        mode="markers" 
                     ), row=row, col=col
                 )
                 show_legend = False
@@ -137,6 +169,99 @@ class AnalysisVisualization():
         )     
         fig.show()
 
+    def _visualize_pca_by_collections(self, analysis_data: AnalysisData):
+        """Visualize the PCA data for the authors and models"""
+        fig = go.Figure()
+        df = analysis_data.pca.results
+
+        for collection_name in analysis_data.collection_names:
+            mask = df['collection_name'] == collection_name
+            fig.add_trace(go.Scatter(
+                x=df.loc[mask, 'PC1'],
+                y=df.loc[mask, 'PC2'],
+                mode='markers',
+                marker=dict(color=AnalysisVisualization.COLLECTION_COLORS[collection_name]),
+                name=collection_name,
+                text=df.loc[mask, 'author_name'], 
+                hoverinfo='text'
+            ))
+
+        fig.update_layout(
+            title='PCA Analysis',
+            xaxis_title=f'PC1 [{analysis_data.pca.pc_variance[0]:.2%}]',
+            yaxis_title=f'PC2 [{analysis_data.pca.pc_variance[1]:.2%}]',
+            legend_title='Collection Name',
+        )
+        fig.show()
+
+    def _visualize_pca_by_authors(self, analysis_data: AnalysisData):
+        """Visualize the PCA data for the authors and models"""
+        fig = go.Figure()
+        df = analysis_data.pca.results
+
+        for author_name in analysis_data.author_names:
+            mask = df['author_name'] == author_name
+            fig.add_trace(go.Scatter(
+                x=df.loc[mask, 'PC1'],
+                y=df.loc[mask, 'PC2'],
+                mode='markers',
+                marker=dict(color=AnalysisVisualization.AUTHOR_COLORS[author_name]),
+                name=author_name,
+                text=df.loc[mask, 'collection_name'], 
+                hoverinfo='text'
+            ))
+
+        fig.update_layout(
+            title='PCA Analysis',
+            xaxis_title=f'PC1 [{analysis_data.pca.pc_variance[0]:.2%}]',
+            yaxis_title=f'PC2 [{analysis_data.pca.pc_variance[1]:.2%}]',
+            legend_title='Author Name',
+        )
+        fig.show()
+
+    def _visualize_metrics_of_two(self, analysis_data: AnalysisData):
+        """Visualize the unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""
+        fig = go.Figure()
+        excluded_metrics = ["author_name", "collection_name", "top_10_function_words", "punctuation_frequency"]
+        included_metrics = [f.name for f in fields(MetricData) if f.name not in excluded_metrics]
+        buttons = []
+        for i, metric_name in enumerate(included_metrics):
+            button = dict(
+                label=metric_name,
+                method='update',
+                args=[{'visible': [j == i for j in range(len(included_metrics))]},
+                    {'title': metric_name}]
+            )
+            buttons.append(button)
+
+        for i, (collection_name, metrics) in enumerate(analysis_data.collection_metrics.items()):
+        
+            colleciton_metrics_per_metric = {metric_name: [] for metric_name in included_metrics}
+            for metrics in metrics:
+                for metric_name in colleciton_metrics_per_metric.keys():
+                    colleciton_metrics_per_metric[metric_name].append(getattr(metrics, metric_name))
+            
+            for metric_name, value in colleciton_metrics_per_metric.items():
+                fig.add_trace(go.Scatter(
+                        name=collection_name, 
+                        x=analysis_data.author_names, 
+                        marker_color=AnalysisVisualization.COLLECTION_COLORS_LIST[i],
+                        y=value,
+                        mode="markers",
+                        visible=(metric_name == included_metrics[0])
+                    )
+                )
+
+        fig.update_layout(
+            updatemenus=[dict(
+                type='dropdown',
+                direction='down',
+                buttons=buttons,
+            )],
+            title=included_metrics[0],
+        )
+        fig.show()
+    
     def _sort_and_trim_fw_frequency(self, fw_frequency: Dict[str, int]) -> Dict[str, int]:
         """Sort the function words frequency"""
         sorted_fw_frequency = sorted(fw_frequency.items(), key=lambda x: x[1], reverse=True)
@@ -147,7 +272,7 @@ class AnalysisVisualization():
         model_names = list(data.keys())
         params = {}
         for y_idx in range(1, 10*3+1, 10):
-            params[f'yaxis{y_idx}'] = go.YAxis(
+            params[f"yaxis{y_idx}"] = go.YAxis(
                 title=model_names[3 + y_idx//10], 
                 titlefont=go.Font(size=25)
             )
@@ -185,9 +310,9 @@ class AnalysisVisualization():
         # fig.update_traces(showlegend=True, showscale=False)
         fig.update_xaxes(showticklabels=False)
         fig.update_yaxes(tickfont_size=20)
-        fig.update_traces(colorbar_orientation='h',
-                            selector=dict(type='heatmap'),
-                            colorscale='oranges',
+        fig.update_traces(colorbar_orientation="h",
+                            selector=dict(type="heatmap"),
+                            colorscale="oranges",
                             colorbar=dict(
                                 x=0.5, 
                                 y=1.3,
@@ -207,7 +332,7 @@ class AnalysisVisualization():
         author_names = [d.author_name for d in first_data]
         params = {}
         for y_idx in range(1, 10*6+1, 6):
-            params[f'yaxis{y_idx}'] = go.YAxis(
+            params[f"yaxis{y_idx}"] = go.YAxis(
                 title=author_names[y_idx//6], 
                 titlefont=go.Font(size=AnalysisVisualization.FONT_SIZE_EXTRA_LARGE)
             )
@@ -232,8 +357,8 @@ class AnalysisVisualization():
                     name=model_name, 
                     y=list(reversed(list(function_words.keys()))), 
                     x=list(reversed(list(function_words.values()))), 
-                    marker_color=AnalysisVisualization.LEGEND_COLORS[i],
-                    orientation='h',
+                    marker_color=AnalysisVisualization.COLLECTION_COLORS_LIST[i],
+                    orientation="h",
                     showlegend=False
                 ), row=j+1, col=i+1)
 
