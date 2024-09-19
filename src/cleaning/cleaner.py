@@ -82,14 +82,14 @@ class Cleaner:
     def _is_too_small(self, text: str) -> bool:
         """Check if the text is too small"""
         words = text.split()
-        return len(words) < self.configuration.min_response_text_length
+        return len(words) < self.configuration.min_response_number_of_words
     
     def _ends_with_repeated_substring(self, text: str) -> bool:
         """Check if the end of the text contains repeated substrings."""
         n = len(text)
 
         # Loop through possible lengths of repeating substrings
-        for length in range(self.configuration.min_repeat_length, n // 2 + 1):  # length of substring
+        for length in range(self.configuration.min_repeat_size, n // 2 + 1):  # length of substring
             # Get the last `length` characters as the candidate substring
             substring = text[-length:]
             count = 1

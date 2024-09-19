@@ -36,18 +36,18 @@ class Collection():
         """Get the merged text of all texts in the collection"""
         return " ".join([text.text for text in self.texts])
        
-    def get_text_chunks(self, book_chunk_size: int) -> List[List[str]]:
+    def get_text_chunks(self, extract_book_chunk_size: int) -> List[List[str]]:
         """Get the text chunks for the collection"""
         if self.name == "books":
-            return self._get_shuffled_books_chunks(book_chunk_size)
+            return self._get_shuffled_books_chunks(extract_book_chunk_size)
         else:
             return self._get_models_chunks()
     
-    def _get_shuffled_books_chunks(self, book_chunk_size: int) -> List[List[str]]:
-        """Get shuffled chunks of the merged text"""
+    def _get_shuffled_books_chunks(self, extract_book_chunk_size: int) -> List[List[str]]:
+        """To get objective author's text (not biased by a single book), books are chunked and then the chunks are shuffled"""
         chunks = []
         for t in self.texts:
-            chunks.extend(Collection._chunk_text(t.text, book_chunk_size))
+            chunks.extend(Collection._chunk_text(t.text, extract_book_chunk_size))
         random.shuffle(chunks)
         return chunks
     

@@ -30,7 +30,7 @@ class Preprocessing:
         for author in self.authors:
             data.update({author: {}})
             for collection in author.cleaned_collections:
-                text_chunks = collection.get_text_chunks(self.configuration.book_chunk_size)
+                text_chunks = collection.get_text_chunks(self.configuration.extract_book_chunk_size)
                 split, sentences = self._get_split(text_chunks)
                 text = self._get_text(sentences)
                 words = self._get_words(split)
@@ -56,7 +56,7 @@ class Preprocessing:
         
         for chunk in text_chunks:
             for sentence in chunk:
-                if split_size > self.configuration.analysis_size:
+                if split_size > self.configuration.analysis_number_of_words:
                     return split, sentences
                 sentence_split = nltk.word_tokenize(sentence)
                 split_size += len(sentence_split)
