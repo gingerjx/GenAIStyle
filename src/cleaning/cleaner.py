@@ -70,6 +70,8 @@ class Cleaner:
         if self._ends_with_repeated_substring(text):
             return None
         text = self._remove_emojis(text)
+        text = Cleaner._remove_ats(text)
+        text = Cleaner._remove_html_tags(text)
         return text
 
     def _clean_books_text(self, text: str) -> str:
@@ -77,6 +79,7 @@ class Cleaner:
         text = Cleaner._remove_italic(text)
         text = Cleaner._remove_dividers(text)
         text = Cleaner._remove_illustration_annotations(text)
+        text = Cleaner._remove_note_annotation(text)
         return text
     
     def _is_too_small(self, text: str) -> bool:
@@ -107,6 +110,18 @@ class Cleaner:
         return False
     
     @staticmethod
+    def _remove_ats(text: str) -> str:
+        """Replace all @ signs by the space character."""
+        return text.replace("@", " ")
+    
+    @staticmethod
+    def _remove_html_tags(text: str) -> str:
+        """Remove HTML tags from the text"""
+        pattern = r'<.*?>'
+        return re.sub(pattern, '', text, flags=re.DOTALL)
+    
+
+    @staticmethod
     def _remove_emojis(text: str) -> str:
         """Remove emojis from the text"""
         emoj = re.compile("["
@@ -134,7 +149,7 @@ class Cleaner:
     def _remove_italic(text: str) -> str:
         """Remove italic text from the text"""
         pattern = r'_(.*?)_'
-        return re.sub(pattern, r'\1', text)
+        return re.sub(pattern, r'\1', text, flags=re.DOTALL)
     
     @staticmethod
     def _remove_dividers(text: str) -> str:
@@ -147,3 +162,9 @@ class Cleaner:
         """Remove dividers from the text"""
         pattern = r'\[Illustration:.*?\]'
         return re.sub(pattern, '', text, flags=re.DOTALL)
+    
+    @staticmethod
+    def _remove_note_annotation(text: str) -> str:
+        """Remove note annotations from the text"""
+        pattern = r'\{.*?\}'
+        return re.sub(pattern, '', text)
