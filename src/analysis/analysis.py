@@ -32,8 +32,20 @@ class Analysis():
         """Analyze the authors and their collections"""
         author_names=[author.name for author in authors]
         collection_names=[collection.name for collection in authors[0].cleaned_collections]
+
+        full_analysis_data = self._get_analysis_data(
+            author_names=author_names, 
+            collection_names=collection_names
+        )
+        chunks_analysis_data = [self._get_analysis_data(
+                                    author_names=author_names, 
+                                    collection_names=collection_names, 
+                                    chunk_id=i
+                                ) 
+                                for i in range(self.configuration.analysis_nubmer_of_chunks)]
         analysis_results = AnalysisResults(
-            full=self._get_analysis_data(author_names, collection_names),
+            full=full_analysis_data,
+            chunks=chunks_analysis_data,
             metadata=Metadata(percentage_of_removed_text=MetadataAnalysis.get_percentage_of_removed_text(authors))
         )          
        
