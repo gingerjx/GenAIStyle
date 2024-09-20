@@ -46,6 +46,8 @@ class FileUtils():
         """Read books for a list of authors"""
         author_books = {}
         for author_name in authors_names:
+            if len(author_name) == 0:
+                continue
             author_books[author_name] = []
             books_files = FileUtils.get_books_files(author_name, books_dir)
             for book_file in books_files:

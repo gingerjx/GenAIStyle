@@ -6,17 +6,9 @@ from src.models.author import Author
 from src.settings import Settings
 import nltk
 import re
-
-nltk.download('cmudict')
-nltk.download('punkt')
 from nltk.corpus import cmudict
-from nltk.tokenize import sent_tokenize
-from nltk.tokenize.treebank import TreebankWordDetokenizer
-from string import punctuation
 
 class Preprocessing:
-    
-    MAX_WORD_LENGTH = 50
 
     def __init__(self, settings: Settings, authors: List[Author]) -> None:
         self.paths = settings.paths
@@ -28,16 +20,16 @@ class Preprocessing:
         data= {}
 
         for author in self.authors:
-            data.update({author: {}})
+            data.update({author.name: {}})
             for collection in author.cleaned_collections:
-                text_chunks = collection.get_text_chunks(self.configuration.book_chunk_size)
+                text_chunks = collection.get_text_chunks(self.configuration.extract_book_chunk_size)
                 split, sentences = self._get_split(text_chunks)
                 text = self._get_text(sentences)
                 words = self._get_words(split)
                 num_of_syllabes, complex_words = self._get_num_of_syllabes_and_complex_words(words)
                 
-                data[author].update({
-                    collection: PreprocessingData(
+                data[author.name].update({
+                    collection.name: PreprocessingData(
                         text=text, 
                         split=split,
                         words=words, 
@@ -56,7 +48,7 @@ class Preprocessing:
         
         for chunk in text_chunks:
             for sentence in chunk:
-                if split_size > self.configuration.analysis_size:
+                if split_size > self.configuration.analysis_number_of_words:
                     return split, sentences
                 sentence_split = nltk.word_tokenize(sentence)
                 split_size += len(sentence_split)

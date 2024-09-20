@@ -21,8 +21,9 @@ class Settings:
         query_filepath: Path = metadata_dir / "queries"
         all_authors_filepath: Path = metadata_dir / "all/author_list"
         all_books_csv_filepath: Path = metadata_dir / "all/books.csv"
-        selected_authors_filepath: Path = metadata_dir / "selected/author_list"
-        selected_books_csv_filepath: Path = metadata_dir / "selected/books.csv"
+        selected_dir_path = metadata_dir / "selected"
+        selected_authors_filepath: Path = selected_dir_path / "author_list"
+        selected_books_csv_filepath: Path = selected_dir_path / "books.csv"
 
         raw_dir: Path = res_dir / "raw"
         raw_books_dir: Path = raw_dir / "books"
@@ -53,12 +54,13 @@ class Settings:
         
         read_analysis_from_file: bool = False                           # Read analysis data from file
         response_number_of_words: int = 3000                            # Expected number of words used during response generation
-        book_chunk_size: int = 5 * response_number_of_words             # Average english word length * expected number of words used during response generation
-        analysis_size: int = 200000                                     # Number of words used during analysis   
-        min_response_text_length: int = 100                             # Minimum number of words of the response text to be considered
-        min_repeat_length: int = 3                                      # Minimum length of the repeated substring
+        extract_book_chunk_size: int = 5 * response_number_of_words     # Number of characters used as a chunk size during preprocessing of the books. Average english word length * expected number of words used during response generation
+        analysis_chunk_number_of_words: 5000                            # Number of characters used as a chunk size during analysis
+        analysis_number_of_words: int = 200000                          # Number of words used during analysis   
+        min_response_number_of_words: int = 100                         # Minimum number of words of the response text to be considered
+        min_repeat_size: int = 3                                        # Minimum length of the repeated substring
         repeat_threshold: int = 3                                       # Minimum number of repeated substrings to be considered
-        n_top_function_words: int = 10                                  # Number of top function words to be considered
+        top_n_function_words: int = 10                                  # Number of top function words to be considered
     
     paths: Paths = Paths()
     configuration: Configuration = Configuration()
