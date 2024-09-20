@@ -5,7 +5,7 @@ from src.analysis.analysis_data import AnalysisData, MetricData, Metadata
 from src.analysis.metadata_analysis import MetadataAnalysis
 from src.analysis.metrics_analysis import MetricsAnalysis
 from src.analysis.pca_analysis import PCAAnalysis
-from src.analysis.preprocessing_data import PreprocessingData
+from src.analysis.preprocessing_data import PreprocessingData, PreprocessingResults
 from src.file_utils import FileUtils
 from src.models.author import Author
 from src.settings import Settings
@@ -15,12 +15,12 @@ class Analysis():
 
     def __init__(self, 
                  settings: Settings, 
-                 preprocessing_data: PreprocessingData,
+                 preprocessing_results: PreprocessingResults,
                  read_from_file: bool = False
             ) -> None:
         self.paths = settings.paths
         self.configuration = settings.configuration
-        self.preprocessing_data = preprocessing_data
+        self.preprocessing_results = preprocessing_results
         self.read_from_file = read_from_file
     
     def get_analysis(self, authors: List[Author]) -> AnalysisData:    
@@ -38,7 +38,7 @@ class Analysis():
 
         for author_name in analysis_data.author_names:
             for collection_name in analysis_data.collection_names:
-                analysis_results = MetricsAnalysis._analyze(self.preprocessing_data[author_name][collection_name])
+                analysis_results = MetricsAnalysis._analyze(self.preprocessing_results[author_name][collection_name].full)
                 metrics = MetricData(
                     author_name=author_name, 
                     collection_name=collection_name, 
