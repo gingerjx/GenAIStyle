@@ -28,11 +28,15 @@ class PCAData:
     top_10_features: Dict[str, List[str]] = None
 
 @dataclass
+class Metadata:
+    percentage_of_removed_text: float
+    cross_top_function_words_names: List[str] = field(default_factory=list)
+
+@dataclass
 class AnalysisData:
     author_names: List[str]
     collection_names: List[str]
-    percentage_of_removed_text: float
-    cross_top_function_words_names: List[str] = field(default_factory=list)
+    metadata: Metadata = field(default_factory=Metadata)
     collection_metrics: Dict[str, List] = field(init=False, default_factory=dict)
     author_metrics: Dict[str, List] = field(init=False, default_factory=dict)
     pca: PCAData = field(default_factory=PCAData)

@@ -2,7 +2,7 @@ from typing import Dict, List
 import nltk
 import json
 from functionwords import FunctionWords
-from src.analysis.analysis_data import AnalysisData, MetricData
+from src.analysis.analysis_data import AnalysisData, MetricData, Metadata
 from src.analysis.preprocessing_data import PreprocessingData
 from src.file_utils import FileUtils
 from src.models.author import Author
@@ -41,7 +41,7 @@ class Analysis():
         analysis_data = AnalysisData(
             author_names=[author.name for author in authors],
             collection_names=[collection.name for collection in authors[0].cleaned_collections],
-            percentage_of_removed_text=self._get_percentage_of_removed_text()
+            metadata=Metadata(percentage_of_removed_text=self._get_percentage_of_removed_text())
         )
 
         for author in authors:
@@ -55,7 +55,7 @@ class Analysis():
                 )
                 analysis_data.collection_metrics[model_name].append(metrics)
 
-        analysis_data.cross_top_function_words_names = self._get_cross_top_function_words_names(analysis_data)
+        analysis_data.metadata.cross_top_function_words_names = self._get_cross_top_function_words_names(analysis_data)
         analysis_data.pca.data = self._get_pca_data(analysis_data)
         pca_results, top_10_pca_features, explained_variance_ratio_ = self._get_pca(analysis_data)
         analysis_data.pca.results = pca_results
@@ -95,14 +95,14 @@ class Analysis():
         processed_columns.remove("sorted_function_words")
         processed_columns.remove("punctuation_frequency")
         punctuation_columns = list(punctuation) 
-        all_columns = processed_columns + punctuation_columns + analysis_data.cross_top_function_words_names
+        all_columns = processed_columns + punctuation_columns + analysis_data.metadata.cross_top_function_words_names
         df = pd.DataFrame([], columns=all_columns)
 
         for collection_name in analysis_data.collection_names:
             for metrics in analysis_data.collection_metrics[collection_name]:
                 serie = [getattr(metrics, column) for column in processed_columns]
                 serie.extend([metrics.punctuation_frequency[column] for column in punctuation_columns])
-                serie.extend([metrics.sorted_function_words.get(column, 0)for column in analysis_data.cross_top_function_words_names])
+                serie.extend([metrics.sorted_function_words.get(column, 0)for column in analysis_data.metadata.cross_top_function_words_names])
                 df.loc[len(df)] = serie
         return df
 
@@ -194,6 +194,8 @@ class Analysis():
         )
         
         return data
+
+    # SINGLE METRICS
 
     def _get_unique_word_count(self, words: List[str]) -> int:
         """Get the unique word count from the text"""
