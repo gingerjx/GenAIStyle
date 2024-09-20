@@ -25,7 +25,7 @@ class PCAData:
     data: dict = None
     results: pd.DataFrame = None
     pc_variance: List[float] = None
-    top_10_features: Dict[str, List[str]] = None
+    top_features: Dict[str, List[str]] = None
 
 @dataclass
 class Metadata:

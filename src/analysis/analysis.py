@@ -3,6 +3,7 @@ import nltk
 import json
 from functionwords import FunctionWords
 from src.analysis.analysis_data import AnalysisData, MetricData, Metadata
+from src.analysis.pca_analysis import PCAAnalysis
 from src.analysis.preprocessing_data import PreprocessingData
 from src.file_utils import FileUtils
 from src.models.author import Author
@@ -56,11 +57,7 @@ class Analysis():
                 analysis_data.collection_metrics[model_name].append(metrics)
 
         analysis_data.metadata.cross_top_function_words_names = self._get_cross_top_function_words_names(analysis_data)
-        analysis_data.pca.data = self._get_pca_data(analysis_data)
-        pca_results, top_10_pca_features, explained_variance_ratio_ = self._get_pca(analysis_data)
-        analysis_data.pca.results = pca_results
-        analysis_data.pca.top_10_features = top_10_pca_features
-        analysis_data.pca.pc_variance = [explained_variance_ratio_[0], explained_variance_ratio_[1]]
+        analysis_data.pca = PCAAnalysis.get_analysis(analysis_data)
         self._set_author_metrics(analysis_data)
         
         self._save_analysis_data(analysis_data)
@@ -89,43 +86,6 @@ class Analysis():
             cleaned_text_length += self._get_text_length(author.cleaned_collections)
         return 100 * (raw_text_length - cleaned_text_length) / raw_text_length
     
-    def _get_pca_data(self, analysis_data: AnalysisData) -> pd.DataFrame:
-        """Get the PCA of the analysis data"""
-        processed_columns = [f.name for f in fields(MetricData)]
-        processed_columns.remove("sorted_function_words")
-        processed_columns.remove("punctuation_frequency")
-        punctuation_columns = list(punctuation) 
-        all_columns = processed_columns + punctuation_columns + analysis_data.metadata.cross_top_function_words_names
-        df = pd.DataFrame([], columns=all_columns)
-
-        for collection_name in analysis_data.collection_names:
-            for metrics in analysis_data.collection_metrics[collection_name]:
-                serie = [getattr(metrics, column) for column in processed_columns]
-                serie.extend([metrics.punctuation_frequency[column] for column in punctuation_columns])
-                serie.extend([metrics.sorted_function_words.get(column, 0)for column in analysis_data.metadata.cross_top_function_words_names])
-                df.loc[len(df)] = serie
-        return df
-
-    def _get_pca(self, analysis_data: AnalysisData) -> Dict[str, pd.DataFrame]:
-        """Get the PCA of the analysis data"""
-        targets = ["collection_name", "author_name"]
-        features = [column for column in analysis_data.pca.data.columns if column not in targets]
-
-        x = analysis_data.pca.data.loc[:, features].values
-        x_scaled = StandardScaler().fit_transform(x)
-        pca = PCA(n_components=2)
-        principal_components = pca.fit_transform(x_scaled)
-        pc_df = pd.DataFrame(data = principal_components, columns = ["PC1", "PC2"])
-        pca_df = pd.concat([pc_df, analysis_data.pca.data[targets]], axis = 1) 
-
-        loadings = pd.DataFrame(pca.components_.T, columns=['PC1', 'PC2'], index=features)
-        top_10_features = {
-            'PC1': loadings['PC1'].abs().sort_values(ascending=False).index.tolist()[:10],
-            'PC2': loadings['PC2'].abs().sort_values(ascending=False).index.tolist()[:10]
-        }
-
-        return pca_df, top_10_features, pca.explained_variance_ratio_
-
     def _get_text_length(self, collections: List[Collection]) -> int:
         """Get the total number of words in the collections"""
         all_text = " ".join([collection.get_merged_text() for collection in collections])
@@ -194,7 +154,7 @@ class Analysis():
         )
         
         return data
-
+ 
     # SINGLE METRICS
 
     def _get_unique_word_count(self, words: List[str]) -> int:
