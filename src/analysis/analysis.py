@@ -12,10 +12,6 @@ from src.models.collection import Collection
 import jsonpickle
 from string import punctuation
 from collections import Counter
-import pandas as pd
-from dataclasses import fields
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
 import math
 
 class Analysis():
@@ -47,18 +43,17 @@ class Analysis():
 
         for author in authors:
             for collection in author.cleaned_collections:
-                model_name = collection.name
-                collection_metrics = self._analyze(self.preprocessing_data[author][collection])
+                analysis_results = self._analyze(self.preprocessing_data[author][collection])
                 metrics = MetricData(
                     author_name=author.name, 
                     collection_name=collection.name, 
-                    **collection_metrics
+                    **analysis_results
                 )
-                analysis_data.collection_metrics[model_name].append(metrics)
+                analysis_data.collection_author_metrics[collection.name][author.name] = metrics
+                analysis_data.author_collection_metrics[author.name][collection.name] = metrics
 
         analysis_data.metadata.cross_top_function_words_names = self._get_cross_top_function_words_names(analysis_data)
         analysis_data.pca = PCAAnalysis.get_analysis(analysis_data)
-        self._set_author_metrics(analysis_data)
         
         self._save_analysis_data(analysis_data)
 
@@ -68,15 +63,10 @@ class Analysis():
         """Get the top n function words from all the collections"""
         cross_top_function_words_names = []
         for collection_name in analysis_data.collection_names:
-            for metrics in analysis_data.collection_metrics[collection_name]:
+            for author_name in analysis_data.author_names:
+                metrics = analysis_data.collection_author_metrics[collection_name][author_name]
                 cross_top_function_words_names.extend(list(metrics.sorted_function_words.keys())[:self.configuration.top_n_function_words])
         return list(set(cross_top_function_words_names))
-   
-    def _set_author_metrics(self, analysis_data: AnalysisData) -> None:
-        """Set the author metrics"""
-        for collection_name, metrics in analysis_data.collection_metrics.items():
-             for metric in metrics:
-                analysis_data.author_metrics[metric.author_name].append(metric)
 
     def _get_percentage_of_removed_text(self) -> float:
         raw_text_length = 0

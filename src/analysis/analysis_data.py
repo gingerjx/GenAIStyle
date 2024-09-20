@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, List
 from dataclasses import dataclass, field
 import pandas as pd
 
@@ -37,12 +37,12 @@ class AnalysisData:
     author_names: List[str]
     collection_names: List[str]
     metadata: Metadata = field(default_factory=Metadata)
-    collection_metrics: Dict[str, List] = field(init=False, default_factory=dict)
-    author_metrics: Dict[str, List] = field(init=False, default_factory=dict)
+    collection_author_metrics: Dict[str, Dict[str, MetricData]] = field(init=False, default_factory=dict)
+    author_collection_metrics: Dict[str, Dict[str, MetricData]] = field(init=False, default_factory=dict)
     pca: PCAData = field(default_factory=PCAData)
 
     def __post_init__(self):
         for collection_name in self.collection_names:
-            self.collection_metrics[collection_name] = []
+            self.collection_author_metrics[collection_name] = {}
         for author_name in self.author_names:
-            self.author_metrics[author_name] = []
+            self.author_collection_metrics[author_name] = {}

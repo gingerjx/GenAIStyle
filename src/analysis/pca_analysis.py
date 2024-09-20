@@ -27,7 +27,8 @@ class PCAAnalysis:
         df = pd.DataFrame([], columns=all_columns)
 
         for collection_name in analysis_data.collection_names:
-            for metrics in analysis_data.collection_metrics[collection_name]:
+            for author_name in analysis_data.author_names:
+                metrics = analysis_data.collection_author_metrics[collection_name][author_name]
                 serie = [getattr(metrics, column) for column in processed_columns]
                 serie.extend([metrics.punctuation_frequency[column] for column in punctuation_columns])
                 serie.extend([metrics.sorted_function_words.get(column, 0)for column in analysis_data.metadata.cross_top_function_words_names])
