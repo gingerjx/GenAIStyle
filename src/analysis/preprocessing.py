@@ -7,8 +7,6 @@ from src.settings import Settings
 import nltk
 import re
 
-nltk.download('cmudict')
-nltk.download('punkt')
 from nltk.corpus import cmudict
 from nltk.tokenize import sent_tokenize
 from nltk.tokenize.treebank import TreebankWordDetokenizer

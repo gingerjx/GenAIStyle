@@ -11,7 +11,6 @@ import random
 import nltk
 from nltk.tokenize import sent_tokenize
 
-nltk.download('punkt')
 random.seed(42) # Fixed seed for reproducibility
 
 class Collection():
