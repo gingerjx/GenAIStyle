@@ -4,7 +4,7 @@ from typing import Dict, List
 import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-
+from itertools import islice
 from src.analysis.analysis_data import AnalysisData, MetricData
 from src.settings import Settings
 
@@ -108,16 +108,16 @@ class AnalysisVisualization():
 
         for i, (model_name, metrics) in enumerate(analysis_data.collection_metrics.items()):
             author_names = [d.author_name for d in metrics]
-            function_words = [self._sort_and_trim_fw_frequency(d.top_10_function_words)
+            top_function_words = [dict(islice(d.sorted_function_words.items(), self.configuration.top_n_function_words))
                               for d in metrics]
-            authors_function_words = dict(zip(author_names, function_words))
+            authors_top_function_words = dict(zip(author_names, top_function_words))
 
-            for j, (_, function_words) in enumerate(authors_function_words.items()):
-                max_freq_overall = max([max_freq_overall] + list(function_words.values()))
+            for j, (_, author_top_function_words) in enumerate(authors_top_function_words.items()):
+                max_freq_overall = max([max_freq_overall] + list(author_top_function_words.values()))
                 fig.add_trace(go.Bar(
                     name=model_name, 
-                    x=list(function_words.keys()), 
-                    y=list(function_words.values()), 
+                    x=list(author_top_function_words.keys()), 
+                    y=list(author_top_function_words.values()), 
                     marker_color=AnalysisVisualization.COLLECTION_COLORS_LIST[i],
                     showlegend=j==0
                 ), row=i+1, col=j+1)
@@ -262,11 +262,8 @@ class AnalysisVisualization():
         )
         fig.show()
     
-    def _sort_and_trim_fw_frequency(self, fw_frequency: Dict[str, int]) -> Dict[str, int]:
-        """Sort the function words frequency"""
-        sorted_fw_frequency = sorted(fw_frequency.items(), key=lambda x: x[1], reverse=True)
-        return dict(sorted_fw_frequency[:self.configuration.n_top_function_words])
-    
+    # OLD
+
     def _visualize_function_words_heatmap(self, data: Dict[str, List[AnalysisData]]):
         _, first_data = next(iter(data.items()))
         model_names = list(data.keys())
@@ -289,17 +286,17 @@ class AnalysisVisualization():
 
         for i, (model_name, analysis_data) in enumerate(data.items()):
             author_names = [d.author_name for d in analysis_data]
-            function_words = [d.top_10_function_words for d in analysis_data]
-            authors_function_words = dict(zip(author_names, function_words))
+            sorted_function_words = [d.sorted_function_words for d in analysis_data]
+            authors_function_words = dict(zip(author_names, sorted_function_words))
             if i < 3:
                 continue
 
-            for j, (_, function_words) in enumerate(authors_function_words.items()):
-                values = list(reversed(list(function_words.values())))
+            for j, (_, sorted_function_words) in enumerate(authors_function_words.items()):
+                values = list(reversed(list(sorted_function_words.values())))
                 values_matrix = np.array(values[:10]).reshape(10, 1)    
                 fig.add_trace(go.Heatmap(
                     z=values_matrix,
-                    y=list(reversed(list(function_words.keys()))),
+                    y=list(reversed(list(sorted_function_words.keys()))),
                     zmin=0,
                     zmax=1000,
                     showscale=init_legend, 
@@ -348,15 +345,15 @@ class AnalysisVisualization():
 
         for i, (model_name, analysis_data) in enumerate(data.items()):
             author_names = [d.author_name for d in analysis_data]
-            function_words = [d.top_10_function_words for d in analysis_data]
-            authors_function_words = dict(zip(author_names, function_words))
+            sorted_function_words = [d.sorted_function_words for d in analysis_data]
+            authors_function_words = dict(zip(author_names, sorted_function_words))
 
-            for j, (_, function_words) in enumerate(authors_function_words.items()):
-                max_freq_overall = max([max_freq_overall] + list(function_words.values()))
+            for j, (_, sorted_function_words) in enumerate(authors_function_words.items()):
+                max_freq_overall = max([max_freq_overall] + list(sorted_function_words.values()))
                 fig.add_trace(go.Bar(
                     name=model_name, 
-                    y=list(reversed(list(function_words.keys()))), 
-                    x=list(reversed(list(function_words.values()))), 
+                    y=list(reversed(list(sorted_function_words.keys()))), 
+                    x=list(reversed(list(sorted_function_words.values()))), 
                     marker_color=AnalysisVisualization.COLLECTION_COLORS_LIST[i],
                     orientation="h",
                     showlegend=False

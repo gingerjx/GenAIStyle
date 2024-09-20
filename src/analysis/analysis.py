@@ -55,7 +55,7 @@ class Analysis():
                 )
                 analysis_data.collection_metrics[model_name].append(metrics)
 
-        analysis_data.all_top_function_words = self._get_all_top_function_words(analysis_data)
+        analysis_data.cross_top_function_words_names = self._get_cross_top_function_words_names(analysis_data)
         analysis_data.pca.data = self._get_pca_data(analysis_data)
         pca_results, top_10_pca_features, explained_variance_ratio_ = self._get_pca(analysis_data)
         analysis_data.pca.results = pca_results
@@ -66,7 +66,15 @@ class Analysis():
         self._save_analysis_data(analysis_data)
 
         return analysis_data
-    
+
+    def _get_cross_top_function_words_names(self, analysis_data: AnalysisData) -> List[str]:
+        """Get the top n function words from all the collections"""
+        cross_top_function_words_names = []
+        for collection_name in analysis_data.collection_names:
+            for metrics in analysis_data.collection_metrics[collection_name]:
+                cross_top_function_words_names.extend(list(metrics.sorted_function_words.keys())[:self.configuration.top_n_function_words])
+        return list(set(cross_top_function_words_names))
+   
     def _set_author_metrics(self, analysis_data: AnalysisData) -> None:
         """Set the author metrics"""
         for collection_name, metrics in analysis_data.collection_metrics.items():
@@ -84,18 +92,17 @@ class Analysis():
     def _get_pca_data(self, analysis_data: AnalysisData) -> pd.DataFrame:
         """Get the PCA of the analysis data"""
         processed_columns = [f.name for f in fields(MetricData)]
-        processed_columns.remove("top_10_function_words")
+        processed_columns.remove("sorted_function_words")
         processed_columns.remove("punctuation_frequency")
         punctuation_columns = list(punctuation) 
-        top_function_words_column = analysis_data.all_top_function_words
-        all_columns = processed_columns + punctuation_columns + top_function_words_column
+        all_columns = processed_columns + punctuation_columns + analysis_data.cross_top_function_words_names
         df = pd.DataFrame([], columns=all_columns)
 
         for collection_name in analysis_data.collection_names:
             for metrics in analysis_data.collection_metrics[collection_name]:
                 serie = [getattr(metrics, column) for column in processed_columns]
                 serie.extend([metrics.punctuation_frequency[column] for column in punctuation_columns])
-                serie.extend([metrics.top_10_function_words.get(column, 0)for column in top_function_words_column])
+                serie.extend([metrics.sorted_function_words.get(column, 0)for column in analysis_data.cross_top_function_words_names])
                 df.loc[len(df)] = serie
         return df
 
@@ -118,14 +125,6 @@ class Analysis():
         }
 
         return pca_df, top_10_features, pca.explained_variance_ratio_
-    
-    def _get_all_top_function_words(self, analysis_data: AnalysisData) -> List[str]:
-        """Get the top n function words from all the collections"""
-        all_top_function_words = []
-        for collection_name in analysis_data.collection_names:
-            for metrics in analysis_data.collection_metrics[collection_name]:
-                all_top_function_words.extend(list(metrics.top_10_function_words.keys()))
-        return list(set(all_top_function_words))
 
     def _get_text_length(self, collections: List[Collection]) -> int:
         """Get the total number of words in the collections"""
@@ -154,8 +153,8 @@ class Analysis():
             num_of_words=preprocessing_data.num_of_words, 
             num_of_sentences=preprocessing_data.num_of_sentences
         )
-        data["top_10_function_words"] = self._get_top_function_words(
-            text=preprocessing_data.text
+        data["sorted_function_words"] = self._get_sorted_function_words(
+            words=preprocessing_data.words
         )
         data["punctuation_frequency"] = self._get_punctuation_frequency(
             text=preprocessing_data.text
@@ -208,13 +207,16 @@ class Analysis():
         """Get the average word length from the text"""
         return num_of_words / num_of_sentences
     
-    def _get_top_function_words(self, text: str) -> Dict[str, int]:
-        """Get the top n function words from the text"""
+    def _get_sorted_function_words(self, words: List[str]) -> Dict[str, int]:  
+        """Get the function words from the text"""
         fw = FunctionWords(function_words_list="english")
-        fw_frequency = dict(zip(fw.get_feature_names(), fw.transform(text)))
+        fw_frequency = {}
+        for word in set(words):
+            if word in fw.get_feature_names(): # TODO: Should we add `'s`, `'d`, `'ll` etc.?
+                fw_frequency[word] = words.count(word)
         sorted_fw_frequency = sorted(fw_frequency.items(), key=lambda x: x[1], reverse=True)
-        return dict(sorted_fw_frequency[:self.configuration.n_top_function_words])
-    
+        return dict(sorted_fw_frequency)
+        
     def _get_punctuation_frequency(self, text: str) -> Dict[str, int]:
         """Get the punctuation frequency from the text"""
         counts = Counter(text)
