@@ -29,7 +29,7 @@ class PCAData:
 
 @dataclass
 class Metadata:
-    percentage_of_removed_text: float
+    percentage_of_removed_text: float = None
     cross_top_function_words_names: List[str] = field(default_factory=list)
 
 @dataclass
@@ -46,3 +46,10 @@ class AnalysisData:
             self.collection_author_metrics[collection_name] = {}
         for author_name in self.author_names:
             self.author_collection_metrics[author_name] = {}
+
+@dataclass
+class AnalysisResults:
+    
+    full: AnalysisData = None
+    chunks: List[AnalysisData] = field(default_factory=list)
+    metadata: Metadata = field(default_factory=Metadata)

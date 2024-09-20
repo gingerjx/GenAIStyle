@@ -5,7 +5,7 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from itertools import islice
-from src.analysis.analysis_data import AnalysisData, MetricData
+from src.analysis.analysis_data import AnalysisData, AnalysisResults, MetricData
 from src.settings import Settings
 
 class AnalysisVisualization():
@@ -36,14 +36,14 @@ class AnalysisVisualization():
     def __init__(self, settings: Settings) -> None:
         self.configuration = settings.configuration
 
-    def visualize(self, analysis_data: AnalysisData):
+    def visualize(self, analysis_results: AnalysisResults):
         """Visualize the analysis data for the authors and models"""
-        self._visualize(analysis_data)
-        self._visualize_function_words(analysis_data)
-        self._visualize_punctuation_frequency(analysis_data)
-        self._visualize_pca_by_collections(analysis_data)
-        self._visualize_pca_by_authors(analysis_data)
-        self._visualize_metrics_of_two(analysis_data)
+        self._visualize(analysis_results.full)
+        self._visualize_function_words(analysis_results.full)
+        self._visualize_punctuation_frequency(analysis_results.full)
+        self._visualize_pca_by_collections(analysis_results.full)
+        self._visualize_pca_by_authors(analysis_results.full)
+        self._visualize_metrics_of_two(analysis_results.full)
 
     def _visualize(self, analysis_data: AnalysisData):
         """Visualize the unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""
