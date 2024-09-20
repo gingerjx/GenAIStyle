@@ -3,12 +3,12 @@ import nltk
 import json
 from functionwords import FunctionWords
 from src.analysis.analysis_data import AnalysisData, MetricData, Metadata
+from src.analysis.metadata_analysis import MetadataAnalysis
 from src.analysis.pca_analysis import PCAAnalysis
 from src.analysis.preprocessing_data import PreprocessingData
 from src.file_utils import FileUtils
 from src.models.author import Author
 from src.settings import Settings
-from src.models.collection import Collection
 import jsonpickle
 from string import punctuation
 from collections import Counter
@@ -18,13 +18,11 @@ class Analysis():
 
     def __init__(self, 
                  settings: Settings, 
-                 authors: List[Author], 
                  preprocessing_data: PreprocessingData,
                  read_from_file: bool = False
             ) -> None:
         self.paths = settings.paths
         self.configuration = settings.configuration
-        self.authors = authors
         self.preprocessing_data = preprocessing_data
         self.read_from_file = read_from_file
     
@@ -38,7 +36,7 @@ class Analysis():
         analysis_data = AnalysisData(
             author_names=[author.name for author in authors],
             collection_names=[collection.name for collection in authors[0].cleaned_collections],
-            metadata=Metadata(percentage_of_removed_text=self._get_percentage_of_removed_text())
+            metadata=Metadata(percentage_of_removed_text=MetadataAnalysis.get_percentage_of_removed_text(authors))
         )
 
         for author in authors:
@@ -52,34 +50,12 @@ class Analysis():
                 analysis_data.collection_author_metrics[collection.name][author.name] = metrics
                 analysis_data.author_collection_metrics[author.name][collection.name] = metrics
 
-        analysis_data.metadata.cross_top_function_words_names = self._get_cross_top_function_words_names(analysis_data)
+        analysis_data.metadata.cross_top_function_words_names = MetadataAnalysis.get_cross_top_function_words_names(analysis_data, self.configuration.top_n_function_words)
         analysis_data.pca = PCAAnalysis.get_analysis(analysis_data)
         
         self._save_analysis_data(analysis_data)
 
         return analysis_data
-
-    def _get_cross_top_function_words_names(self, analysis_data: AnalysisData) -> List[str]:
-        """Get the top n function words from all the collections"""
-        cross_top_function_words_names = []
-        for collection_name in analysis_data.collection_names:
-            for author_name in analysis_data.author_names:
-                metrics = analysis_data.collection_author_metrics[collection_name][author_name]
-                cross_top_function_words_names.extend(list(metrics.sorted_function_words.keys())[:self.configuration.top_n_function_words])
-        return list(set(cross_top_function_words_names))
-
-    def _get_percentage_of_removed_text(self) -> float:
-        raw_text_length = 0
-        cleaned_text_length = 0
-        for author in self.authors:
-            raw_text_length += self._get_text_length(author.raw_collections)
-            cleaned_text_length += self._get_text_length(author.cleaned_collections)
-        return 100 * (raw_text_length - cleaned_text_length) / raw_text_length
-    
-    def _get_text_length(self, collections: List[Collection]) -> int:
-        """Get the total number of words in the collections"""
-        all_text = " ".join([collection.get_merged_text() for collection in collections])
-        return len(all_text)
     
     def _save_analysis_data(self, data: Dict[str, List[AnalysisData]]) -> None:
         """Save the analysis data to a file"""
