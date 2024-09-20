@@ -36,16 +36,16 @@ class Analysis():
             metadata=Metadata(percentage_of_removed_text=MetadataAnalysis.get_percentage_of_removed_text(authors))
         )
 
-        for author in authors:
-            for collection in author.cleaned_collections:
-                analysis_results = MetricsAnalysis._analyze(self.preprocessing_data[author][collection])
+        for author_name in analysis_data.author_names:
+            for collection_name in analysis_data.collection_names:
+                analysis_results = MetricsAnalysis._analyze(self.preprocessing_data[author_name][collection_name])
                 metrics = MetricData(
-                    author_name=author.name, 
-                    collection_name=collection.name, 
+                    author_name=author_name, 
+                    collection_name=collection_name, 
                     **analysis_results
                 )
-                analysis_data.collection_author_metrics[collection.name][author.name] = metrics
-                analysis_data.author_collection_metrics[author.name][collection.name] = metrics
+                analysis_data.collection_author_metrics[collection_name][author_name] = metrics
+                analysis_data.author_collection_metrics[author_name][collection_name] = metrics
 
         analysis_data.metadata.cross_top_function_words_names = MetadataAnalysis.get_cross_top_function_words_names(analysis_data, self.configuration.top_n_function_words)
         analysis_data.pca = PCAAnalysis.get_analysis(analysis_data)
