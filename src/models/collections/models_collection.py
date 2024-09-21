@@ -1,0 +1,39 @@
+import os
+from pathlib import Path
+from typing import List
+from src.models.collections.collection import Collection
+from src.models.llm_response import LLMResponse
+
+
+class ModelsCollection(Collection):
+
+    def __init__(self, name: str, model_data_dir: Path):
+        super().__init__(name)
+        self.model_data_dir = model_data_dir
+
+    def read(self, author_name: str) -> None:
+        """Read generated texts for the author from the directories of the models"""
+        generated_texts_files = ModelsCollection._get_generated_texts_filepaths(
+            author_name=author_name, 
+            model_data_dir=self.model_data_dir
+        )
+        for filepath in generated_texts_files:
+            self.texts.append(LLMResponse(filepath))
+
+    def get_text_chunks(self, chunk_size: int = None) -> List[List[str]]:
+        """Get the chunks of the generated texts"""
+        chunks = []
+        for t in self.texts:
+            chunks.extend(Collection._chunk_text(t.text, len(t.text)))
+        return chunks
+
+    @staticmethod
+    def _get_generated_texts_filepaths(author_name: str, model_data_dir: Path) -> List[str]:
+        """Get all generated texts filepaths for a given author"""
+        texts_dir = model_data_dir / author_name
+        return [str(texts_dir / f) 
+                for f 
+                in os.listdir(texts_dir)]
+     
+    def __repr__(self) -> str:
+        return f"Collection({self.name})"

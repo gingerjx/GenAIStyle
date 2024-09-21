@@ -1,6 +1,6 @@
 from src.file_utils import FileUtils
 from src.models.author import Author
-from src.models.collection import Collection
+from src.models.collections.collection import Collection
 from src.analysis.analysis import Analysis
 from src.analysis.analysis_visualization import AnalysisVisualization
 from src.analysis.preprocessing import Preprocessing
