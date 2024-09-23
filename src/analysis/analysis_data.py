@@ -4,6 +4,7 @@ import pandas as pd
 
 @dataclass
 class MetricData:
+    source_name: str
     author_name: str
     collection_name: str
     unique_word_count: int
@@ -22,6 +23,7 @@ class MetricData:
 
 @dataclass
 class PCAData:
+    source_name = None
     data: dict = None
     results: pd.DataFrame = None
     pc_variance: List[float] = None

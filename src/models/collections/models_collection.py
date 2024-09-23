@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import List
 from src.models.collections.collection import Collection
 from src.models.llm_response import LLMResponse
+from src.models.text_chunk import TextChunk
 
 
 class ModelsCollection(Collection):
@@ -20,13 +21,18 @@ class ModelsCollection(Collection):
         for filepath in generated_texts_files:
             self.texts.append(LLMResponse(filepath))
 
-    def get_text_chunks(self, chunk_size: int = None) -> List[List[str]]:
+    def get_text_chunks(self, chunk_size: int = None) -> List[TextChunk]:
         """Get the chunks of the generated texts"""
         chunks = []
-        for t in self.texts:
-            chunks.extend(Collection._chunk_text(t.text, len(t.text)))
+        for response in self.texts:
+            chunks.extend(ModelsCollection._chunk_text(response, len(response.text)))
         return chunks
 
+    @staticmethod
+    def _chunk_text(response: LLMResponse, chunk_size: int) -> List[TextChunk]:
+        chunks_sentences = Collection._chunk_text(response.text, chunk_size)
+        return [TextChunk(sentences=sentences, source_name=response.query[:50]) for sentences in chunks_sentences]
+    
     @staticmethod
     def _get_generated_texts_filepaths(author_name: str, model_data_dir: Path) -> List[str]:
         """Get all generated texts filepaths for a given author"""

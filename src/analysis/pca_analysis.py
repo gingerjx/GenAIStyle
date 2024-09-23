@@ -38,7 +38,7 @@ class PCAAnalysis:
     @staticmethod
     def _get_pca(pca_data: pd.DataFrame) -> Dict[str, pd.DataFrame]:
         """Get the PCA of the analysis data"""
-        targets = ["collection_name", "author_name"]
+        targets = ["source_name", "collection_name", "author_name"]
         features = [column for column in pca_data.columns if column not in targets]
 
         x = pca_data.loc[:, features].values

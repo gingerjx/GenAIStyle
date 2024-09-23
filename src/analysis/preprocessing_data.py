@@ -4,6 +4,8 @@ from typing import List
 @dataclass
 class PreprocessingData:
 
+    source_name: str = "*"
+
     text: str = ""
     split: List[str] = field(default_factory=list)
     words: List[str] = field(default_factory=list)

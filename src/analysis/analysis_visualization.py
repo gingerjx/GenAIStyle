@@ -324,11 +324,10 @@ class AnalysisVisualization():
                     if not row.empty:
                         authors_collections_x[author_name][collection_name][chunk_id] = row["PC1"].values[0]
                         authors_collections_y[author_name][collection_name][chunk_id] = row["PC2"].values[0]
-                        authors_collections_text[author_name][collection_name][chunk_id] = f"{author_name} = {collection_name} - {chunk_id}"
+                        authors_collections_text[author_name][collection_name][chunk_id] = f"{author_name} = {collection_name} - {row["source_name"].values[0]}"
 
         fig = go.Figure()
 
-        # Create traces for each author and collection
         for author_name in analysis_data.author_names:
             for collection_name in analysis_data.collection_names:
                 x = list(authors_collections_x[author_name][collection_name].values())
@@ -342,10 +341,9 @@ class AnalysisVisualization():
                     name=f"{author_name} {collection_name}",
                     text=text,
                     hoverinfo='text',
-                    visible=False  # Initially hidden
+                    visible=False
                 ))
 
-        # Define buttons for each author
         buttons = []
         for author_name in analysis_data.author_names:
             button = dict(
@@ -356,7 +354,6 @@ class AnalysisVisualization():
             )
             buttons.append(button)
 
-        # Update layout with dropdown
         fig.update_layout(
             title='PCA Analysis Chunks',
             xaxis_title='PC1',
@@ -370,7 +367,6 @@ class AnalysisVisualization():
             )]
         )
 
-        # Show the first author's data by default
         if buttons:
             first_author = buttons[0]['label']
             for trace in fig.data:
@@ -383,7 +379,7 @@ class AnalysisVisualization():
     def _visualize_metrics_of_two(self, analysis_data: AnalysisData):
         """Visualize the unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""
         fig = go.Figure()
-        excluded_metrics = ["author_name", "collection_name", "sorted_function_words", "punctuation_frequency"]
+        excluded_metrics = ["source_name", "author_name", "collection_name", "sorted_function_words", "punctuation_frequency"]
         included_metrics = [f.name for f in fields(MetricData) if f.name not in excluded_metrics]
         buttons = []
         for i, metric_name in enumerate(included_metrics):

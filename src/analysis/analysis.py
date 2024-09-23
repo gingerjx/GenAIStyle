@@ -74,10 +74,10 @@ class Analysis():
         return analysis_data
 
     def _get_preprocessing_data(self, author_name: str, collection_name: str, chunk_id: int) -> PreprocessingData:
-        if chunk_id:
-            return getattr(self.preprocessing_results[author_name][collection_name], "chunks")[chunk_id]
-        return getattr(self.preprocessing_results[author_name][collection_name], "full")
-    
+        if chunk_id is None:
+            return getattr(self.preprocessing_results[author_name][collection_name], "full")
+        return getattr(self.preprocessing_results[author_name][collection_name], "chunks")[chunk_id]
+        
     def _save_analysis_results(self, data: Dict[str, List[AnalysisData]]) -> None:
         """Save the analysis data to a file"""
         self.paths.analysis_filepath.parent.mkdir(parents=True, exist_ok=True)

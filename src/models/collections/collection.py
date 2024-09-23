@@ -3,6 +3,8 @@ from src.models.text import Text
 from nltk.tokenize import sent_tokenize
 from abc import ABC, abstractmethod
 
+from src.models.text_chunk import TextChunk
+
 class Collection(ABC):
     
     def __init__(self, name: str):
@@ -14,7 +16,7 @@ class Collection(ABC):
         pass
 
     @abstractmethod  
-    def get_text_chunks(self, chunk_size: int = None) -> List[List[str]]:
+    def get_text_chunks(self, chunk_size: int = None) -> List[TextChunk]:
         """Get the text chunks for the collection"""
         pass
 
