@@ -68,9 +68,6 @@ class Analysis():
                 analysis_data.collection_author_metrics[collection_name][author_name] = metrics
                 analysis_data.author_collection_metrics[author_name][collection_name] = metrics
 
-        analysis_data.metadata.cross_top_function_words_names = MetadataAnalysis.get_cross_top_function_words_names(analysis_data, self.configuration.top_n_function_words)
-        analysis_data.pca = PCAAnalysis.get_analysis(analysis_data)
-
         return analysis_data
 
     def _get_preprocessing_data(self, author_name: str, collection_name: str, chunk_id: int) -> PreprocessingData:

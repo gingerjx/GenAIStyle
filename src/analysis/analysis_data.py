@@ -31,17 +31,14 @@ class PCAData:
 
 @dataclass
 class Metadata:
-    percentage_of_removed_text: float = None
-    cross_top_function_words_names: List[str] = field(default_factory=list)
+    percentage_of_removed_text: float
 
 @dataclass
 class AnalysisData:
     author_names: List[str]
     collection_names: List[str]
-    metadata: Metadata = field(default_factory=Metadata)
     collection_author_metrics: Dict[str, Dict[str, MetricData]] = field(init=False, default_factory=dict)
     author_collection_metrics: Dict[str, Dict[str, MetricData]] = field(init=False, default_factory=dict)
-    pca: PCAData = field(default_factory=PCAData)
 
     def __post_init__(self):
         for collection_name in self.collection_names:
