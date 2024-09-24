@@ -11,7 +11,7 @@ class MetricsAnalysis:
     @staticmethod
     def _analyze(preprocessing_data: PreprocessingData) -> dict:
         """Analyze the sample of words and return the unique_word_counts, average_word_lengths and average_sentence_lengths"""
-        data = {}
+        data = {"source_name": preprocessing_data.source_name}
         
         data["unique_word_count"] = MetricsAnalysis._get_unique_word_count(
             words=preprocessing_data.words

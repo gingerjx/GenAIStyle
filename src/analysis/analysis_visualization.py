@@ -5,7 +5,7 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from itertools import islice
-from src.analysis.analysis_data import AnalysisData, MetricData
+from src.analysis.analysis_data import AnalysisData, AnalysisResults, MetricData
 from src.settings import Settings
 
 class AnalysisVisualization():
@@ -36,14 +36,17 @@ class AnalysisVisualization():
     def __init__(self, settings: Settings) -> None:
         self.configuration = settings.configuration
 
-    def visualize(self, analysis_data: AnalysisData):
+    def visualize(self, analysis_results: AnalysisResults):
         """Visualize the analysis data for the authors and models"""
-        self._visualize(analysis_data)
-        self._visualize_function_words(analysis_data)
-        self._visualize_punctuation_frequency(analysis_data)
-        self._visualize_pca_by_collections(analysis_data)
-        self._visualize_pca_by_authors(analysis_data)
-        self._visualize_metrics_of_two(analysis_data)
+        self._visualize(analysis_results.full)
+        self._visualize_function_words(analysis_results.full)
+        self._visualize_punctuation_frequency(analysis_results.full)
+        self._visualize_pca_by_collections(analysis_results.full)
+        self._visualize_pca_by_authors(analysis_results.full)
+        self._visualize_pca_chunks_by_collections(analysis_results.chunks)
+        self._visualize_pca_chunks_by_authors(analysis_results.chunks)
+        self._visualize_pca_chunks_iteractive(analysis_results.chunks)
+        self._visualize_metrics_of_two(analysis_results.full)
 
     def _visualize(self, analysis_data: AnalysisData):
         """Visualize the unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""
@@ -194,6 +197,46 @@ class AnalysisVisualization():
         )
         fig.show()
 
+    def _visualize_pca_chunks_by_collections(self, analysis_data_chunks: List[AnalysisData]):
+        """Visualize the PCA data for the authors and models"""
+        fig = go.Figure()
+        collections_x = {}
+        collections_y = {}
+        collections_text = {}
+
+        for chunk_id, analysis_data in enumerate(analysis_data_chunks):
+            df = analysis_data.pca.results
+            for collection_name in analysis_data.collection_names:
+                if collection_name not in collections_x:
+                    collections_x[collection_name] = []
+                    collections_y[collection_name] = []
+                    collections_text[collection_name] = []
+
+                mask = df['collection_name'] == collection_name
+                collections_x[collection_name].extend(df.loc[mask, 'PC1'].values)
+                collections_y[collection_name].extend(df.loc[mask, 'PC2'].values)
+                collections_text[collection_name].extend([f"{name} - Chunk {chunk_id}" for name in df.loc[mask, 'author_name'].values])
+
+
+        for collection_name in analysis_data.collection_names:
+            fig.add_trace(go.Scatter(
+                x=collections_x[collection_name],
+                y=collections_y[collection_name],
+                mode='markers',
+                marker=dict(color=AnalysisVisualization.COLLECTION_COLORS[collection_name]),
+                name=collection_name,
+                text=collections_text[collection_name],
+                hoverinfo='text'
+            ))
+
+        fig.update_layout(
+            title='PCA Chunks Analysis',
+            xaxis_title=f'PC1',
+            yaxis_title=f'PC2',
+            legend_title='Collection Name',
+        )
+        fig.show()
+
     def _visualize_pca_by_authors(self, analysis_data: AnalysisData):
         """Visualize the PCA data for the authors and models"""
         fig = go.Figure()
@@ -219,10 +262,124 @@ class AnalysisVisualization():
         )
         fig.show()
 
+    def _visualize_pca_chunks_by_authors(self, analysis_data_chunks: List[AnalysisData]):
+        """Visualize the PCA data for the authors and models"""
+        fig = go.Figure()
+        authors_x = {}
+        authors_y = {}
+        authors_text = {}
+
+        for chunk_id, analysis_data in enumerate(analysis_data_chunks):
+            df = analysis_data.pca.results
+            for author_name in analysis_data.author_names:
+                if author_name not in authors_x:
+                    authors_x[author_name] = []
+                    authors_y[author_name] = []
+                    authors_text[author_name] = []
+
+                mask = df['author_name'] == author_name
+                authors_x[author_name].extend(df.loc[mask, 'PC1'].values)
+                authors_y[author_name].extend(df.loc[mask, 'PC2'].values)
+                authors_text[author_name].extend([f"{name} - Chunk {chunk_id}" for name in df.loc[mask, 'collection_name'].values])
+
+
+        for author_name in analysis_data.author_names:
+            fig.add_trace(go.Scatter(
+                x=authors_x[author_name],
+                y=authors_y[author_name],
+                mode='markers',
+                marker=dict(color=AnalysisVisualization.AUTHOR_COLORS[author_name]),
+                name=author_name,
+                text=authors_text[author_name],
+                hoverinfo='text'
+            ))
+
+        fig.update_layout(
+            title='PCA Chunks Analysis',
+            xaxis_title=f'PC1',
+            yaxis_title=f'PC2',
+            legend_title='Collection Name',
+        )
+        fig.show()
+
+    def _visualize_pca_chunks_iteractive(self, analysis_data_chunks: List[AnalysisData]):
+        """Visualize the PCA data for the authors and collections with a dropdown to toggle authors"""
+        authors_collections_x = {}
+        authors_collections_y = {}
+        authors_collections_text = {}
+
+        for chunk_id, analysis_data in enumerate(analysis_data_chunks):
+            df = analysis_data.pca.results
+            for author_name in analysis_data.author_names:
+                if author_name not in authors_collections_x:
+                    authors_collections_x[author_name] = {}
+                    authors_collections_y[author_name] = {}
+                    authors_collections_text[author_name] = {}
+                for collection_name in analysis_data.collection_names:
+                    if collection_name not in authors_collections_x[author_name]:
+                        authors_collections_x[author_name][collection_name] = {}
+                        authors_collections_y[author_name][collection_name] = {}
+                        authors_collections_text[author_name][collection_name] = {}
+                    row = df[(df["author_name"] == author_name) & (df["collection_name"] == collection_name)]
+                    if not row.empty:
+                        authors_collections_x[author_name][collection_name][chunk_id] = row["PC1"].values[0]
+                        authors_collections_y[author_name][collection_name][chunk_id] = row["PC2"].values[0]
+                        authors_collections_text[author_name][collection_name][chunk_id] = f"{author_name} = {collection_name} - {row["source_name"].values[0]}"
+
+        fig = go.Figure()
+
+        for author_name in analysis_data.author_names:
+            for collection_name in analysis_data.collection_names:
+                x = list(authors_collections_x[author_name][collection_name].values())
+                y = list(authors_collections_y[author_name][collection_name].values())
+                text = list(authors_collections_text[author_name][collection_name].values())
+                fig.add_trace(go.Scatter(
+                    x=x,
+                    y=y,
+                    mode='markers',
+                    marker=dict(color=AnalysisVisualization.COLLECTION_COLORS[collection_name]),
+                    name=f"{author_name} {collection_name}",
+                    text=text,
+                    hoverinfo='text',
+                    visible=False
+                ))
+
+        buttons = []
+        for author_name in analysis_data.author_names:
+            button = dict(
+                label=author_name,
+                method="update",
+                args=[{"visible": [trace.name.startswith(author_name) for trace in fig.data]},
+                    {"title": f"PCA Analysis Chunks - {author_name}"}]
+            )
+            buttons.append(button)
+
+        fig.update_layout(
+            title='PCA Analysis Chunks',
+            xaxis_title='PC1',
+            yaxis_title='PC2',
+            legend_title='Collection Name',
+            updatemenus=[dict(
+                type="dropdown",
+                direction="down",
+                buttons=buttons,
+                showactive=True,
+            )]
+        )
+
+        if buttons:
+            first_author = buttons[0]['label']
+            for trace in fig.data:
+                if trace.name.startswith(first_author):
+                    trace.visible = True
+            fig.update_layout(title=f"PCA Analysis Chunks - {first_author}")
+
+        fig.show()
+
     def _visualize_metrics_of_two(self, analysis_data: AnalysisData):
         """Visualize the unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""
         fig = go.Figure()
-        excluded_metrics = ["author_name", "collection_name", "sorted_function_words", "punctuation_frequency"]
+        excluded_metrics = ["source_name", "author_name", "collection_name", "sorted_function_words", "punctuation_frequency"]
         included_metrics = [f.name for f in fields(MetricData) if f.name not in excluded_metrics]
         buttons = []
         for i, metric_name in enumerate(included_metrics):

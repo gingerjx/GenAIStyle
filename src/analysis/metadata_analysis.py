@@ -1,7 +1,7 @@
 from typing import List
 from src.analysis.analysis_data import AnalysisData
 from src.models.author import Author
-from src.models.collection import Collection
+from src.models.collections.collection import Collection
 
 
 class MetadataAnalysis:
