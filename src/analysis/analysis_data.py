@@ -22,16 +22,12 @@ class MetricData:
     simpsons_index: float
 
 @dataclass
-class PCAData:
+class PCAAnalysisData:
     source_name = None
     data: dict = None
     results: pd.DataFrame = None
     pc_variance: List[float] = None
     top_features: Dict[str, List[str]] = None
-
-@dataclass
-class Metadata:
-    percentage_of_removed_text: float
 
 @dataclass
 class AnalysisData:
@@ -49,6 +45,6 @@ class AnalysisData:
 @dataclass
 class AnalysisResults:
     
-    full: AnalysisData = None
-    chunks: List[AnalysisData] = field(default_factory=list)
-    metadata: Metadata = field(default_factory=Metadata)
+    full: AnalysisData
+    chunks: List[AnalysisData]
+    pca_author_books_vs_model: Dict[str, Dict[str, PCAAnalysisData]] # [author][model] analysis of author books' text vs author model's text

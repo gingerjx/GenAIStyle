@@ -4,17 +4,21 @@ from typing import Dict
 import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.discriminant_analysis import StandardScaler
-from src.analysis.analysis_data import AnalysisData, MetricData, PCAData
+from src.analysis.analysis_data import AnalysisData, AnalysisResults, MetricData, PCAAnalysisData
 from string import punctuation
 
 class PCAAnalysis:
     
     TOP_FEATURES: int = 10
 
-    def get_analysis(analysis_data: AnalysisData) -> PCAData:
-        pca_data = PCAAnalysis._get_pca_data(analysis_data)
-        pca_results, pca_top_features, explained_variance_ratio_ = PCAAnalysis._get_pca(pca_data)
-        return PCAData(data=pca_data, results=pca_results, pc_variance=explained_variance_ratio_, top_features=pca_top_features)
+    # def get_analysis(analysis_data: AnalysisData) -> PCAData:
+    #     pca_data = PCAAnalysis._get_pca_data(analysis_data)
+    #     pca_results, pca_top_features, explained_variance_ratio_ = PCAAnalysis._get_pca(pca_data)
+    #     return PCAData(data=pca_data, results=pca_results, pc_variance=explained_variance_ratio_, top_features=pca_top_features)
+
+    @staticmethod
+    def get_pca_author_books_vs_model(analysis_results: AnalysisResults) -> Dict[str, Dict[str, PCAAnalysisData]]:       
+        pass
 
     @staticmethod
     def _get_pca_data(analysis_data: AnalysisData) -> pd.DataFrame:
@@ -55,3 +59,4 @@ class PCAAnalysis:
         }
 
         return pca_df, top_features, pca.explained_variance_ratio_
+    

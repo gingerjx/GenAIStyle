@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from itertools import islice
 from src.analysis.analysis_data import AnalysisData, AnalysisResults, MetricData
+from src.analysis.metrics.models import MetricsAnalysisResults
 from src.settings import Settings
 
 class AnalysisVisualization():
@@ -36,14 +37,14 @@ class AnalysisVisualization():
     def __init__(self, settings: Settings) -> None:
         self.configuration = settings.configuration
 
-    def visualize(self, analysis_results: AnalysisResults):
+    def visualize(self, metrics_analysis_results: MetricsAnalysisResults):
         """Visualize the analysis data for the authors and models"""
-        self._visualize(analysis_results.full)
-        self._visualize_function_words(analysis_results.full)
-        self._visualize_punctuation_frequency(analysis_results.full)
-        self._visualize_metrics_of_two(analysis_results.full)
+        self._visualize(metrics_analysis_results)
+        self._visualize_function_words(metrics_analysis_results)
+        self._visualize_punctuation_frequency(metrics_analysis_results)
+        self._visualize_metrics_of_two(metrics_analysis_results)
 
-    def _visualize(self, analysis_data: AnalysisData):
+    def _visualize(self, metrics_analysis_results: MetricsAnalysisResults):
         """Visualize the unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""
         fig_xaxes_font_size = 10
         fig_height = 1500
@@ -63,29 +64,30 @@ class AnalysisVisualization():
                                 # vertical_spacing=0.1
                             )
 
-        for i, (collection_name, authors_metrics) in enumerate(analysis_data.collection_author_metrics.items()):
-            metrics_subset = {
-                "Unique word count": [m.unique_word_count for m in authors_metrics.values()], 
-                "Average word length": [m.average_word_length for m in authors_metrics.values()], 
-                "Average sentence length": [m.average_sentence_length for m in authors_metrics.values()],
-                "Average syllables per word": [m.average_syllables_per_word for m in authors_metrics.values()], 
-                "Flesch Reading Ease": [m.flesch_reading_ease for m in authors_metrics.values()], 
-                "Flesch Kincaid Grade Level": [m.flesch_kincaid_grade_level for m in authors_metrics.values()], 
-                "Gunning Fog Index": [m.gunning_fog_index for m in authors_metrics.values()],
-                "Yules Characteristic K": [m.yules_characteristic_k for m in authors_metrics.values()],
-                "Herdan's C": [m.herdans_c for m in authors_metrics.values()],
-                "Maas": [m.maas for m in authors_metrics.values()],
-                "Simpsons Index": [m.simpsons_index for m in authors_metrics.values()]
-            }
+        for i, collection_name in enumerate(metrics_analysis_results.collection_names):
+                full_collection_metrics_data = metrics_analysis_results.full_collection_author[collection_name]
+                collection_authors_metrics = {
+                    "Unique word count": [m.unique_word_count for m in full_collection_metrics_data.values()], 
+                    "Average word length": [m.average_word_length for m in full_collection_metrics_data.values()], 
+                    "Average sentence length": [m.average_sentence_length for m in full_collection_metrics_data.values()],
+                    "Average syllables per word": [m.average_syllables_per_word for m in full_collection_metrics_data.values()], 
+                    "Flesch Reading Ease": [m.flesch_reading_ease for m in full_collection_metrics_data.values()], 
+                    "Flesch Kincaid Grade Level": [m.flesch_kincaid_grade_level for m in full_collection_metrics_data.values()], 
+                    "Gunning Fog Index": [m.gunning_fog_index for m in full_collection_metrics_data.values()],
+                    "Yules Characteristic K": [m.yules_characteristic_k for m in full_collection_metrics_data.values()],
+                    "Herdan's C": [m.herdans_c for m in full_collection_metrics_data.values()],
+                    "Maas": [m.maas for m in full_collection_metrics_data.values()],
+                    "Simpsons Index": [m.simpsons_index for m in full_collection_metrics_data.values()]
+                }
 
-            for j, (_, value) in enumerate(metrics_subset.items()):
-                fig.add_trace(go.Bar(
-                    name=collection_name, 
-                    x=analysis_data.author_names, 
-                    marker_color=AnalysisVisualization.COLLECTION_COLORS_LIST[i],
-                    y=value, 
-                    showlegend=j==0
-                ), row=j+1, col=1)
+                for j, (_, value) in enumerate(collection_authors_metrics.items()):
+                    fig.add_trace(go.Bar(
+                        name=collection_name, 
+                        x=metrics_analysis_results.author_names, 
+                        marker_color=AnalysisVisualization.COLLECTION_COLORS_LIST[i],
+                        y=value, 
+                        showlegend=j==0
+                    ), row=j+1, col=1)
 
         fig.update_xaxes(tickfont_size=fig_xaxes_font_size)
         fig.update_layout(
@@ -94,21 +96,21 @@ class AnalysisVisualization():
         )
         fig.show()
 
-    def _visualize_function_words(self, analysis_data: AnalysisData):
+    def _visualize_function_words(self, metrics_analysis_results: MetricsAnalysisResults):
         """Visualize the top 10 function words for the authors and models"""
         fig_font_size = 10
         fig_height = 800
         fig = make_subplots(
-            rows=6, cols=10, 
-            subplot_titles=analysis_data.author_names
+            rows=len(metrics_analysis_results.collection_names), cols=10, 
+            subplot_titles=metrics_analysis_results.author_names
         )
         max_freq_overall = 0
 
-        for i, (collection_name, authors_metrics) in enumerate(analysis_data.collection_author_metrics.items()):
-            author_names = [d.author_name for d in authors_metrics.values()]
+        for i, collection_name in enumerate(metrics_analysis_results.collection_names):
+            full_collection_metrics_data = metrics_analysis_results.full_collection_author[collection_name]
             top_function_words = [dict(islice(d.sorted_function_words.items(), self.configuration.top_n_function_words))
-                              for d in authors_metrics.values()]
-            authors_top_function_words = dict(zip(author_names, top_function_words))
+                              for d in full_collection_metrics_data.values()]
+            authors_top_function_words = dict(zip(metrics_analysis_results.author_names, top_function_words))
 
             for j, (_, author_top_function_words) in enumerate(authors_top_function_words.items()):
                 max_freq_overall = max([max_freq_overall] + list(author_top_function_words.values()))
@@ -130,19 +132,20 @@ class AnalysisVisualization():
         )
         fig.show()
 
-    def _visualize_punctuation_frequency(self, analysis_data: AnalysisData):
+    def _visualize_punctuation_frequency(self, metrics_analysis_results: MetricsAnalysisResults):
         fig_height = 1500
         total_cols = 3
         total_rows = 4
         fig = make_subplots(
             rows=total_rows, 
             cols=total_cols,
-            subplot_titles=analysis_data.author_names,
+            subplot_titles=metrics_analysis_results.author_names,
         )
 
         show_legend = True
-        for i, (collection_name, authors_metrics) in enumerate(analysis_data.collection_author_metrics.items()):
-            for j, (author_name, metrics) in enumerate(authors_metrics.items()):
+        for i, collection_name in enumerate(metrics_analysis_results.collection_names):
+            full_collection_metrics_data = metrics_analysis_results.full_collection_author[collection_name]
+            for j, (author_name, metrics) in enumerate(full_collection_metrics_data.items()):
                 row = j // total_cols + 1
                 col = j % total_cols + 1
                 punctuation_frequency = metrics.punctuation_frequency
@@ -167,7 +170,7 @@ class AnalysisVisualization():
         )     
         fig.show()
 
-    def _visualize_metrics_of_two(self, analysis_data: AnalysisData):
+    def _visualize_metrics_of_two(self, metrics_analysis_results: MetricsAnalysisResults):
         """Visualize the unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""
         fig = go.Figure()
         excluded_metrics = ["source_name", "author_name", "collection_name", "sorted_function_words", "punctuation_frequency"]
@@ -182,17 +185,18 @@ class AnalysisVisualization():
             )
             buttons.append(button)
 
-        for i, (collection_name, authors_metrics) in enumerate(analysis_data.collection_author_metrics.items()):
-        
+
+        for i, collection_name in enumerate(metrics_analysis_results.collection_names):
+            full_collection_metrics_data = metrics_analysis_results.full_collection_author[collection_name]
             collection_metrics_per_metric = {metric_name: [] for metric_name in included_metrics}
-            for author_name, metrics in authors_metrics.items():
+            for author_name, metrics in full_collection_metrics_data.items():
                 for metric_name in collection_metrics_per_metric.keys():
                     collection_metrics_per_metric[metric_name].append(getattr(metrics, metric_name))
             
             for metric_name, value in collection_metrics_per_metric.items():
                 fig.add_trace(go.Scatter(
                         name=collection_name, 
-                        x=analysis_data.author_names, 
+                        x=metrics_analysis_results.author_names, 
                         marker_color=AnalysisVisualization.COLLECTION_COLORS_LIST[i],
                         y=value,
                         mode="markers",
