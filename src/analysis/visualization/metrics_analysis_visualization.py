@@ -6,31 +6,10 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from itertools import islice
 from src.analysis.metrics.models import MetricData, MetricsAnalysisResults
+from src.analysis.visualization.analysis_visualization import AnalysisVisualization
 from src.settings import Settings
 
-class AnalysisVisualization():
-    COLLECTION_COLORS = {
-        "books": "#3498db", 
-        "gpt-3.5-turbo-0125": "#e74c3c",
-        "gpt-4o": "#2ecc71", 
-        "gemini-1.5-flash": "#f1c40f", 
-        "open-mixtral-8x7b": "#9b59b6", 
-        "claude-3-haiku-20240307": "#e67e22",
-    }
-    COLLECTION_COLORS_LIST = list(COLLECTION_COLORS.values())
-    AUTHOR_COLORS = {
-        "Mark Twain": "#3498db",          # Blue
-        "Zane Grey": "#e74c3c",           # Red
-        "Joseph Conrad": "#2ecc71",       # Green
-        "George Eliot": "#f1c40f",        # Yellow
-        "Benjamin Disraeli": "#9b59b6",   # Purple
-        "Lucy Maud Montgomery": "#e67e22",# Orange
-        "William Henry Hudson": "#1abc9c",# Turquoise
-        "Howard Pyle": "#34495e",         # Dark Blue
-        "Virginia Woolf": "#d35400",      # Dark Orange
-        "Lewis Carroll": "#7f8c8d"        # Gray
-    }
-    LEGEND_TITLE = "Text source"
+class MetricsAnalysisVisualization(AnalysisVisualization):
     FONT_SIZE = 10
 
     def __init__(self, settings: Settings) -> None:
@@ -83,14 +62,14 @@ class AnalysisVisualization():
                     fig.add_trace(go.Bar(
                         name=collection_name, 
                         x=metrics_analysis_results.author_names, 
-                        marker_color=AnalysisVisualization.COLLECTION_COLORS_LIST[i],
+                        marker_color=MetricsAnalysisVisualization.COLLECTION_COLORS_LIST[i],
                         y=value, 
                         showlegend=j==0
                     ), row=j+1, col=1)
 
         fig.update_xaxes(tickfont_size=fig_xaxes_font_size)
         fig.update_layout(
-            legend_title_text=AnalysisVisualization.LEGEND_TITLE,
+            legend_title_text="Collection",
             height=fig_height,
         )
         fig.show()
@@ -117,7 +96,7 @@ class AnalysisVisualization():
                     name=collection_name, 
                     x=list(author_top_function_words.keys()), 
                     y=list(author_top_function_words.values()), 
-                    marker_color=AnalysisVisualization.COLLECTION_COLORS_LIST[i],
+                    marker_color=MetricsAnalysisVisualization.COLLECTION_COLORS_LIST[i],
                     showlegend=j==0
                 ), row=i+1, col=j+1)
 
@@ -125,6 +104,7 @@ class AnalysisVisualization():
         fig.update_xaxes(tickfont_size=fig_font_size)
         fig.update_annotations(font_size=fig_font_size)
         fig.update_layout(
+            legend_title_text="Collection",
             title_text="Top 10 function words", 
             title_x=0.5,
             height=fig_height
@@ -154,7 +134,7 @@ class AnalysisVisualization():
                         name=collection_name, 
                         x=list(sorted_keys), 
                         y=list(sorted_values), 
-                        marker_color=AnalysisVisualization.COLLECTION_COLORS_LIST[i],
+                        marker_color=MetricsAnalysisVisualization.COLLECTION_COLORS_LIST[i],
                         showlegend=show_legend,
                         mode="markers" 
                     ), row=row, col=col
@@ -163,6 +143,7 @@ class AnalysisVisualization():
             show_legend = True
 
         fig.update_layout(
+            legend_title_text="Collection",
             height=fig_height,
             title_text="Punctuation frequency",
             title_x=0.5
@@ -196,7 +177,7 @@ class AnalysisVisualization():
                 fig.add_trace(go.Scatter(
                         name=collection_name, 
                         x=metrics_analysis_results.author_names, 
-                        marker_color=AnalysisVisualization.COLLECTION_COLORS_LIST[i],
+                        marker_color=MetricsAnalysisVisualization.COLLECTION_COLORS_LIST[i],
                         y=value,
                         mode="markers",
                         visible=(metric_name == included_metrics[0])
@@ -204,6 +185,7 @@ class AnalysisVisualization():
                 )
 
         fig.update_layout(
+            legend_title_text="Collection",
             updatemenus=[dict(
                 type='dropdown',
                 direction='down',

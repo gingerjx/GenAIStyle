@@ -12,5 +12,7 @@ class PCAAnalysisData:
 
 @dataclass
 class PCAAnalysisResults:
+    author_names: List[str]
+    collection_names: List[str]
     # Results of PCA performed separately for each collection-collection-author, all chunks are included in the pca. 
     collection_vs_collection_per_author_chunks: Dict[str, Dict[str, Dict[str, PCAAnalysisData]]] # [author][collection][collection]

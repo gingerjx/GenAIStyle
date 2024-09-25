@@ -20,6 +20,8 @@ class PCAAnalysis:
     def get_pca_analysis(self, metrics_analysis_results: MetricsAnalysisResults) -> PCAAnalysisResults:
         collection_vs_collection_per_author_chunks = self._get_pca_collection_vs_collection_per_author_chunks_analysis(metrics_analysis_results)
         return PCAAnalysisResults(
+            author_names=metrics_analysis_results.author_names,
+            collection_names=metrics_analysis_results.collection_names,
             collection_vs_collection_per_author_chunks=collection_vs_collection_per_author_chunks
         )
     
