@@ -15,24 +15,29 @@ class PCAAnalysisVisualization(AnalysisVisualization):
 
     def setup_layout(self):
         self.app.layout = html.Div([
-            dcc.Dropdown(
-                id='author-dropdown',
-                options=[{'label': author, 'value': author} for author in self.pca_analysis_results.author_names],
-                value=self.pca_analysis_results.author_names[0],
-                clearable=False
-            ),
-            dcc.Dropdown(
-                id='collection1-dropdown',
-                options=[{'label': collection, 'value': collection} for collection in self.pca_analysis_results.collection_names],
-                value=self.pca_analysis_results.collection_names[0],
-                clearable=False
-            ),
-            dcc.Dropdown(
-                id='collection2-dropdown',
-                options=[{'label': collection, 'value': collection} for collection in self.pca_analysis_results.collection_names],
-                value=self.pca_analysis_results.collection_names[1],
-                clearable=False
-            ),
+            html.Div([
+                dcc.Dropdown(
+                    id='author-dropdown',
+                    options=[{'label': author, 'value': author} for author in self.pca_analysis_results.author_names],
+                    value=self.pca_analysis_results.author_names[0],
+                    clearable=False,
+                    style={'width': '100%'}
+                ),
+                dcc.Dropdown(
+                    id='collection1-dropdown',
+                    options=[{'label': collection, 'value': collection} for collection in self.pca_analysis_results.collection_names],
+                    value=self.pca_analysis_results.collection_names[0],
+                    clearable=False,
+                    style={'width': '100%'}
+                ),
+                dcc.Dropdown(
+                    id='collection2-dropdown',
+                    options=[{'label': collection, 'value': collection} for collection in self.pca_analysis_results.collection_names],
+                    value=self.pca_analysis_results.collection_names[1],
+                    clearable=False,
+                    style={'width': '100%'}
+                ),
+            ], style={'display': 'flex', 'justify-content': 'space-between'}),
             dcc.Graph(id='pca-graph')
         ])
 
@@ -55,13 +60,13 @@ class PCAAnalysisVisualization(AnalysisVisualization):
                     mode='markers',
                     marker=dict(color=PCAAnalysisVisualization.COLLECTION_COLORS[collection_name]),
                     name=collection_name,
-                    text=results.loc[mask, 'author_name'],
+                    text=results.loc[mask, 'source_name'],
                     hoverinfo='text'
                 ))
 
             fig.update_layout(
-                title='PCA Analysis',
-                legend_title='Collection Name',
+                title=f'[{selected_author}] Chunks PCA Analysis',
+                legend_title='Collection',
             )
             return fig
 
