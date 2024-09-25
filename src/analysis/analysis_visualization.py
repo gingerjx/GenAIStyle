@@ -5,8 +5,7 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from itertools import islice
-from src.analysis.analysis_data import AnalysisData, AnalysisResults, MetricData
-from src.analysis.metrics.models import MetricsAnalysisResults
+from src.analysis.metrics.models import MetricData, MetricsAnalysisResults
 from src.settings import Settings
 
 class AnalysisVisualization():

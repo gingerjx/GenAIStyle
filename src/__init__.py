@@ -9,3 +9,4 @@ from src.generation.generated_text import GeneratedText
 from src.cleaning.cleaner import Cleaner
 from src.analysis.metadata.analysis import MetadataAnalysis
 from src.analysis.metrics.analysis import MetricsAnalysis
+from src.analysis.pca.analysis import PCAAnalysis

@@ -1,10 +1,8 @@
 from collections import Counter
-from dataclasses import dataclass
 import math
 from string import punctuation
 from typing import Dict, List
-from src.analysis.analysis_data import MetricData
-from src.analysis.metrics.models import MetricsAnalysisResults
+from src.analysis.metrics.models import MetricData, MetricsAnalysisResults
 from src.analysis.preprocessing.data import PreprocessingData, PreprocessingResults
 import nltk
 from functionwords import FunctionWords
@@ -47,6 +45,7 @@ class MetricsAnalysis:
                 metrics_analysis_results.full_collection_author[collection_name][author_name] = metrics_analysis
 
         return metrics_analysis_results
+
     @staticmethod
     def _analyze(preprocessing_data: PreprocessingData) -> dict:
         """Analyze the sample of words and return the unique_word_counts, average_word_lengths and average_sentence_lengths"""
