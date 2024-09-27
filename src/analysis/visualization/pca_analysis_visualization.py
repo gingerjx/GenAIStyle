@@ -17,58 +17,125 @@ class PCAAnalysisVisualization(AnalysisVisualization):
         self.app.layout = html.Div([
             html.Div([
                 dcc.Dropdown(
-                    id='author-dropdown',
+                    id='author-dropdown-1',
                     options=[{'label': author, 'value': author} for author in self.pca_analysis_results.author_names],
                     value=self.pca_analysis_results.author_names[0],
                     clearable=False,
                     style={'width': '100%'}
                 ),
                 dcc.Dropdown(
-                    id='collection1-dropdown',
+                    id='collection1-dropdown-1',
                     options=[{'label': collection, 'value': collection} for collection in self.pca_analysis_results.collection_names],
                     value=self.pca_analysis_results.collection_names[0],
                     clearable=False,
                     style={'width': '100%'}
                 ),
                 dcc.Dropdown(
-                    id='collection2-dropdown',
+                    id='collection2-dropdown-1',
                     options=[{'label': collection, 'value': collection} for collection in self.pca_analysis_results.collection_names],
                     value=self.pca_analysis_results.collection_names[1],
                     clearable=False,
                     style={'width': '100%'}
                 ),
             ], style={'display': 'flex', 'justify-content': 'space-between'}),
-            dcc.Graph(id='pca-graph')
+            dcc.Graph(id='collection_vs_collection_per_author_chunks', style={'margin-bottom': '0'}),
+            html.Div(id='collection_vs_collection_per_author_chunks_text', style={'background': 'white', "padding": "10px"}),
+            dcc.Dropdown(
+                id='author-dropdown-2',
+                options=[{'label': author, 'value': author} for author in self.pca_analysis_results.author_names],
+                value=self.pca_analysis_results.author_names[0],
+                clearable=False,
+                style={'width': '100%'}
+            ),
+            dcc.Graph(id='collections_per_author_chunks'),
+            html.Div(id='collections_per_author_chunks_text', style={'background': 'white', "padding": "10px"}),
         ])
 
     def setup_callbacks(self):
         @self.app.callback(
-            Output('pca-graph', 'figure'),
-            Input('author-dropdown', 'value'),
-            Input('collection1-dropdown', 'value'),
-            Input('collection2-dropdown', 'value')
+            Output('collection_vs_collection_per_author_chunks', 'figure'),
+            Input('author-dropdown-1', 'value'),
+            Input('collection1-dropdown-1', 'value'),
+            Input('collection2-dropdown-1', 'value')
         )
         def update_graph(selected_author, selected_collection1, selected_collection2):
             fig = go.Figure()
-            results = self.pca_analysis_results.collection_vs_collection_per_author_chunks[selected_author][selected_collection1][selected_collection2].results
+            pca = self.pca_analysis_results.collection_vs_collection_per_author_chunks[selected_author][selected_collection1][selected_collection2]
 
             for collection_name in [selected_collection1, selected_collection2]:
-                mask = results['collection_name'] == collection_name
+                mask = pca.results['collection_name'] == collection_name
                 fig.add_trace(go.Scatter(
-                    x=results.loc[mask, 'PC1'],
-                    y=results.loc[mask, 'PC2'],
+                    x=pca.results.loc[mask, 'PC1'],
+                    y=pca.results.loc[mask, 'PC2'],
                     mode='markers',
                     marker=dict(color=PCAAnalysisVisualization.COLLECTION_COLORS[collection_name]),
                     name=collection_name,
-                    text=results.loc[mask, 'source_name'],
+                    text=pca.results.loc[mask, 'source_name'],
                     hoverinfo='text'
                 ))
 
             fig.update_layout(
                 title=f'[{selected_author}] Chunks PCA Analysis',
                 legend_title='Collection',
+                xaxis_title=f'PC1[{pca.pc_variance[0]:.2f}]',
+                yaxis_title=f'PC2[{pca.pc_variance[1]:.2f}]',
             )
             return fig
 
+        @self.app.callback(
+            Output('collection_vs_collection_per_author_chunks_text', 'children'),
+            Input('author-dropdown-1', 'value'),
+            Input('collection1-dropdown-1', 'value'),
+            Input('collection2-dropdown-1', 'value')
+        )
+        def update_annotation_text(selected_author, selected_collection1, selected_collection2):
+            top_features = self.pca_analysis_results.collection_vs_collection_per_author_chunks[selected_author][selected_collection1][selected_collection2].top_features
+            return html.Div([
+                html.P(f"PC1 Top features: {top_features["PC1"]}", style={'margin': '0', "font-size": "20px"}),
+                html.P(f"PC2 Top features: {top_features["PC2"]}", style={'margin': '0', "font-size": "20px"})
+            ])
+        
+        @self.app.callback(
+            Output('collections_per_author_chunks', 'figure'),
+            Input('author-dropdown-2', 'value'),
+        )
+        def update_graph_2(selected_author):
+            fig = go.Figure()
+            pca = self.pca_analysis_results.collections_per_author_chunks[selected_author]
+
+            for collection_name in self.pca_analysis_results.collection_names:
+                mask = pca.results['collection_name'] == collection_name
+                fig.add_trace(go.Scatter(
+                    x=pca.results.loc[mask, 'PC1'],
+                    y=pca.results.loc[mask, 'PC2'],
+                    mode='markers',
+                    marker=dict(color=PCAAnalysisVisualization.COLLECTION_COLORS[collection_name]),
+                    name=collection_name,
+                    text=pca.results.loc[mask, 'source_name'],
+                    hoverinfo='text'
+                ))
+
+            fig.update_layout(
+                title=f'[{selected_author}] Chunks PCA Analysis',
+                legend_title='Collection',
+                xaxis_title=f'PC1[{pca.pc_variance[0]:.2f}]',
+                yaxis_title=f'PC2[{pca.pc_variance[1]:.2f}]',
+            )
+            return fig
+
+        @self.app.callback(
+            Output('collections_per_author_chunks_text', 'children'),
+            Input('author-dropdown-2', 'value'),
+        )
+        def update_annotation_text(selected_author):
+            top_features = self.pca_analysis_results.collections_per_author_chunks[selected_author].top_features
+            return html.Div([
+                html.P(f"PC1 Top features: {top_features["PC1"]}", style={'margin': '0', "font-size": "20px"}),
+                html.P(f"PC2 Top features: {top_features["PC2"]}", style={'margin': '0', "font-size": "20px"})
+            ])
+         
     def run(self):
-        self.app.run_server(debug=True)
+        self.app.run(
+            port=8050,
+            jupyter_height=1500,
+        )
