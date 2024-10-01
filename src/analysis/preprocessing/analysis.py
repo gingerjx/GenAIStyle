@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Dict, List, Tuple
 
 import pyphen
-from src.analysis.preprocessing_data import PreprocessingData, PreprocessingResults
+from src.analysis.preprocessing.data import PreprocessingData, PreprocessingResults
 from src.models.author import Author
 from src.models.text_chunk import TextChunk
 from src.settings import Settings
@@ -23,36 +23,28 @@ class Preprocessing:
         splits: List[str]
         sentences: List[str]
 
-    def __init__(self, settings: Settings, authors: List[Author]) -> None:
+    def __init__(self, settings: Settings) -> None:
         self.paths = settings.paths
         self.configuration = settings.configuration
-        self.authors = authors
 
-    def preprocess(self) -> Dict[str, Dict[str, PreprocessingResults]]:
+    def preprocess(self, authors: List[Author]) -> PreprocessingResults:
         """Preprocess the data"""
-        data= {}
+        preprocessing_results = PreprocessingResults(
+            author_names=[author.name for author in authors],
+            collection_names=[collection.name for collection in authors[0].cleaned_collections]
+        )
 
-        for author in self.authors:
-            data.update({author.name: {}})
+        for author in authors:
             for collection in author.cleaned_collections:
                 text_chunks = collection.get_text_chunks(self.configuration.extract_book_chunk_size)
                 split_chunks = self._get_split(text_chunks)
-                chunks_preprocessing_data = []
-                full_preprocessing_data = PreprocessingData()
 
                 for split_chunk in split_chunks:
                     chunk_preprocessing_data = self._get_chunk_preprocessing_data(split_chunk)
-                    chunks_preprocessing_data.append(chunk_preprocessing_data)
-                    full_preprocessing_data.append_data(chunk_preprocessing_data)
+                    preprocessing_results.chunks[author.name][collection.name].append(chunk_preprocessing_data)
+                    preprocessing_results.full[author.name][collection.name].append_data(chunk_preprocessing_data)
 
-                full_preprocessing_data.calculate_counts()
-                data[author.name].update({
-                    collection.name: PreprocessingResults(
-                        full=full_preprocessing_data,
-                        chunks=chunks_preprocessing_data)
-                })
-
-        return data
+        return preprocessing_results
     
     def _get_chunk_preprocessing_data(self, split_chunk: _SplitChunk) -> PreprocessingData:
         text = self._get_text(split_chunk.sentences)

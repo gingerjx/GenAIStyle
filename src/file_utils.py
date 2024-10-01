@@ -5,8 +5,6 @@ from typing import Dict, List
 
 import jsonpickle
 
-from src.analysis.analysis_data import AnalysisResults
-
 class FileUtils():
 
     @staticmethod
@@ -70,10 +68,3 @@ class FileUtils():
             for text_file in os.listdir(author_dir):
                 generated_text[author].append(FileUtils.read_generated_text(author_dir / text_file))
         return generated_text
-    
-    @staticmethod
-    def read_analysis_data(filepath: str) -> AnalysisResults:
-        """Read analysis data from a file"""
-        with open(filepath, 'r', encoding='utf-8') as f:
-            json_data = json.load(f)
-            return jsonpickle.decode(json_data)
