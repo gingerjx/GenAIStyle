@@ -1,7 +1,7 @@
 import plotly.graph_objects as go
 from dash import dcc, html, Dash
 from dash.dependencies import Input, Output
-
+from plotly.subplots import make_subplots
 from src.analysis.visualization.metrics_analysis_visualization import AnalysisVisualization
 from src.analysis.pca.data import PCAAnalysisResults
 
@@ -12,6 +12,51 @@ class PCAAnalysisVisualization(AnalysisVisualization):
         self.app = Dash(__name__)
         self.setup_layout()
         self.setup_callbacks()
+    
+    def visualize_top_features(pca_analysis_results: PCAAnalysisResults) -> None:
+        top_features = pca_analysis_results.all_chunks.top_features
+
+        # Create subplots
+        fig = make_subplots(
+            rows=1, 
+            cols=len(top_features), 
+            horizontal_spacing=0.25,
+            subplot_titles=[
+                f'Top Features for {pc}[{pca_analysis_results.all_chunks.pc_variance[i]:.2f}]' 
+                for i, pc in enumerate(top_features.keys())
+            ]
+        )
+
+        for i, (pc, features) in enumerate(top_features.items(), start=1):
+            # Extract features and their corresponding importance
+            feature_names = list(features.keys())
+            importances = list(features.values)
+
+            # Add a vertical bar plot to the subplot
+            fig.add_trace(go.Bar(
+                x=importances,
+                y=feature_names,
+                orientation='h',
+                marker=dict(color='skyblue'),
+                name=f'Top Features for {pc}[{pca_analysis_results.all_chunks.pc_variance[i-1]:.2f}]'
+            ), row=1, col=i)
+
+            fig.update_xaxes(range=[min(importances), max(importances)], row=1, col=i)
+
+        # Customize the layout
+        fig.update_layout(
+            title='Top Features for Principal Components',
+            xaxis_title='Importance',
+            yaxis_title='Features',
+            showlegend=False
+        )
+
+        # Invert y-axis for all subplots to have the most important feature on top
+        for i in range(1, len(top_features) + 1):
+            fig.update_yaxes(autorange='reversed', row=1, col=i)
+
+        # Show the plot
+        fig.show()
 
     def setup_layout(self):
         self.app.layout = html.Div([
@@ -75,8 +120,8 @@ class PCAAnalysisVisualization(AnalysisVisualization):
         @staticmethod
         def _update_annotation_text(top_features: str) -> html.Div:
             return html.Div([
-                html.P(f"PC1 Top features: {top_features["PC1"]}", style={'margin': '0', "font-size": "20px"}),
-                html.P(f"PC2 Top features: {top_features["PC2"]}", style={'margin': '0', "font-size": "20px"})
+                html.P(f"PC1 Top features: {top_features["PC1"].index.tolist()}", style={'margin': '0', "font-size": "20px"}),
+                html.P(f"PC2 Top features: {top_features["PC2"].index.tolist()}", style={'margin': '0', "font-size": "20px"})
             ])
         
         @staticmethod
@@ -133,7 +178,7 @@ class PCAAnalysisVisualization(AnalysisVisualization):
                 _add_trace(fig, pca, collection_name)
 
             fig.update_layout(
-                title=f'[{selected_author}] Chunks PCA Analysis',
+                title=f'[{selected_author}][{selected_collection1}][{selected_collection2}] Chunks PCA Analysis',
                 legend_title='Collection',
                 xaxis_title=f'PC1[{pca.pc_variance[0]:.2f}]',
                 yaxis_title=f'PC2[{pca.pc_variance[1]:.2f}]',

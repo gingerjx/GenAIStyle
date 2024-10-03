@@ -157,8 +157,8 @@ class PCAAnalysis:
 
         loadings = pd.DataFrame(pca.components_.T, columns=['PC1', 'PC2'], index=features)
         top_features = {
-            'PC1': loadings['PC1'].abs().sort_values(ascending=False).index.tolist()[:PCAAnalysis.TOP_FEATURES],
-            'PC2': loadings['PC2'].abs().sort_values(ascending=False).index.tolist()[:PCAAnalysis.TOP_FEATURES]
+            'PC1': loadings['PC1'].abs().sort_values(ascending=False)[:PCAAnalysis.TOP_FEATURES],
+            'PC2': loadings['PC2'].abs().sort_values(ascending=False)[:PCAAnalysis.TOP_FEATURES]
         }
 
         return pca_df, top_features, pca.explained_variance_ratio_
