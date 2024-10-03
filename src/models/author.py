@@ -10,6 +10,7 @@ class Author():
     def __init__(self, settings: Settings, name: str):
         self.name = name
         self.paths = settings.paths
+        self.configuration = settings.configuration
 
         self.raw_collections: List[Collection] = []
         self.cleaned_collections: List[Collection] = []
@@ -19,7 +20,8 @@ class Author():
         raw_books = BooksCollection(
             name="books",
             selected_books_csv_filepath=self.paths.selected_books_csv_filepath,
-            books_dir=self.paths.raw_books_dir
+            books_dir=self.paths.raw_books_dir,
+            seed=self.configuration.seed
         )
         raw_books.read(self.name)
         self.raw_collections.append(raw_books)
@@ -27,7 +29,8 @@ class Author():
         cleaned_books =  BooksCollection(
             name="books",
             selected_books_csv_filepath=self.paths.selected_books_csv_filepath,
-            books_dir=self.paths.raw_books_dir
+            books_dir=self.paths.raw_books_dir,
+            seed=self.configuration.seed
         )
         cleaned_books.read(self.name)
         self.cleaned_collections.append(cleaned_books)

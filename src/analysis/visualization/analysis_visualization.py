@@ -20,3 +20,7 @@ class AnalysisVisualization():
         "Virginia Woolf": "#d35400",      # Dark Orange
         "Lewis Carroll": "#7f8c8d"        # Gray
     }
+    HUMAN_LLM_COLORS = {
+        "human": "#3498db", 
+        "llm": "#e74c3c"
+    }

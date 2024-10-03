@@ -62,6 +62,9 @@ class Settings:
         min_repeat_size: int = 3                                                                    # Minimum length of the repeated substring
         repeat_threshold: int = 3                                                                   # Minimum number of repeated substrings to be considered
         top_n_function_words: int = 10                                                              # Number of top function words to be considered
+        test_size: float = 0.2                                                                      # Test size for train-test split
+        seed: int = 42                                                                              # Seed for random state
+        number_of_cv_folds: int = 5                                                                 # Number of cross-validation folds
     
     paths: Paths = Paths()
     configuration: Configuration = Configuration()

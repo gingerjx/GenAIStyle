@@ -206,9 +206,9 @@ class PCAAnalysisVisualization(AnalysisVisualization):
             top_features = self.pca_analysis_results.author_collection_chunks[selected_author][selected_colleciton].top_features
             return _update_annotation_text(top_features)
          
-    def run(self):
+    def run(self, port: int):
         self.app.run(
-            port=8050,
+            port=port,
             jupyter_height=800,
             debug=True,
         )
