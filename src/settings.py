@@ -52,16 +52,18 @@ class Settings:
           
     class Configuration:
         
-        read_analysis_from_file: bool = False                                                       # Read analysis data from file
-        response_number_of_words: int = 3000                                                        # Expected number of words used during response generation
-        extract_book_chunk_size: int = 5 * response_number_of_words                                 # Number of characters used as a chunk size during preprocessing of the books. Average english word length * expected number of words used during response generation
-        analysis_chunk_number_of_words: int = 5000                                                  # Number of words used as a chunk size during analysis. Has to be divisor of `analysis_number_of_words`
-        analysis_number_of_words: int = 200000                                                      # Number of words used during analysis   
-        analysis_number_of_chunks: int = analysis_number_of_words // analysis_chunk_number_of_words # Number of chunks used during analysis
-        min_response_number_of_words: int = 100                                                     # Minimum number of words of the response text to be considered
-        min_repeat_size: int = 3                                                                    # Minimum length of the repeated substring
-        repeat_threshold: int = 3                                                                   # Minimum number of repeated substrings to be considered
-        top_n_function_words: int = 10                                                              # Number of top function words to be considered
+        read_analysis_from_file: bool = False                                                                   # Read analysis data from file
+        response_number_of_words: int = 3000                                                                    # Expected number of words used during response generation
+        extract_book_chunk_size: int = 5 * response_number_of_words                                             # Number of characters used as a chunk size during preprocessing of the books. Average english word length * expected number of words used during response generation
+        analysis_chunk_number_of_words: int = 5000                                                              # Number of words used as a chunk size during analysis. Has to be divisor of `train_analysis_number_of_words`
+        train_analysis_number_of_words: int = 180000                                                                  # Number of words used during analysis   
+        test_analysis_number_of_words: int = 20000                                                              # Number of words used during test analysis
+        train_analysis_number_of_chunks: int = train_analysis_number_of_words // analysis_chunk_number_of_words             # Number of chunks used during analysis
+        test_analysis_number_of_chunks: int = test_analysis_number_of_words // analysis_chunk_number_of_words   # Number of chunks used during test analysis
+        min_response_number_of_words: int = 100                                                                 # Minimum number of words of the response text to be considered
+        min_repeat_size: int = 3                                                                                # Minimum length of the repeated substring
+        repeat_threshold: int = 3                                                                               # Minimum number of repeated substrings to be considered
+        top_n_function_words: int = 10                                                                          # Number of top function words to be considered
     
     paths: Paths = Paths()
     configuration: Configuration = Configuration()

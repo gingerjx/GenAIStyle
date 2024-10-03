@@ -29,7 +29,11 @@ class Preprocessing:
 
     def preprocess(self, authors: List[Author]) -> PreprocessingResults:
         """Preprocess the data"""
-        preprocessing_results = PreprocessingResults(
+        train_preprocessing_results = PreprocessingResults(
+            author_names=[author.name for author in authors],
+            collection_names=[collection.name for collection in authors[0].cleaned_collections]
+        )
+        test_preprocessing_results = PreprocessingResults(
             author_names=[author.name for author in authors],
             collection_names=[collection.name for collection in authors[0].cleaned_collections]
         )
@@ -37,14 +41,28 @@ class Preprocessing:
         for author in authors:
             for collection in author.cleaned_collections:
                 text_chunks = collection.get_text_chunks(self.configuration.extract_book_chunk_size)
-                split_chunks = self._get_split(text_chunks)
+                last_chunk_idx, last_sentence_idx, train_split_chunks = self._get_split(
+                    text_chunks=text_chunks, 
+                    analysis_number_of_words=self.configuration.train_analysis_number_of_words
+                )
+                _, _, test_split_chunks = self._get_split(
+                    text_chunks=text_chunks,
+                    analysis_number_of_words=self.configuration.test_analysis_number_of_words,
+                    offset_chunk_idx=last_chunk_idx,
+                    offset_sentence_idx=last_sentence_idx
+                )
 
-                for split_chunk in split_chunks:
+                for split_chunk in train_split_chunks:
                     chunk_preprocessing_data = self._get_chunk_preprocessing_data(split_chunk)
-                    preprocessing_results.chunks[author.name][collection.name].append(chunk_preprocessing_data)
-                    preprocessing_results.full[author.name][collection.name].append_data(chunk_preprocessing_data)
+                    train_preprocessing_results.chunks[author.name][collection.name].append(chunk_preprocessing_data)
+                    train_preprocessing_results.full[author.name][collection.name].append_data(chunk_preprocessing_data)
 
-        return preprocessing_results
+                for split_chunk in test_split_chunks:
+                    chunk_preprocessing_data = self._get_chunk_preprocessing_data(split_chunk)
+                    test_preprocessing_results.chunks[author.name][collection.name].append(chunk_preprocessing_data)
+                    test_preprocessing_results.full[author.name][collection.name].append_data(chunk_preprocessing_data)
+
+        return train_preprocessing_results, test_preprocessing_results
     
     def _get_chunk_preprocessing_data(self, split_chunk: _SplitChunk) -> PreprocessingData:
         text = self._get_text(split_chunk.sentences)
@@ -60,7 +78,12 @@ class Preprocessing:
             num_of_syllabes=num_of_syllabes
         )
 
-    def _get_split(self, text_chunks: List[TextChunk]) -> List[_SplitChunk]:
+    def _get_split(self, 
+                   text_chunks: List[TextChunk], 
+                   analysis_number_of_words: int, 
+                   offset_chunk_idx: int = 0, 
+                   offset_sentence_idx: int = 0
+        ) -> List[_SplitChunk]:
         """Get the split from the text"""
         split_chunks = []
         current_chunk_splits = []
@@ -68,15 +91,17 @@ class Preprocessing:
         total_split_size = 0
         chunk_split_size = 0
         
-        for chunk in text_chunks:
-            for sentence in chunk.sentences:
-                if total_split_size >= self.configuration.analysis_number_of_words and chunk_split_size >= self.configuration.analysis_chunk_number_of_words:
+        for chunk_idx, chunk in enumerate(text_chunks[offset_chunk_idx:]):
+            for sentence_idx, sentence in enumerate(chunk.sentences[offset_sentence_idx:]):
+                if total_split_size >= analysis_number_of_words and chunk_split_size >= self.configuration.analysis_chunk_number_of_words:
                     split_chunks.append(Preprocessing._SplitChunk(
                         source_name=chunk.source_name, 
                         splits=current_chunk_splits, 
                         sentences=current_chunk_sentences)
                     )
-                    return split_chunks
+                    return offset_chunk_idx + chunk_idx, \
+                            offset_sentence_idx + sentence_idx, \
+                            split_chunks
                 if chunk_split_size >= self.configuration.analysis_chunk_number_of_words:
                     split_chunks.append(Preprocessing._SplitChunk(
                         source_name=chunk.source_name, 
@@ -93,8 +118,12 @@ class Preprocessing:
                 current_chunk_splits.extend(sentence_split)
                 current_chunk_sentences.append(sentence)
 
-        return split_chunks
-    
+            offset_sentence_idx = 0
+
+        return offset_chunk_idx + chunk_idx, \
+                offset_sentence_idx + sentence_idx, \
+                split_chunks
+
     def _get_text(self, sentences: List[str]) -> str:
         return " ".join(sentences)
     

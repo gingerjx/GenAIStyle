@@ -13,10 +13,7 @@ from src.settings import Settings
 
 class MetricsAnalysis:
 
-    def __init__(self, settings: Settings) -> None:
-        self.configuration = settings.configuration
-
-    def analyze(self, preprocessing_results: PreprocessingResults) -> MetricsAnalysisResults:
+    def analyze(self, preprocessing_results: PreprocessingResults, analysis_number_of_chunks: int) -> MetricsAnalysisResults:
         """Analyze the authors and their collections"""
         metrics_analysis_results = MetricsAnalysisResults(
             author_names=preprocessing_results.author_names,
@@ -25,7 +22,7 @@ class MetricsAnalysis:
 
         for author_name in preprocessing_results.author_names:
             for collection_name in preprocessing_results.collection_names:
-                for chunk_id in range(self.configuration.analysis_number_of_chunks):
+                for chunk_id in range(analysis_number_of_chunks):
                     preprocessing_data = preprocessing_results.chunks[author_name][collection_name][chunk_id]
                     metrics_analysis = MetricData(
                         author_name=author_name,

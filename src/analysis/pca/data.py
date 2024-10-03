@@ -1,14 +1,19 @@
 from typing import Dict, List
 from dataclasses import dataclass
 import pandas as pd
+from sklearn.decomposition import PCA
+from sklearn.discriminant_analysis import StandardScaler\
 
 @dataclass
 class PCAAnalysisData:
     source_name = None
-    data: dict = None
-    results: pd.DataFrame = None
-    pc_variance: List[float] = None
-    top_features: Dict[str, List[str]] = None
+    pca: PCA
+    data: dict
+    results: pd.DataFrame
+    pc_variance: List[float]
+    top_features: Dict[str, List[str]]
+    scaler: StandardScaler
+    top_function_words: List[str] = None
 
 @dataclass
 class PCAAnalysisResults:
