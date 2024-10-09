@@ -15,10 +15,31 @@ class LogisticRegressionClassification:
 
     def classify(self, pca_analysis_results: PCAAnalysisResults) -> LogisticRegressionResults:
         all_chunks_binary_classification = self._fit_and_binary_predict_on_pca(pca_analysis_results.all_chunks)
+        authors_chunks_binary_classification = {
+            author_name: self._fit_and_binary_predict_on_pca(pca_analysis_data) 
+            for author_name, pca_analysis_data 
+            in pca_analysis_results.collections_per_author_chunks.items()
+        }
 
         return LogisticRegressionResults(
-            all_chunks_binary_classification=all_chunks_binary_classification
+            all_chunks_binary_classification=all_chunks_binary_classification,
+            authors_chunks_binary_classification=authors_chunks_binary_classification,
         )
+
+    @staticmethod
+    def print_results(logistic_regression_results: LogisticRegressionResults) -> str:
+        df = pd.DataFrame()
+        for author_name, results in logistic_regression_results.authors_chunks_binary_classification.items():
+            # Add results.accuracy_per_class together with author_name to the dataframe as a row
+            df = df.append(
+                pd.DataFrame(
+                    {
+                        'author_name': author_name,
+                        'accuracy_per_class': results.accuracy_per_class
+                    }
+                ) 
+            )
+        return df
         
     def _fit_and_binary_predict_on_pca(self, pca_analysis_data: PCAAnalysisData) -> LogisticClassificationData:
         X, y = LogisticRegressionClassification._transform_data_for_two_classes(pca_analysis_data.results)

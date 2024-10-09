@@ -12,4 +12,5 @@ from src.analysis.pca.analysis import PCAAnalysis
 from src.analysis.visualization.pca_analysis_visualization import PCAAnalysisVisualization
 from src.analysis.visualization.metrics_analysis_visualization import MetricsAnalysisVisualization
 from src.classification.logistic_regression import LogisticRegressionClassification
+from src.classification.classification_data import LogisticRegressionResultsTransformer
 from src.classification.classification_visualization import ClassificationVisualization
