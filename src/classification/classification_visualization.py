@@ -2,12 +2,12 @@ import numpy as np
 import plotly.graph_objects as go
 
 from src.analysis.visualization.analysis_visualization import AnalysisVisualization
-from src.classification.classification_data import LogisticRegressionResults
+from src.classification.classification_data import LogisticClassificationData, LogisticRegressionResults
 
 class ClassificationVisualization(AnalysisVisualization):
 
     @staticmethod
-    def visualize(classification_results: LogisticRegressionResults):
+    def visualize_binary_classification(classification_results: LogisticClassificationData):
         model = classification_results.model
         X = classification_results.X
         y = classification_results.y
