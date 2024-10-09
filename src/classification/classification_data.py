@@ -58,4 +58,6 @@ class LogisticRegressionResultsTransformer:
         df.rename(columns={'collection_1': 'collection vs collection'}, inplace=True)
         df = df.drop(columns=['collection_2', "author_name"])
         df = df.groupby(["collection vs collection"]).mean()
+        df.columns = ['average_accuracy']
+        df = df.sort_values(by='average_accuracy', ascending=False)
         return df
