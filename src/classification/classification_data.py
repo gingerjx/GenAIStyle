@@ -15,8 +15,12 @@ class LogisticClassificationData:
 class LogisticRegressionResults:
     # Results of Logistic Regresson performed on all chunks, all authors and collections are included in the pca.
     all_chunks_binary_classification: LogisticClassificationData
-    # Results of PCA performed seperately for each author, all chunks are included in the pca.
+    # Results of Logistic Regresson performed seperately for each author, all chunks are included in the pca.
     authors_chunks_binary_classification: Dict[str, LogisticClassificationData] # [author]
+    # Results of Logistic Regresson performed separately for each collection-collection-author, all chunks are included in the pca. 
+    collection_vs_collection_per_author_classification: Dict[str, Dict[str, Dict[str, LogisticClassificationData]]] # [author][collection][collection]
+    # collection_vs_collection_per_author_classification without duplicates
+    collection_vs_collection_per_author_classification_triangle: Dict[str, Dict[str, Dict[str, LogisticClassificationData]]] # [author][collection][collection]
 
 class LogisticRegressionResultsTransformer:
 
@@ -29,12 +33,29 @@ class LogisticRegressionResultsTransformer:
     @staticmethod
     def print_author_chunks_results(logistic_regression_data: Dict[str, LogisticClassificationData]) -> str:
         df = pd.DataFrame()
-        total_accuracy = 0
         for author_name, results in logistic_regression_data.items():
-            total_accuracy += results.cross_validation_accuracy
-            series = pd.Series([author_name, results.accuracy_per_class['llm'], results.accuracy_per_class['human']])
+            series = pd.Series([author_name, results.accuracy_per_class['llm'], results.accuracy_per_class['human'], results.cross_validation_accuracy])
             df = pd.concat([df, series.to_frame().T])
-        print(f"Average cross-validation accuracy: {total_accuracy / len(logistic_regression_data)}\n ---")
         df.reset_index()
-        df.columns=['author_name', 'accuracy_llm', 'accuracy_human']
+        df.columns=['author_name', 'accuracy_llm', 'accuracy_human', "total_accuracy"]
+        print(f"Average cross-validation accuracy: {df["total_accuracy"].mean()}\n ---")
         print(f"Cross-validation accuracy for each author PCA:\n {df}")
+
+    @staticmethod
+    def print_collection_vs_collection_per_author_results(logistic_regression_data: Dict[str, Dict[str, Dict[str, LogisticClassificationData]]]) -> str:
+        df = pd.DataFrame()
+        for author_name, collections in logistic_regression_data.items():
+            for collection_name_outer, collection in collections.items():
+                for collection_name_inner, results in collection.items():
+
+                    series = pd.Series([author_name, collection_name_outer, collection_name_inner, results.cross_validation_accuracy])
+                    df = pd.concat([df, series.to_frame().T])
+        df.reset_index()
+        df.columns=['author_name', 'collection_1', 'collection_2', "total_accuracy"]
+        print(f"Average cross-validation accuracy: {df["total_accuracy"].mean()}\n ---")
+
+        df['collection_1'] = df['collection_1'] + " vs " + df['collection_2']
+        df.rename(columns={'collection_1': 'collection vs collection'}, inplace=True)
+        df = df.drop(columns=['collection_2', "author_name"])
+        df = df.groupby(["collection vs collection"]).mean()
+        return df
