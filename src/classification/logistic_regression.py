@@ -14,9 +14,9 @@ class LogisticRegressionClassification:
         self.configuration = settings.configuration
 
     def classify(self, pca_analysis_results: PCAAnalysisResults) -> LogisticRegressionResults:
-        all_chunks_binary_classification = self._fit_and_binary_predict_on_pca(pca_analysis_results.all_chunks)
+        all_chunks_binary_classification = self._fit_and_binary_predict_on_pca(pca_analysis_results.all_chunks.results)
         authors_chunks_binary_classification = {
-            author_name: self._fit_and_binary_predict_on_pca(pca_analysis_data) 
+            author_name: self._fit_and_binary_predict_on_pca(pca_analysis_data.results) 
             for author_name, pca_analysis_data 
             in pca_analysis_results.collections_per_author_chunks.items()
         }
@@ -26,27 +26,12 @@ class LogisticRegressionClassification:
             authors_chunks_binary_classification=authors_chunks_binary_classification,
         )
 
-    @staticmethod
-    def print_results(logistic_regression_results: LogisticRegressionResults) -> str:
-        df = pd.DataFrame()
-        for author_name, results in logistic_regression_results.authors_chunks_binary_classification.items():
-            # Add results.accuracy_per_class together with author_name to the dataframe as a row
-            df = df.append(
-                pd.DataFrame(
-                    {
-                        'author_name': author_name,
-                        'accuracy_per_class': results.accuracy_per_class
-                    }
-                ) 
-            )
-        return df
-        
-    def _fit_and_binary_predict_on_pca(self, pca_analysis_data: PCAAnalysisData) -> LogisticClassificationData:
-        X, y = LogisticRegressionClassification._transform_data_for_two_classes(pca_analysis_data.results)
+    def _fit_and_binary_predict_on_pca(self, pca_analysis_data_results: pd.DataFrame) -> LogisticClassificationData:
+        X, y = LogisticRegressionClassification._transform_data_for_two_classes(pca_analysis_data_results)
         accuracy_per_author, accuracy_per_class = self._get_cross_validation(
             X=X, 
             y=y,
-            author_names=LogisticRegressionClassification._get_author_names_column(pca_analysis_data.results)
+            author_names=LogisticRegressionClassification._get_author_names_column(pca_analysis_data_results)
         )
         
         return LogisticClassificationData(
@@ -73,8 +58,8 @@ class LogisticRegressionClassification:
         return accuracy_per_author, accuracy_per_class
     
     @staticmethod
-    def _get_author_names_column(pca_analysis_results_data: pd.DataFrame) -> pd.Series:
-        return pca_analysis_results_data['author_name']
+    def _get_author_names_column(pca_analysis_data_results: pd.DataFrame) -> pd.Series:
+        return pca_analysis_data_results['author_name']
 
     @staticmethod
     def _transform_data_for_two_classes(pca_analysis_results_data: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series, pd.Series]:
