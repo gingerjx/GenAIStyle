@@ -6,105 +6,60 @@ from plotly.subplots import make_subplots
 from src.analysis.visualization.metrics_analysis_visualization import AnalysisVisualization
 from src.analysis.pca.data import PCAAnalysisResults
 
-class PCAAnalysisVisualization(AnalysisVisualization):
+class DashApp:
+    
+    class Helper:
+        @staticmethod
+        def _get_mark_by_button(id: str) -> dcc.Dropdown:
+            return dcc.Dropdown(
+                id=id,
+                options=[
+                    {'label': 'Mark by authors', 'value': 'AUTHORS'},
+                    {'label': 'Mark by collections', 'value': 'COLLECTIONS'}
+                ],
+                value='COLLECTIONS',
+                clearable=False,
+                style={'width': '100%'}
+            )
+
+        def _get_collections_button(parent: "PCAAnalysisVisualization", id: str, collection_idx: int = 0) -> dcc.Dropdown:
+            return dcc.Dropdown(
+                id=id,
+                options=[{'label': collection, 'value': collection} for collection in parent.pca_analysis_results.collection_names],
+                value=parent.pca_analysis_results.collection_names[collection_idx],
+                clearable=False,
+                style={'width': '100%'}
+            )
+        
+        def _get_authors_button(parent: "PCAAnalysisVisualization", id: str) -> dcc.Dropdown:
+            return dcc.Dropdown(
+                id=id,
+                options=[{'label': author, 'value': author} for author in parent.pca_analysis_results.author_names],
+                value=parent.pca_analysis_results.author_names[0],
+                clearable=False,
+                style={'width': '100%'}
+            )
 
     def __init__(self, pca_analysis_results: PCAAnalysisResults):
         self.pca_analysis_results = pca_analysis_results
         self.app = Dash(__name__)
         self.setup_layout()
         self.setup_callbacks()
-    
-    def visualize_top_features(pca_analysis_results: PCAAnalysisResults) -> None:
-        top_features = pca_analysis_results.all_chunks.top_features
 
-        # Create subplots
-        fig = make_subplots(
-            rows=1, 
-            cols=len(top_features), 
-            horizontal_spacing=0.25,
-            subplot_titles=[
-                f'Top Features for {pc}[{pca_analysis_results.all_chunks.pc_variance[i]:.2f}]' 
-                for i, pc in enumerate(top_features.keys())
-            ]
-        )
-
-        for i, (pc, features) in enumerate(top_features.items(), start=1):
-            # Extract features and their corresponding importance
-            feature_names = list(features.keys())
-            importances = list(features.values)
-
-            # Add a vertical bar plot to the subplot
-            fig.add_trace(go.Bar(
-                x=importances,
-                y=feature_names,
-                orientation='h',
-                marker=dict(color='skyblue'),
-                name=f'Top Features for {pc}[{pca_analysis_results.all_chunks.pc_variance[i-1]:.2f}]'
-            ), row=1, col=i)
-
-            fig.update_xaxes(range=[min(importances), max(importances)], row=1, col=i)
-
-        # Customize the layout
-        fig.update_layout(
-            title='Top Features for Principal Components',
-            xaxis_title='Importance',
-            yaxis_title='Features',
-            showlegend=False
-        )
-
-        # Invert y-axis for all subplots to have the most important feature on top
-        for i in range(1, len(top_features) + 1):
-            fig.update_yaxes(autorange='reversed', row=1, col=i)
-
-        # Show the plot
-        fig.show()
-
-    @staticmethod
-    def _get_mark_by_button(id: str) -> dcc.Dropdown:
-        return dcc.Dropdown(
-            id=id,
-            options=[
-                {'label': 'Mark by authors', 'value': 'AUTHORS'},
-                {'label': 'Mark by collections', 'value': 'COLLECTIONS'}
-            ],
-            value='COLLECTIONS',
-            clearable=False,
-            style={'width': '100%'}
-        )
-
-
-    def _get_collections_button(self, id: str, collection_idx: int = 0) -> dcc.Dropdown:
-        return dcc.Dropdown(
-            id=id,
-            options=[{'label': collection, 'value': collection} for collection in self.pca_analysis_results.collection_names],
-            value=self.pca_analysis_results.collection_names[collection_idx],
-            clearable=False,
-            style={'width': '100%'}
-        )
-    
-    def _get_authors_button(self, id: str) -> dcc.Dropdown:
-        return dcc.Dropdown(
-            id=id,
-            options=[{'label': author, 'value': author} for author in self.pca_analysis_results.author_names],
-            value=self.pca_analysis_results.author_names[0],
-            clearable=False,
-            style={'width': '100%'}
-        )
-    
     def setup_layout(self):
         self.app.layout = html.Div([
-            PCAAnalysisVisualization._get_mark_by_button('mark-by-0'),
+            DashApp.Helper._get_mark_by_button('mark-by-0'),
             dcc.Graph(id='all_chunks', style={'margin-bottom': '0'}),
             html.Div(id='all_chunks_text', style={'background': 'white', "padding": "10px"}),
 
-            self._get_authors_button(id='author-dropdown-1'),
+            DashApp.Helper._get_authors_button(parent=self, id='author-dropdown-1'),
             dcc.Graph(id='collections_per_author_chunks'),
             html.Div(id='collections_per_author_chunks_text', style={'background': 'white', "padding": "10px"}),
 
             html.Div([
-                self._get_authors_button(id='author-dropdown-3'),
-                self._get_collections_button(id='collection1-dropdown-3'),
-                self._get_collections_button(id='collection2-dropdown-3', collection_idx=1),
+                DashApp.Helper._get_authors_button(parent=self, id='author-dropdown-3'),
+                DashApp.Helper._get_collections_button(parent=self, id='collection1-dropdown-3'),
+                DashApp.Helper._get_collections_button(parent=self, id='collection2-dropdown-3', collection_idx=1),
             ], style={'display': 'flex', 'justify-content': 'space-between'}),
             dcc.Graph(id='collection_vs_collection_per_author_chunks', style={'margin-bottom': '0'}),
             html.Div(id='collection_vs_collection_per_author_chunks_text', style={'background': 'white', "padding": "10px"}),
@@ -187,7 +142,7 @@ class PCAAnalysisVisualization(AnalysisVisualization):
         )
         def update_graph_1(selected_author):
             fig = go.Figure()
-            pca = self.pca_analysis_results.collections_per_author_chunks[selected_author]
+            pca = self.pca_analysis_results.authors_chunks[selected_author]
 
             for collection_name in self.pca_analysis_results.collection_names:
                 _add_collection_trace(fig, pca, collection_name)
@@ -205,10 +160,7 @@ class PCAAnalysisVisualization(AnalysisVisualization):
             Input('author-dropdown-1', 'value'),
         )
         def update_annotation_text_1(selected_author):
-            top_features = self.pca_analysis_results.collections_per_author_chunks[selected_author].top_features
-            return _update_annotation_text(top_features)
-        
-            top_features = self.pca_analysis_results.author_collection_chunks[selected_author][selected_colleciton].top_features
+            top_features = self.pca_analysis_results.authors_chunks[selected_author].top_features
             return _update_annotation_text(top_features)
         
         ### GRAPH 2
@@ -223,7 +175,7 @@ class PCAAnalysisVisualization(AnalysisVisualization):
         )
         def update_graph_3(selected_author, selected_collection1, selected_collection2):
             fig = go.Figure()
-            pca = self.pca_analysis_results.collection_vs_collection_per_author_chunks[selected_author][selected_collection1][selected_collection2]
+            pca = self.pca_analysis_results.author_collection_collection_chunks[selected_author][selected_collection1][selected_collection2]
 
             for collection_name in [selected_collection1, selected_collection2]:
                 _add_collection_trace(fig, pca, collection_name)
@@ -243,13 +195,62 @@ class PCAAnalysisVisualization(AnalysisVisualization):
             Input('collection2-dropdown-3', 'value')
         )
         def update_annotation_text_3(selected_author, selected_collection1, selected_collection2):
-            top_features = self.pca_analysis_results.collection_vs_collection_per_author_chunks[selected_author][selected_collection1][selected_collection2].top_features
+            top_features = self.pca_analysis_results.author_collection_collection_chunks[selected_author][selected_collection1][selected_collection2].top_features
             return _update_annotation_text(top_features)
         
-
     def run(self, port: int):
         self.app.run(
             port=port,
             jupyter_height=800,
             debug=True,
         )
+
+class PCAAnalysisVisualization(AnalysisVisualization):
+    
+    def __init__(self, pca_analysis_results: PCAAnalysisResults):
+        self.dash_app = DashApp(pca_analysis_results)
+    
+    def visualize_top_features(pca_analysis_results: PCAAnalysisResults) -> None:
+        top_features = pca_analysis_results.all_chunks.top_features
+
+        # Create subplots
+        fig = make_subplots(
+            rows=1, 
+            cols=len(top_features), 
+            horizontal_spacing=0.25,
+            subplot_titles=[
+                f'Top Features for {pc}[{pca_analysis_results.all_chunks.pc_variance[i]:.2f}]' 
+                for i, pc in enumerate(top_features.keys())
+            ]
+        )
+
+        for i, (pc, features) in enumerate(top_features.items(), start=1):
+            # Extract features and their corresponding importance
+            feature_names = list(features.keys())
+            importances = list(features.values)
+
+            # Add a vertical bar plot to the subplot
+            fig.add_trace(go.Bar(
+                x=importances,
+                y=feature_names,
+                orientation='h',
+                marker=dict(color='skyblue'),
+                name=f'Top Features for {pc}[{pca_analysis_results.all_chunks.pc_variance[i-1]:.2f}]'
+            ), row=1, col=i)
+
+            fig.update_xaxes(range=[min(importances), max(importances)], row=1, col=i)
+
+        # Customize the layout
+        fig.update_layout(
+            title='Top Features for Principal Components',
+            xaxis_title='Importance',
+            yaxis_title='Features',
+            showlegend=False
+        )
+
+        # Invert y-axis for all subplots to have the most important feature on top
+        for i in range(1, len(top_features) + 1):
+            fig.update_yaxes(autorange='reversed', row=1, col=i)
+
+        # Show the plot
+        fig.show()
