@@ -13,14 +13,19 @@ class LogisticClassificationData:
 
 @dataclass
 class LogisticRegressionResults:
+    # Binary classifications
+
     # Results of Logistic Regresson performed on all chunks, all authors and collections are included in the pca.
     all_chunks_binary_classification: LogisticClassificationData
     # Results of Logistic Regresson performed seperately for each author, all chunks are included in the pca.
     authors_chunks_binary_classification: Dict[str, LogisticClassificationData] # [author]
     # Results of Logistic Regresson performed separately for each collection-collection-author, all chunks are included in the pca. 
-    collection_vs_collection_per_author_classification: Dict[str, Dict[str, Dict[str, LogisticClassificationData]]] # [author][collection][collection]
+    collection_vs_collection_per_author_binary_classification: Dict[str, Dict[str, Dict[str, LogisticClassificationData]]] # [author][collection][collection]
     # collection_vs_collection_per_author_classification without duplicates
-    collection_vs_collection_per_author_classification_triangle: Dict[str, Dict[str, Dict[str, LogisticClassificationData]]] # [author][collection][collection]
+    collection_vs_collection_per_author_binary_classification_triangle: Dict[str, Dict[str, Dict[str, LogisticClassificationData]]] # [author][collection][collection]
+
+    # Author classifications
+    all_chunks_binary_classification: LogisticClassificationData
 
 class LogisticRegressionResultsTransformer:
 

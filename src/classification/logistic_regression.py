@@ -20,16 +20,16 @@ class LogisticRegressionClassification:
             for author_name, pca_analysis_data 
             in pca_analysis_results.collections_per_author_chunks.items()
         }
-        collection_vs_collection_per_author_classification, collection_vs_collection_per_author_classification_triangle = self._get_collection_vs_collection_per_author_classification(pca_analysis_results)
+        collection_vs_collection_per_author_binary_classification, collection_vs_collection_per_author_binary_classification_triangle = self._get_collection_vs_collection_per_author_binary_classification(pca_analysis_results)
 
         return LogisticRegressionResults(
             all_chunks_binary_classification=all_chunks_binary_classification,
             authors_chunks_binary_classification=authors_chunks_binary_classification,
-            collection_vs_collection_per_author_classification=collection_vs_collection_per_author_classification,
-            collection_vs_collection_per_author_classification_triangle=collection_vs_collection_per_author_classification_triangle
+            collection_vs_collection_per_author_binary_classification=collection_vs_collection_per_author_binary_classification,
+            collection_vs_collection_per_author_binary_classification_triangle=collection_vs_collection_per_author_binary_classification_triangle
         )
 
-    def _get_collection_vs_collection_per_author_classification(self, pca_analysis_results: PCAAnalysisResults) -> LogisticRegressionResults:
+    def _get_collection_vs_collection_per_author_binary_classification(self, pca_analysis_results: PCAAnalysisResults) -> LogisticRegressionResults:
         result = {}
         result_trinagle = {}
 
@@ -54,7 +54,7 @@ class LogisticRegressionClassification:
         return result, result_trinagle
 
     def _fit_and_binary_predict_on_pca(self, pca_analysis_results_data: pd.DataFrame, use_original_labels: bool = False) -> LogisticClassificationData:
-        X, y = LogisticRegressionClassification._transform_data_for_two_classes(
+        X, y = LogisticRegressionClassification._transform_data_for_binary_classification(
             pca_analysis_results_data=pca_analysis_results_data,
             use_original_labels=use_original_labels
         )
@@ -92,7 +92,7 @@ class LogisticRegressionClassification:
         return pca_analysis_data_results['author_name']
 
     @staticmethod
-    def _transform_data_for_two_classes(pca_analysis_results_data: pd.DataFrame, use_original_labels: bool) -> Tuple[pd.DataFrame, pd.Series]:
+    def _transform_data_for_binary_classification(pca_analysis_results_data: pd.DataFrame, use_original_labels: bool) -> Tuple[pd.DataFrame, pd.Series]:
         df = pca_analysis_results_data.copy()
         if not use_original_labels:
             df['collection_name'] = df['collection_name'].apply(
