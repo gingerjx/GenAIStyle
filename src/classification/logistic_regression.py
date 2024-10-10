@@ -19,13 +19,15 @@ class LogisticRegressionClassification:
             transformation_function=LogisticRegressionClassification._transform_data_for_binary_collection_classification
         )
         authors_chunks_binary_classification = self._get_authors_chunks_binary_classification(pca_analysis_results)
-        collection_collection_author_classification, collection_collection_authorclassification_triangle = self._get_collection_collection_author_classification(pca_analysis_results)
+        collections_chunks_binary_classification = self._get_collections_chunks_binary_classification(pca_analysis_results)
+        collection_collection_author_chunks_classification, collection_collection_author_chunks_classification_triangle = self._get_collection_collection_author_chunks_classification(pca_analysis_results)
 
         return LogisticRegressionResults(
             all_chunks_binary_classification=all_chunks_binary_classification,
             authors_chunks_binary_classification=authors_chunks_binary_classification,
-            collection_collection_author_classification=collection_collection_author_classification,
-            collection_collection_authorclassification_triangle=collection_collection_authorclassification_triangle
+            collections_chunks_binary_classification=collections_chunks_binary_classification,
+            collection_collection_author_chunks_classification=collection_collection_author_chunks_classification,
+            collection_collection_author_chunks_classification_triangle=collection_collection_author_chunks_classification_triangle
         )
     
     def _get_authors_chunks_binary_classification(self, pca_analysis_results: PCAAnalysisResults) -> Dict:
@@ -38,7 +40,17 @@ class LogisticRegressionClassification:
             in pca_analysis_results.authors_chunks.items()
         }
     
-    def _get_collection_collection_author_classification(self, pca_analysis_results: PCAAnalysisResults) -> Tuple:
+    def _get_collections_chunks_binary_classification(self, pca_analysis_results: PCAAnalysisResults) -> Dict:
+        return {
+            collection_name: self._fit_and_binary_predict_on_pca(
+                pca_analysis_results_data=pca_analysis_data.results,
+                transformation_function=LogisticRegressionClassification._transform_data_for_authors_classification
+            )
+            for collection_name, pca_analysis_data 
+            in pca_analysis_results.collections_chunks.items()
+        }
+    
+    def _get_collection_collection_author_chunks_classification(self, pca_analysis_results: PCAAnalysisResults) -> Tuple:
         result = {}
         result_trinagle = {}
 
@@ -111,6 +123,14 @@ class LogisticRegressionClassification:
         df = df.drop(columns=['source_name', 'author_name'])
         X = df.drop(columns=['collection_name'])
         y = df['collection_name']
+        return X, y
+    
+    @staticmethod
+    def _transform_data_for_authors_classification(pca_analysis_results_data: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
+        df = pca_analysis_results_data.copy()
+        df = df.drop(columns=['source_name', 'collection_name'])
+        X = df.drop(columns=['author_name'])
+        y = df['author_name']
         return X, y
     
     @staticmethod
