@@ -40,32 +40,6 @@ class DashApp:
                 style={'width': '100%'}
             )
 
-    def __init__(self, pca_analysis_results: PCAAnalysisResults):
-        self.pca_analysis_results = pca_analysis_results
-        self.app = Dash(__name__)
-        self.setup_layout()
-        self.setup_callbacks()
-
-    def setup_layout(self):
-        self.app.layout = html.Div([
-            DashApp.Helper._get_mark_by_button('mark-by-0'),
-            dcc.Graph(id='all_chunks', style={'margin-bottom': '0'}),
-            html.Div(id='all_chunks_text', style={'background': 'white', "padding": "10px"}),
-
-            DashApp.Helper._get_authors_button(parent=self, id='author-dropdown-1'),
-            dcc.Graph(id='collections_per_author_chunks'),
-            html.Div(id='collections_per_author_chunks_text', style={'background': 'white', "padding": "10px"}),
-
-            html.Div([
-                DashApp.Helper._get_authors_button(parent=self, id='author-dropdown-3'),
-                DashApp.Helper._get_collections_button(parent=self, id='collection1-dropdown-3'),
-                DashApp.Helper._get_collections_button(parent=self, id='collection2-dropdown-3', collection_idx=1),
-            ], style={'display': 'flex', 'justify-content': 'space-between'}),
-            dcc.Graph(id='collection_vs_collection_per_author_chunks', style={'margin-bottom': '0'}),
-            html.Div(id='collection_vs_collection_per_author_chunks_text', style={'background': 'white', "padding": "10px"}),
-        ])
-
-    def setup_callbacks(self):
         @staticmethod
         def _update_annotation_text(top_features: str) -> html.Div:
             return html.Div([
@@ -99,6 +73,39 @@ class DashApp:
                 hoverinfo='text'
             ))
 
+
+    def __init__(self, pca_analysis_results: PCAAnalysisResults):
+        self.pca_analysis_results = pca_analysis_results
+        self.app = Dash(__name__)
+        self.setup_layout()
+        self.setup_callbacks()
+
+    def setup_layout(self):
+        self.app.layout = html.Div([
+            # GRAPH 0
+            DashApp.Helper._get_mark_by_button('mark-by-0'),
+            dcc.Graph(id='all_chunks', style={'margin-bottom': '0'}),
+            html.Div(id='all_chunks_text', style={'background': 'white', "padding": "10px"}),
+            # GRAPH 1
+            DashApp.Helper._get_authors_button(parent=self, id='author-dropdown-1'),
+            dcc.Graph(id='authors_chunks'),
+            html.Div(id='authors_chunks_text', style={'background': 'white', "padding": "10px"}),
+            # GRAPH 2
+            DashApp.Helper._get_collections_button(parent=self, id='collection-dropdown-2'),
+            dcc.Graph(id='collections_chunks'),
+            html.Div(id='collections_chunks_text', style={'background': 'white', "padding": "10px"}),
+            # GRAPH 3
+            html.Div([
+                DashApp.Helper._get_authors_button(parent=self, id='author-dropdown-3'),
+                DashApp.Helper._get_collections_button(parent=self, id='collection1-dropdown-3'),
+                DashApp.Helper._get_collections_button(parent=self, id='collection2-dropdown-3', collection_idx=1),
+            ], style={'display': 'flex', 'justify-content': 'space-between'}),
+            dcc.Graph(id='author_collection_collection_chunks', style={'margin-bottom': '0'}),
+            html.Div(id='author_collection_collection_chunks_text', style={'background': 'white', "padding": "10px"}),
+        ])
+
+    def setup_callbacks(self):
+
         ### GRAPH 0
 
         @self.app.callback(
@@ -112,11 +119,11 @@ class DashApp:
             if marked_by == "AUTHORS":
                 print("I am hereee")
                 for author_name in self.pca_analysis_results.author_names:
-                    _add_author_trace(fig, pca, author_name)
+                    DashApp.Helper._add_author_trace(fig, pca, author_name)
             elif marked_by == "COLLECTIONS":
                 print("I am hereee")
                 for collection_name in self.pca_analysis_results.collection_names:
-                    _add_collection_trace(fig, pca, collection_name)
+                    DashApp.Helper._add_collection_trace(fig, pca, collection_name)
 
             fig.update_layout(
                 title=f'All Chunks PCA Analysis {marked_by}' ,
@@ -132,12 +139,12 @@ class DashApp:
         )
         def update_annotation_text_0(_: str):
             top_features = self.pca_analysis_results.all_chunks.top_features
-            return _update_annotation_text(top_features)
+            return DashApp.Helper._update_annotation_text(top_features)
 
         ### GRAPH 1
   
         @self.app.callback(
-            Output('collections_per_author_chunks', 'figure'),
+            Output('authors_chunks', 'figure'),
             Input('author-dropdown-1', 'value'),
         )
         def update_graph_1(selected_author):
@@ -145,7 +152,7 @@ class DashApp:
             pca = self.pca_analysis_results.authors_chunks[selected_author]
 
             for collection_name in self.pca_analysis_results.collection_names:
-                _add_collection_trace(fig, pca, collection_name)
+                DashApp.Helper._add_collection_trace(fig, pca, collection_name)
 
             fig.update_layout(
                 title=f'[{selected_author}] Chunks PCA Analysis',
@@ -156,19 +163,46 @@ class DashApp:
             return fig
         
         @self.app.callback(
-            Output('collections_per_author_chunks_text', 'children'),
+            Output('authors_chunks_text', 'children'),
             Input('author-dropdown-1', 'value'),
         )
         def update_annotation_text_1(selected_author):
             top_features = self.pca_analysis_results.authors_chunks[selected_author].top_features
-            return _update_annotation_text(top_features)
+            return DashApp.Helper._update_annotation_text(top_features)
         
         ### GRAPH 2
 
+        @self.app.callback(
+            Output('collections_chunks', 'figure'),
+            Input('collection-dropdown-2', 'value'),
+        )
+        def update_graph_2(selected_collection: str) -> go.Figure:
+            fig = go.Figure()
+            pca = self.pca_analysis_results.collections_chunks[selected_collection]
+
+            for author_name in self.pca_analysis_results.author_names:
+                DashApp.Helper._add_author_trace(fig, pca, author_name)
+
+            fig.update_layout(
+                title=f'[{selected_collection}] Chunks PCA Analysis',
+                legend_title='Authors',
+                xaxis_title=f'PC1[{pca.pc_variance[0]:.2f}]',
+                yaxis_title=f'PC2[{pca.pc_variance[1]:.2f}]',
+            )
+            return fig
+        
+        @self.app.callback(
+            Output('collections_chunks_text', 'children'),
+            Input('collection-dropdown-2', 'value'),
+        )
+        def update_annotation_text_1(selected_collection: str):
+            top_features = self.pca_analysis_results.collections_chunks[selected_collection].top_features
+            return DashApp.Helper._update_annotation_text(top_features)
+        
         ### GRAPH 3
 
         @self.app.callback(
-            Output('collection_vs_collection_per_author_chunks', 'figure'),
+            Output('author_collection_collection_chunks', 'figure'),
             Input('author-dropdown-3', 'value'),
             Input('collection1-dropdown-3', 'value'),
             Input('collection2-dropdown-3', 'value')
@@ -178,7 +212,7 @@ class DashApp:
             pca = self.pca_analysis_results.author_collection_collection_chunks[selected_author][selected_collection1][selected_collection2]
 
             for collection_name in [selected_collection1, selected_collection2]:
-                _add_collection_trace(fig, pca, collection_name)
+                DashApp.Helper._add_collection_trace(fig, pca, collection_name)
 
             fig.update_layout(
                 title=f'[{selected_author}][{selected_collection1}][{selected_collection2}] Chunks PCA Analysis',
@@ -189,14 +223,14 @@ class DashApp:
             return fig
 
         @self.app.callback(
-            Output('collection_vs_collection_per_author_chunks_text', 'children'),
+            Output('author_collection_collection_chunks_text', 'children'),
             Input('author-dropdown-3', 'value'),
             Input('collection1-dropdown-3', 'value'),
             Input('collection2-dropdown-3', 'value')
         )
         def update_annotation_text_3(selected_author, selected_collection1, selected_collection2):
             top_features = self.pca_analysis_results.author_collection_collection_chunks[selected_author][selected_collection1][selected_collection2].top_features
-            return _update_annotation_text(top_features)
+            return DashApp.Helper._update_annotation_text(top_features)
         
     def run(self, port: int):
         self.app.run(

@@ -18,22 +18,22 @@ class LogisticRegressionClassification:
         authors_chunks_binary_classification = {
             author_name: self._fit_and_binary_predict_on_pca(pca_analysis_data.results) 
             for author_name, pca_analysis_data 
-            in pca_analysis_results.collections_per_author_chunks.items()
+            in pca_analysis_results.authors_chunks.items()
         }
-        collection_vs_collection_per_author_binary_classification, collection_vs_collection_per_author_binary_classification_triangle = self._get_collection_vs_collection_per_author_binary_classification(pca_analysis_results)
+        collection_collection_author_classification, collection_collection_authorclassification_triangle = self._get_collection_collection_author_classification(pca_analysis_results)
 
         return LogisticRegressionResults(
             all_chunks_binary_classification=all_chunks_binary_classification,
             authors_chunks_binary_classification=authors_chunks_binary_classification,
-            collection_vs_collection_per_author_binary_classification=collection_vs_collection_per_author_binary_classification,
-            collection_vs_collection_per_author_binary_classification_triangle=collection_vs_collection_per_author_binary_classification_triangle
+            collection_collection_author_classification=collection_collection_author_classification,
+            collection_collection_authorclassification_triangle=collection_collection_authorclassification_triangle
         )
 
-    def _get_collection_vs_collection_per_author_binary_classification(self, pca_analysis_results: PCAAnalysisResults) -> LogisticRegressionResults:
+    def _get_collection_collection_author_classification(self, pca_analysis_results: PCAAnalysisResults) -> LogisticRegressionResults:
         result = {}
         result_trinagle = {}
 
-        for author_name, collections in pca_analysis_results.collection_vs_collection_per_author_chunks.items():
+        for author_name, collections in pca_analysis_results.author_collection_collection_chunks.items():
             result[author_name] = {}
             result_trinagle[author_name] = {}
 
