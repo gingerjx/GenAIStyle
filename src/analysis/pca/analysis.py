@@ -20,6 +20,7 @@ class PCAAnalysis:
     def get_pca_analysis(self, metrics_analysis_results: MetricsAnalysisResults) -> PCAAnalysisResults:
         collection_vs_collection_per_author_chunks = self._get_pca_collection_vs_collection_per_author_chunks_analysis(metrics_analysis_results)
         collections_per_author_chunks = self._get_collections_per_author_chunks(metrics_analysis_results)
+        authors_per_collection_analysis = self._get_authors_per_collection_chunks(metrics_analysis_results)
         all_chunks = self._get_all_chunks(metrics_analysis_results)
         author_collection_chunks = self._get_author_collection_chunks(metrics_analysis_results)
 
@@ -28,6 +29,7 @@ class PCAAnalysis:
             collection_names=metrics_analysis_results.collection_names,
             collection_vs_collection_per_author_chunks=collection_vs_collection_per_author_chunks,
             collections_per_author_chunks=collections_per_author_chunks,
+            authors_per_collection_analysis=authors_per_collection_analysis,
             all_chunks=all_chunks,
             author_collection_chunks=author_collection_chunks,
         )
@@ -78,6 +80,25 @@ class PCAAnalysis:
             )
             
         return collections_per_author_analysis
+    
+    def _get_authors_per_collection_chunks(self, metrics_analysis_results: MetricsAnalysisResults) -> Dict[str, PCAAnalysisData]:
+        authors_per_collection_analysis = {}
+
+        for collection_name in metrics_analysis_results.collection_names:
+            chunks_metrics = []
+            for author_name in metrics_analysis_results.author_names:
+                chunks_metrics.extend(metrics_analysis_results.chunks_author_collection[author_name][collection_name])
+            pca_data = self._get_pca_data(chunks_metrics)
+            pca_analysis_df, top_features, explained_variance_ratio_ = PCAAnalysis._get_pca_analysis(pca_data)
+
+            authors_per_collection_analysis[collection_name] = PCAAnalysisData(
+                data=pca_data,
+                results=pca_analysis_df,
+                pc_variance=explained_variance_ratio_,
+                top_features=top_features
+            )
+            
+        return authors_per_collection_analysis
     
     def _get_all_chunks(self, metrics_analysis_results: MetricsAnalysisResults) -> PCAAnalysisData:
         chunks_metrics = []
