@@ -1,5 +1,5 @@
 from typing import Dict, Tuple, Type
-from sklearn.linear_model import LogisticRegressionCV
+from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from src.analysis.pca.data import PCAAnalysisResults
@@ -127,20 +127,10 @@ class LogisticRegressionClassification(BaseClassification):
 
     def __init__(self, settings: Settings):
         super().__init__(settings)
-        self.model_class = LogisticRegressionCV
-        self.model_kwargs = {
-            'cv': StratifiedKFold(n_splits=self.configuration.number_of_cv_folds, shuffle=True, random_state=self.configuration.seed),
-            'max_iter': self.configuration.training_max_iter,
-        }
-
-class SVMClassification(BaseClassification):
-
-    def __init__(self, settings: Settings):
-        super().__init__(settings)
-        self.model_class = SVC
+        self.model_class = LogisticRegression
         self.model_kwargs = {}
 
-class KNNClassification(BaseClassification):
+class SVMClassification(BaseClassification):
 
     def __init__(self, settings: Settings):
         super().__init__(settings)
