@@ -4,9 +4,8 @@ import pandas as pd
 
 @dataclass
 class LogisticClassificationData:
-    cross_validation_accuracy: float
-    accuracy_per_author: pd.Series
-    accuracy_per_class: pd.Series
+    accuracy: float
+    report: str
     model: object
     X: pd.DataFrame
     y: pd.Series
@@ -33,40 +32,19 @@ class LogisticRegressionResultsTransformer:
 
     @staticmethod
     def print_all_chunks_results(logistic_regression_data: LogisticClassificationData) -> str:
-        print(f"Cross-validation accuracy: {logistic_regression_data.cross_validation_accuracy}\n ---")
-        print(f"Cross-validation accuracy per class:\n {logistic_regression_data.accuracy_per_class}\n ---")
-        print(f"Cross-validation accuracy per author:")
-        return pd.DataFrame(logistic_regression_data.accuracy_per_author, columns=['average_accuracy'])
+        print(f"Accuracy: {logistic_regression_data.accuracy}")
 
     @staticmethod
     def print_authors_chunks_results(logistic_regression_data: Dict[str, LogisticClassificationData]) -> str:
-        df = pd.DataFrame()
         for author_name, results in logistic_regression_data.items():
-            series = pd.Series([author_name, results.accuracy_per_class['llm'], results.accuracy_per_class['human'], results.cross_validation_accuracy])
-            df = pd.concat([df, series.to_frame().T])
-        df.reset_index()
-        df.columns=['author_name', 'accuracy_llm', 'accuracy_human', "total_accuracy"]
-        print(f"Average cross-validation accuracy: {df["total_accuracy"].mean()}\n ---")
-        print(f"Cross-validation accuracy for each author PCA:")
-        return df
+            print(f"Accuracy for {author_name}:  {results.accuracy}")
+        print(f"\n --- \nOverall accuracy: {sum([results.accuracy for results in logistic_regression_data.values()]) / len(logistic_regression_data)}")
 
     @staticmethod
     def print_collection_chunks_results(logistic_regression_data: Dict[str, LogisticClassificationData]) -> str:
-        df = pd.DataFrame()
-        columns = None
         for collection_name, results in logistic_regression_data.items():
-            if columns is None:
-                columns = results.accuracy_per_class.index.to_list()
-            data = [collection_name]
-            data.extend(results.accuracy_per_class.to_list())
-            data.append(results.cross_validation_accuracy)
-            series = pd.Series(data)
-            df = pd.concat([df, series.to_frame().T])
-        df.reset_index()
-        df.columns=['collection_name'] + columns + ["accuracy"]
-        print(f"Average cross-validation accuracy: {df["accuracy"].mean()}\n ---")
-        print(f"Cross-validation accuracy for each collection PCA:")
-        return df
+            print(f"Accuracy for {collection_name}:  {results.accuracy}")
+        print(f"\n --- \nOverall accuracy: {sum([results.accuracy for results in logistic_regression_data.values()]) / len(logistic_regression_data)}")
 
 
     @staticmethod
@@ -75,8 +53,7 @@ class LogisticRegressionResultsTransformer:
         for author_name, collections in logistic_regression_data.items():
             for collection_name_outer, collection in collections.items():
                 for collection_name_inner, results in collection.items():
-
-                    series = pd.Series([author_name, collection_name_outer, collection_name_inner, results.cross_validation_accuracy])
+                    series = pd.Series([author_name, collection_name_outer, collection_name_inner, results.accuracy])
                     df = pd.concat([df, series.to_frame().T])
         df.reset_index()
         df.columns=['author_name', 'collection_1', 'collection_2', "total_accuracy"]

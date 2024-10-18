@@ -51,7 +51,10 @@ class Settings:
         analysis_filepath: Path = results_dir / "analysis.json"
           
     class Configuration:
-        
+
+        seed: int = 42                                                                              # Seed for random state
+
+        # Analysis
         read_analysis_from_file: bool = False                                                       # Read analysis data from file
         response_number_of_words: int = 3000                                                        # Expected number of words used during response generation
         extract_book_chunk_size: int = 5 * response_number_of_words                                 # Number of characters used as a chunk size during preprocessing of the books. Average english word length * expected number of words used during response generation
@@ -62,9 +65,11 @@ class Settings:
         min_repeat_size: int = 3                                                                    # Minimum length of the repeated substring
         repeat_threshold: int = 3                                                                   # Minimum number of repeated substrings to be considered
         top_n_function_words: int = 10                                                              # Number of top function words to be considered
-        test_size: float = 0.2                                                                      # Test size for train-test split
-        seed: int = 42                                                                              # Seed for random state
-        number_of_cv_folds: int = 5                                                                 # Number of cross-validation folds
+
+        # Classification
+        training_max_iter: int = 100                                                                # Maximum number of iterations for the logistic regression
+        test_size: float = 0.2                                                                      # Test size for the logistic regression
+        number_of_cv_folds: int = 5                                                                 # Number of cross-validation folds for the logistic regression
     
     paths: Paths = Paths()
     configuration: Configuration = Configuration()

@@ -1,13 +1,12 @@
 from typing import Dict, Tuple
-from sklearn.linear_model import LogisticRegression
-from src.analysis.pca.data import PCAAnalysisData, PCAAnalysisResults
-from sklearn.metrics import accuracy_score
+from sklearn.linear_model import LogisticRegressionCV
+from src.analysis.pca.data import PCAAnalysisResults
+from sklearn.metrics import accuracy_score, classification_report
 import pandas as pd
-from sklearn.model_selection import cross_val_predict, StratifiedKFold
-import numpy as np
+from sklearn.model_selection import StratifiedKFold, train_test_split
 from src.classification.classification_data import LogisticClassificationData, LogisticRegressionResults
 from src.settings import Settings
-
+    
 class LogisticRegressionClassification:
 
     def __init__(self, settings: Settings):
@@ -76,34 +75,32 @@ class LogisticRegressionClassification:
 
     def _fit_and_binary_predict_on_pca(self, pca_analysis_results_data: pd.DataFrame, transformation_function) -> LogisticClassificationData:
         X, y = transformation_function(pca_analysis_results_data)
-        accuracy_per_author, accuracy_per_class = self._get_cross_validation(
+        model, report, accuracy = self._get_cross_validation(
             X=X, 
             y=y,
             author_names=LogisticRegressionClassification._get_author_names_column(pca_analysis_results_data)
         )
         
         return LogisticClassificationData(
-            cross_validation_accuracy=np.average(list(accuracy_per_class.to_dict().values())),
-            accuracy_per_author=accuracy_per_author,
-            accuracy_per_class=accuracy_per_class,
-            model=LogisticRegression().fit(X, y),
+            report=report,
+            accuracy=accuracy,
+            model=model,
             X=X,
             y=y
         )
     
-    def _get_cross_validation(self, X: pd.DataFrame, y: pd.Series, author_names: pd.Series) -> float:
-        skf = StratifiedKFold(n_splits=self.configuration.number_of_cv_folds, shuffle=True, random_state=self.configuration.seed)
-        y_pred = cross_val_predict(LogisticRegression(), X, y, cv=skf)
-        df = pd.DataFrame({'y_true': y, 'y_pred': y_pred, 'author_name': author_names})
-        
-        accuracy_per_author = df.groupby('author_name').apply(
-            lambda x: accuracy_score(x['y_true'], x['y_pred'])
-        )
-        accuracy_per_class = df.groupby('y_true').apply(
-            lambda x: accuracy_score(x['y_true'], x['y_pred'])
-        )
+    def _get_cross_validation(self, X: pd.DataFrame, y: pd.Series, author_names: pd.Series) -> Tuple:
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.configuration.test_size)
+        model = LogisticRegressionCV(
+            cv=StratifiedKFold(n_splits=self.configuration.number_of_cv_folds, shuffle=True, random_state=self.configuration.seed),
+            max_iter=self.configuration.training_max_iter,
+        ).fit(X_train, y_train)
 
-        return accuracy_per_author, accuracy_per_class
+        y_pred = model.predict(X_test)
+        report = classification_report(y_test, y_pred)
+        accuracy = accuracy_score(y_test, y_pred)
+
+        return model, report, accuracy
     
     @staticmethod
     def _get_author_names_column(pca_analysis_data_results: pd.DataFrame) -> pd.Series:
