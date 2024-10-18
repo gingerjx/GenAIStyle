@@ -1,4 +1,5 @@
 from typing import Dict, Tuple
+from sklearn.base import BaseEstimator
 from sklearn.linear_model import LogisticRegressionCV
 from src.analysis.pca.data import PCAAnalysisResults
 from sklearn.metrics import accuracy_score, classification_report
@@ -75,21 +76,6 @@ class LogisticRegressionClassification:
 
     def _fit_and_binary_predict_on_pca(self, pca_analysis_results_data: pd.DataFrame, transformation_function) -> LogisticClassificationData:
         X, y = transformation_function(pca_analysis_results_data)
-        model, report, accuracy = self._get_cross_validation(
-            X=X, 
-            y=y,
-            author_names=LogisticRegressionClassification._get_author_names_column(pca_analysis_results_data)
-        )
-        
-        return LogisticClassificationData(
-            report=report,
-            accuracy=accuracy,
-            model=model,
-            X=X,
-            y=y
-        )
-    
-    def _get_cross_validation(self, X: pd.DataFrame, y: pd.Series, author_names: pd.Series) -> Tuple:
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.configuration.test_size)
         model = LogisticRegressionCV(
             cv=StratifiedKFold(n_splits=self.configuration.number_of_cv_folds, shuffle=True, random_state=self.configuration.seed),
@@ -99,12 +85,14 @@ class LogisticRegressionClassification:
         y_pred = model.predict(X_test)
         report = classification_report(y_test, y_pred)
         accuracy = accuracy_score(y_test, y_pred)
-
-        return model, report, accuracy
-    
-    @staticmethod
-    def _get_author_names_column(pca_analysis_data_results: pd.DataFrame) -> pd.Series:
-        return pca_analysis_data_results['author_name']
+        
+        return LogisticClassificationData(
+            report=report,
+            accuracy=accuracy,
+            model=model,
+            X=X,
+            y=y
+        )
 
     @staticmethod
     def _transform_data_for_binary_collection_classification(pca_analysis_results_data: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
