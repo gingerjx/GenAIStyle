@@ -4,7 +4,7 @@ from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Secrets(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config: SettingsConfigDict = SettingsConfigDict(env_file=".env")
 
     anthropic_api_key: str = Field(description="Anthropic API Key")
     google_api_key: str = Field(description="Google API Key") 

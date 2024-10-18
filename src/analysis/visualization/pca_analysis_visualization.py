@@ -117,11 +117,9 @@ class DashApp:
             pca = self.pca_analysis_results.all_chunks
 
             if marked_by == "AUTHORS":
-                print("I am hereee")
                 for author_name in self.pca_analysis_results.author_names:
                     DashApp.Helper._add_author_trace(fig, pca, author_name)
             elif marked_by == "COLLECTIONS":
-                print("I am hereee")
                 for collection_name in self.pca_analysis_results.collection_names:
                     DashApp.Helper._add_collection_trace(fig, pca, collection_name)
 
