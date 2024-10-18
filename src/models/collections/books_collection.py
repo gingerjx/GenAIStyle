@@ -8,14 +8,13 @@ import random
 
 from src.models.text_chunk import TextChunk
 
-random.seed(42)
-
 class BooksCollection(Collection):
     
-    def __init__(self, name: str, selected_books_csv_filepath: Path, books_dir: Path):
+    def __init__(self, name: str, selected_books_csv_filepath: Path, books_dir: Path, seed: int):
         super().__init__(name)
         self.selected_books_csv_filepath = selected_books_csv_filepath
         self.books_dir = books_dir
+        random.seed(seed)
 
     def read(self, author_name: str) -> None:
         """Read selected books for the author from the directory"""
