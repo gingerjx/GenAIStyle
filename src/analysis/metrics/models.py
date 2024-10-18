@@ -30,6 +30,7 @@ class MetricsAnalysisResults:
     chunks_author_collection: Dict[str, Dict[str, List[MetricData]]] = field(init=False, default_factory=dict)      # [author][collection][chunk_id]
     full_collection_author: Dict[str, Dict[str, MetricData]] = field(init=False, default_factory=dict)              # [author][collection]
     chunks_collection_author: Dict[str, Dict[str, List[MetricData]]] = field(init=False, default_factory=dict)      # [author][collection][chunk_id]
+    global_top_function_words: List[str] = field(init=False, default_factory=list)
 
     def __post_init__(self) -> None:
         for author_name in self.author_names:   
@@ -47,3 +48,6 @@ class MetricsAnalysisResults:
                 self.chunks_collection_author[collection_name].update({
                     author_name: []
                 })
+
+    def get_all_full_metrics(self) -> List[MetricData]:
+        return [self.full_author_collection[author_name][collection_name] for author_name in self.author_names for collection_name in self.collection_names]

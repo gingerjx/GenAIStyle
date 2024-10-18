@@ -5,22 +5,132 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from itertools import islice
+from src.analysis.metrics.extractor import MetricsExtractor
 from src.analysis.metrics.models import MetricData, MetricsAnalysisResults
 from src.analysis.visualization.analysis_visualization import AnalysisVisualization
 from src.settings import Settings
+from dash import dcc, html, Dash
+from dash.dependencies import Input, Output
+
+class DashApp:
+
+    class Helper:
+        def _get_collections_button(parent: "DashApp", id: str, collection_idx: int = 0) -> dcc.Dropdown:
+            return dcc.Dropdown(
+                id=id,
+                options=[{'label': collection, 'value': collection} for collection in parent.metrics_analysis_results.collection_names],
+                value=parent.metrics_analysis_results.collection_names[collection_idx],
+                clearable=False,
+                style={'width': '100%'}
+            )
+        
+        def _get_authors_button(parent: "DashApp", id: str, author_idx: int = 0) -> dcc.Dropdown:
+            return dcc.Dropdown(
+                id=id,
+                options=[{'label': author, 'value': author} for author in parent.metrics_analysis_results.author_names],
+                value=parent.metrics_analysis_results.author_names[author_idx],
+                clearable=False,
+                style={'width': '100%'}
+            )
+        
+    def __init__(self, settings: Settings, metrics_analysis_results: MetricsAnalysisResults):
+        self.metrics_analysis_results = metrics_analysis_results
+        self.extractor = MetricsExtractor(settings=settings)
+        self.app = Dash(__name__)
+        self.setup_layout()
+        self.setup_callbacks()
+
+    def setup_layout(self):
+        self.app.layout = html.Div([
+            html.Div([
+                DashApp.Helper._get_collections_button(parent=self, id='collection1-dropdown-1'),
+                DashApp.Helper._get_authors_button(parent=self, id='authors1-dropdown-1'),
+                DashApp.Helper._get_collections_button(parent=self, id='collection2-dropdown-1', collection_idx=1),
+                DashApp.Helper._get_authors_button(parent=self, id='authors2-dropdown-1', author_idx=1),
+            ], style={'display': 'flex', 'justify-content': 'space-between'}),
+            dcc.Graph(id='relative_bars', style={'margin-bottom': '0'}),
+        ])
+
+    def setup_callbacks(self):
+
+        ### GRAPH 0
+
+        @self.app.callback(
+            Output('relative_bars', 'figure'),
+            Input('collection1-dropdown-1', 'value'),
+            Input('authors1-dropdown-1', 'value'),
+            Input('collection2-dropdown-1', 'value'),
+            Input('authors2-dropdown-1', 'value'),
+        )
+        def update_relative_bars(collection_1: str, author_1: str, collection_2: str, author_2: str) -> go.Figure:
+            all_full_metrics = self.metrics_analysis_results.get_all_full_metrics()
+            top_function_words_names = self.extractor.get_top_function_words_names(all_full_metrics)
+
+            author_1_books_metrics = self.metrics_analysis_results.full_author_collection[author_1][collection_1]
+            author_2_books_metrics = self.metrics_analysis_results.full_author_collection[author_2][collection_2]
+            author_1_books_features = self.extractor.get_features(
+                metrics_data=[author_1_books_metrics],
+                top_function_words_names=top_function_words_names
+            ).iloc[0]
+            author_2_books_features = self.extractor.get_features(
+                metrics_data=[author_2_books_metrics],
+                top_function_words_names=top_function_words_names
+            ).iloc[0]
+
+            feature_names = author_1_books_features.index.to_list()
+            for element in ["source_name", "author_name", "collection_name"]:
+                feature_names.remove(element)
+
+            relative_bars = {feature_name: self._get_relative_difference(author_1_books_features[feature_name], author_2_books_features[feature_name]) 
+                    for feature_name in feature_names}
+
+            colors = [AnalysisVisualization.COLORS["negative"] if value < 0 
+                    else AnalysisVisualization.COLORS["positive"] 
+                    for value in relative_bars.values()]
+            fig = go.Figure(data=[
+                go.Bar(
+                    name="Mark Twain", 
+                    x=list(relative_bars.keys()), 
+                    y=list(relative_bars.values()),
+                    marker=dict(color=colors),
+            )
+            ])
+            fig.update_layout(
+                title="Relative difference of features",
+                xaxis_title="Feature",
+                yaxis_title="Relative difference",
+                font=dict(size=MetricsAnalysisVisualization.FONT_SIZE)
+            )
+
+            return fig
+        
+    def _get_relative_difference(self, value_1, value_2):
+        max = np.max([value_1, value_2])
+        difference = value_1 - value_2
+        relative_difference = difference / max
+        return relative_difference
+    
+    def run(self, port: int):
+        self.app.run(
+            port=port,
+            jupyter_height=800,
+            debug=True,
+        )
 
 class MetricsAnalysisVisualization(AnalysisVisualization):
     FONT_SIZE = 10
 
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self, settings: Settings, metrics_analysis_results: MetricsAnalysisResults) -> None:
         self.configuration = settings.configuration
+        self.metrics_analysis_results = metrics_analysis_results
+        self.dash_app = DashApp(settings=settings, metrics_analysis_results=metrics_analysis_results)
 
-    def visualize(self, metrics_analysis_results: MetricsAnalysisResults):
+    def visualize(self):
         """Visualize the analysis data for the authors and models"""
-        self._visualize(metrics_analysis_results)
-        self._visualize_function_words(metrics_analysis_results)
-        self._visualize_punctuation_frequency(metrics_analysis_results)
-        self._visualize_metrics_of_two(metrics_analysis_results)
+        self._visualize(self.metrics_analysis_results)
+        self._visualize_function_words(self.metrics_analysis_results)
+        self._visualize_punctuation_frequency(self.metrics_analysis_results)
+        self._visualize_metrics_of_two(self.metrics_analysis_results)
 
     def _visualize(self, metrics_analysis_results: MetricsAnalysisResults):
         """Visualize the unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""
@@ -194,3 +304,4 @@ class MetricsAnalysisVisualization(AnalysisVisualization):
             title=included_metrics[0],
         )
         fig.show()
+                
