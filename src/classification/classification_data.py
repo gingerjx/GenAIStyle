@@ -28,7 +28,7 @@ class LogisticRegressionResults:
     # Author classifications
     all_chunks_binary_classification: LogisticClassificationData
 
-class LogisticRegressionResultsTransformer:
+class ClassificationResultsTransformer:
 
     @staticmethod
     def print_all_chunks_results(logistic_regression_data: LogisticClassificationData) -> str:
