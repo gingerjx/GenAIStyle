@@ -1,6 +1,7 @@
 from typing import Dict, Tuple, Type
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
 from src.analysis.pca.data import PCAAnalysisResults
 from sklearn.metrics import accuracy_score, classification_report
 import pandas as pd
@@ -78,7 +79,7 @@ class BaseClassification:
 
     def _fit_and_binary_predict_on_pca(self, pca_analysis_results_data: pd.DataFrame, transformation_function) -> LogisticClassificationData:
         X, y = transformation_function(pca_analysis_results_data)
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.configuration.test_size)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.configuration.test_size, random_state=self.configuration.seed)
         
         model = self.model_class(**self.model_kwargs).fit(X_train, y_train)
 
@@ -137,4 +138,18 @@ class SVMClassification(BaseClassification):
     def __init__(self, settings: Settings):
         super().__init__(settings)
         self.model_class = SVC
+        self.model_kwargs = {}
+
+class KNNClassification(BaseClassification):
+
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
+        self.model_class = SVC
+        self.model_kwargs = {}
+
+class DecisionTreeClassification(BaseClassification):
+
+    def __init__(self, settings: Settings):
+        super().__init__(settings)
+        self.model_class = DecisionTreeClassifier
         self.model_kwargs = {}
