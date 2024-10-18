@@ -7,7 +7,7 @@ from src.classification.classification_data import LogisticClassificationData, L
 class ClassificationVisualization(AnalysisVisualization):
 
     @staticmethod
-    def visualize_binary_classification(classification_results: LogisticClassificationData):
+    def visualize_binary_logistic_regression_classification(classification_results: LogisticClassificationData):
         model = classification_results.model
         X = classification_results.X
         y = classification_results.y
