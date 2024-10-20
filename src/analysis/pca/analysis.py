@@ -3,7 +3,7 @@ from typing import Dict
 import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.discriminant_analysis import StandardScaler
-from src.analysis.metrics.extractor import MetricsExtractor
+from src.analysis.metrics.extractor import FeatureExtractor
 from src.analysis.metrics.models import MetricsAnalysisResults
 from src.analysis.pca.data import PCAAnalysisData, PCAAnalysisResults
 
@@ -13,9 +13,9 @@ class PCAAnalysis:
     
     TOP_FEATURES: int = 10
 
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: Settings, feature_extractor: FeatureExtractor) -> None:
         self.configuration = settings.configuration
-        self.extractor = MetricsExtractor(settings=settings)
+        self.feature_extractor = feature_extractor
 
     def get_pca_analysis(self, metrics_analysis_results: MetricsAnalysisResults) -> PCAAnalysisResults:
         all_chunks = self._get_all_chunks(metrics_analysis_results)
@@ -33,8 +33,8 @@ class PCAAnalysis:
         )
         
     def _get_all_chunks(self, metrics_analysis_results: MetricsAnalysisResults) -> PCAAnalysisData:
-        chunks_metrics = metrics_analysis_results.get_all_full_metrics()
-        pca_data = self.extractor.get_features(chunks_metrics)
+        chunks_metrics = metrics_analysis_results.get_all_chunks_metrics()
+        pca_data = self.feature_extractor.get_features(chunks_metrics)
         pca_analysis_df, top_features, explained_variance_ratio_ = PCAAnalysis._get_pca_analysis(pca_data)
         return PCAAnalysisData(
             data=pca_data,
@@ -50,7 +50,7 @@ class PCAAnalysis:
             chunks_metrics = []
             for collection_name in metrics_analysis_results.collection_names:
                 chunks_metrics.extend(metrics_analysis_results.chunks_author_collection[author_name][collection_name])
-            pca_data = self.extractor.get_features(chunks_metrics)
+            pca_data = self.feature_extractor.get_features(chunks_metrics)
             pca_analysis_df, top_features, explained_variance_ratio_ = PCAAnalysis._get_pca_analysis(pca_data)
 
             collections_per_author_analysis[author_name] = PCAAnalysisData(
@@ -69,7 +69,7 @@ class PCAAnalysis:
             chunks_metrics = []
             for author_name in metrics_analysis_results.author_names:
                 chunks_metrics.extend(metrics_analysis_results.chunks_author_collection[author_name][collection_name])
-            pca_data = self.extractor.get_features(chunks_metrics)
+            pca_data = self.feature_extractor.get_features(chunks_metrics)
             pca_analysis_df, top_features, explained_variance_ratio_ = PCAAnalysis._get_pca_analysis(pca_data)
 
             authors_per_collection_analysis[collection_name] = PCAAnalysisData(
@@ -97,7 +97,7 @@ class PCAAnalysis:
 
                     chunks_inner = metrics_analysis_results.chunks_author_collection[author_name][collection_name_inner]
                     chunks_outer = metrics_analysis_results.chunks_author_collection[author_name][collection_name_outer]
-                    pca_data = self.extractor.get_features(chunks_inner + chunks_outer)
+                    pca_data = self.feature_extractor.get_features(chunks_inner + chunks_outer)
                     pca_analysis_df, top_features, explained_variance_ratio_ = PCAAnalysis._get_pca_analysis(pca_data)
 
                     collection_vs_collection_per_author_analysis[author_name][collection_name_outer][collection_name_inner] = PCAAnalysisData(
@@ -116,7 +116,7 @@ class PCAAnalysis:
             author_collection_analysis[author_name] = {}
             for collection_name in metrics_analysis_results.collection_names:
                 chunks_metrics = metrics_analysis_results.chunks_author_collection[author_name][collection_name]
-                pca_data = self.extractor.get_features(chunks_metrics)
+                pca_data = self.feature_extractor.get_features(chunks_metrics)
                 pca_analysis_df, top_features, explained_variance_ratio_ = PCAAnalysis._get_pca_analysis(pca_data)
 
                 author_collection_analysis[author_name][collection_name] = PCAAnalysisData(

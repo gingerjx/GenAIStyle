@@ -51,3 +51,6 @@ class MetricsAnalysisResults:
 
     def get_all_full_metrics(self) -> List[MetricData]:
         return [self.full_author_collection[author_name][collection_name] for author_name in self.author_names for collection_name in self.collection_names]
+    
+    def get_all_chunks_metrics(self) -> List[MetricData]:
+        return [metric for author_name in self.author_names for collection_name in self.collection_names for metric in self.chunks_author_collection[author_name][collection_name]]

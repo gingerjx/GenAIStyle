@@ -1,11 +1,11 @@
 from dataclasses import fields
-from typing import Dict, List
+import pandas as pd
 
 import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from itertools import islice
-from src.analysis.metrics.extractor import MetricsExtractor
+from src.analysis.metrics.extractor import FeatureExtractor
 from src.analysis.metrics.models import MetricData, MetricsAnalysisResults
 from src.analysis.visualization.analysis_visualization import AnalysisVisualization
 from src.settings import Settings
@@ -33,9 +33,12 @@ class DashApp:
                 style={'width': '100%'}
             )
         
-    def __init__(self, settings: Settings, metrics_analysis_results: MetricsAnalysisResults):
+    def __init__(self, 
+                 metrics_analysis_results: MetricsAnalysisResults,
+                 feature_extractor: FeatureExtractor,
+        ) -> None:
         self.metrics_analysis_results = metrics_analysis_results
-        self.extractor = MetricsExtractor(settings=settings)
+        self.feature_extractor = feature_extractor
         self.app = Dash(__name__)
         self.setup_layout()
         self.setup_callbacks()
@@ -63,37 +66,41 @@ class DashApp:
             Input('authors2-dropdown-1', 'value'),
         )
         def update_relative_bars(collection_1: str, author_1: str, collection_2: str, author_2: str) -> go.Figure:
-            all_full_metrics = self.metrics_analysis_results.get_all_full_metrics()
-            top_function_words_names = self.extractor.get_top_function_words_names(all_full_metrics)
-
-            author_1_books_metrics = self.metrics_analysis_results.full_author_collection[author_1][collection_1]
-            author_2_books_metrics = self.metrics_analysis_results.full_author_collection[author_2][collection_2]
-            author_1_books_features = self.extractor.get_features(
-                metrics_data=[author_1_books_metrics],
-                top_function_words_names=top_function_words_names
+            metrics_1 = self.metrics_analysis_results.full_author_collection[author_1][collection_1]
+            metrics_2 = self.metrics_analysis_results.full_author_collection[author_2][collection_2]
+            features_1 = self.feature_extractor.get_features(
+                metrics_data=[metrics_1]
             ).iloc[0]
-            author_2_books_features = self.extractor.get_features(
-                metrics_data=[author_2_books_metrics],
-                top_function_words_names=top_function_words_names
+            features_2 = self.feature_extractor.get_features(
+                metrics_data=[metrics_2]
             ).iloc[0]
 
-            feature_names = author_1_books_features.index.to_list()
+            feature_names = features_1.index.to_list()
             for element in ["source_name", "author_name", "collection_name"]:
                 feature_names.remove(element)
 
-            relative_bars = {feature_name: self._get_relative_difference(author_1_books_features[feature_name], author_2_books_features[feature_name]) 
-                    for feature_name in feature_names}
+            relative_bars = {
+                feature_name: {
+                    'relative_difference': self._get_relative_difference(features_1[feature_name], features_2[feature_name]),
+                    'value_1': features_1[feature_name],
+                    'value_2': features_2[feature_name]
+                }
+                for feature_name in feature_names
+            }
+            relative_bars_df = pd.DataFrame(relative_bars).T
 
             colors = [AnalysisVisualization.COLORS["negative"] if value < 0 
                     else AnalysisVisualization.COLORS["positive"] 
-                    for value in relative_bars.values()]
+                    for value in relative_bars_df["relative_difference"].values]
+            
             fig = go.Figure(data=[
                 go.Bar(
                     name="Mark Twain", 
-                    x=list(relative_bars.keys()), 
-                    y=list(relative_bars.values()),
+                    x=relative_bars_df.index.tolist(), 
+                    y=relative_bars_df["relative_difference"].tolist(),
                     marker=dict(color=colors),
-            )
+                    text=relative_bars_df["value_1"].astype(str) + " - " + relative_bars_df["value_2"].astype(str),
+                )
             ])
             fig.update_layout(
                 title="Relative difference of features",
@@ -114,16 +121,23 @@ class DashApp:
         self.app.run(
             port=port,
             jupyter_height=800,
-            debug=True,
+            debug=False,
         )
 
 class MetricsAnalysisVisualization(AnalysisVisualization):
     FONT_SIZE = 10
 
-    def __init__(self, settings: Settings, metrics_analysis_results: MetricsAnalysisResults) -> None:
+    def __init__(self, 
+                 settings: Settings, 
+                 metrics_analysis_results: MetricsAnalysisResults,
+                 feature_extractor: FeatureExtractor,
+        ) -> None:
         self.configuration = settings.configuration
         self.metrics_analysis_results = metrics_analysis_results
-        self.dash_app = DashApp(settings=settings, metrics_analysis_results=metrics_analysis_results)
+        self.dash_app = DashApp( 
+            metrics_analysis_results=metrics_analysis_results,
+            feature_extractor=feature_extractor
+        )
 
     def visualize(self):
         """Visualize the analysis data for the authors and models"""

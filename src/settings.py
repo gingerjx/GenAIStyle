@@ -65,6 +65,7 @@ class Settings:
         min_repeat_size: int = 3                                                                    # Minimum length of the repeated substring
         repeat_threshold: int = 3                                                                   # Minimum number of repeated substrings to be considered
         top_n_function_words: int = 10                                                              # Number of top function words to be considered
+        top_n_punctuation: int = 5                                                                  # Number of top punctuation to be considered
 
         # Classification
         training_max_iter: int = 100                                                                # Maximum number of iterations for the logistic regression
