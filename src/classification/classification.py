@@ -6,7 +6,7 @@ from src.analysis.pca.data import PCAAnalysisResults
 from sklearn.metrics import accuracy_score, classification_report
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold, train_test_split
-from src.classification.classification_data import LogisticClassificationData, LogisticRegressionResults
+from src.classification.classification_data import ClassificationData, ClassificationResults
 from src.settings import Settings
     
 class BaseClassification:
@@ -16,7 +16,7 @@ class BaseClassification:
         self.model_class: Type = None
         self.model_kwargs: Dict = None
 
-    def classify(self, pca_analysis_results: PCAAnalysisResults) -> LogisticRegressionResults:
+    def classify(self, pca_analysis_results: PCAAnalysisResults) -> ClassificationResults:
         all_chunks_binary_classification = self._fit_and_binary_predict_on_pca(
             pca_analysis_results_data=pca_analysis_results.all_chunks.results,
             transformation_function=BaseClassification._transform_data_for_binary_collection_classification
@@ -25,7 +25,7 @@ class BaseClassification:
         collections_chunks_binary_classification = self._get_collections_chunks_binary_classification(pca_analysis_results)
         collection_collection_author_chunks_classification, collection_collection_author_chunks_classification_triangle = self._get_collection_collection_author_chunks_classification(pca_analysis_results)
 
-        return LogisticRegressionResults(
+        return ClassificationResults(
             all_chunks_binary_classification=all_chunks_binary_classification,
             authors_chunks_binary_classification=authors_chunks_binary_classification,
             collections_chunks_binary_classification=collections_chunks_binary_classification,
@@ -77,7 +77,7 @@ class BaseClassification:
 
         return result, result_trinagle
 
-    def _fit_and_binary_predict_on_pca(self, pca_analysis_results_data: pd.DataFrame, transformation_function) -> LogisticClassificationData:
+    def _fit_and_binary_predict_on_pca(self, pca_analysis_results_data: pd.DataFrame, transformation_function) -> ClassificationData:
         X, y = transformation_function(pca_analysis_results_data)
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.configuration.test_size, random_state=self.configuration.seed)
         
@@ -87,7 +87,7 @@ class BaseClassification:
         report = classification_report(y_test, y_pred)
         accuracy = accuracy_score(y_test, y_pred)
         
-        return LogisticClassificationData(
+        return ClassificationData(
             report=report,
             accuracy=accuracy,
             model=model,
