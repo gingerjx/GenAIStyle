@@ -11,24 +11,45 @@ class FeatureExtractor:
     def __init__(self, settings: Settings, metrics_analysis_results: MetricsAnalysisResults) -> None:
         self.configuration = settings.configuration
 
+        self.processed_columns = self._get_processed_columns()
         self.top_function_words_names = self._get_top_function_words_names(metrics_analysis_results.get_all_full_metrics())
         self.top_punctuations = self._get_top_punctuations(metrics_analysis_results.get_all_full_metrics())
+        self.feature_names = self.processed_columns + self.top_punctuations + self.top_function_words_names
 
+    def get_feature_names(self) -> List[str]:
+        return self.feature_names
+    
+    def get_feature_names_without_metadata(self) -> List[str]:
+        copy = self.feature_names.copy()
+        copy.remove("source_name")
+        copy.remove("collection_name")
+        copy.remove("author_name")
+        return copy
+    
+    def get_top_punctuation_features(self) -> List[str]:
+        return self.top_punctuations
+    
+    def get_top_function_words_features(self) -> List[str]:
+        return self.top_function_words_names
+    
     def get_features(self, metrics_data: List[MetricData]) -> pd.DataFrame:
         """Get the PCA of the analysis data"""
-        processed_columns = [f.name for f in fields(MetricData)]
-        processed_columns.remove("sorted_function_words")
-        processed_columns.remove("punctuation_frequency")
-        all_columns = processed_columns + self.top_punctuations + self.top_function_words_names
-        df = pd.DataFrame([], columns=all_columns)
+        df = pd.DataFrame([], columns=self.feature_names)
 
         for metric_data in metrics_data:
-            serie = [getattr(metric_data, column) for column in processed_columns]
+            serie = [getattr(metric_data, column) for column in self.processed_columns]
             serie.extend([metric_data.punctuation_frequency[column] for column in self.top_punctuations])
             serie.extend([metric_data.sorted_function_words.get(column, 0)for column in self.top_function_words_names])
             df.loc[len(df)] = serie
         return df
 
+    def _get_processed_columns(self) -> List[str]:
+        """Get the columns that are not function words or punctuations"""
+        processed_columns = [f.name for f in fields(MetricData)]
+        processed_columns.remove("sorted_function_words")
+        processed_columns.remove("punctuation_frequency")
+        return processed_columns
+    
     def _get_top_function_words_names(self, metrics_data: List[MetricData]) -> List[str]:
         """
         Get the top n function words from given `metrics_data`. From each metric data `self.configuration.top_n_function_words` function words are selected,

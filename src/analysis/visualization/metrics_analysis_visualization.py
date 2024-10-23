@@ -33,6 +33,15 @@ class DashApp:
                 style={'width': '100%'}
             )
         
+        def _get_features_button(parent: "DashApp", id: str) -> dcc.Dropdown:
+            return dcc.Dropdown(
+                id=id,
+                options=[{'label': feature, 'value': feature} for feature in parent.feature_extractor.get_feature_names_without_metadata()],
+                value=parent.feature_extractor.get_feature_names_without_metadata()[0],
+                clearable=False,
+                style={'width': '100%'}
+            )
+        
     def __init__(self, 
                  metrics_analysis_results: MetricsAnalysisResults,
                  feature_extractor: FeatureExtractor,
@@ -45,21 +54,66 @@ class DashApp:
 
     def setup_layout(self):
         self.app.layout = html.Div([
+            # Graph 0
+            DashApp.Helper._get_features_button(parent=self, id='features-dropdown'),
+            dcc.Graph(id='features-distribution', style={'margin-bottom': '0'}),
+            # Graph 1
             html.Div([
                 DashApp.Helper._get_collections_button(parent=self, id='collection1-dropdown-1'),
                 DashApp.Helper._get_authors_button(parent=self, id='authors1-dropdown-1'),
                 DashApp.Helper._get_collections_button(parent=self, id='collection2-dropdown-1', collection_idx=1),
                 DashApp.Helper._get_authors_button(parent=self, id='authors2-dropdown-1', author_idx=1),
             ], style={'display': 'flex', 'justify-content': 'space-between'}),
-            dcc.Graph(id='relative_bars', style={'margin-bottom': '0'}),
+            dcc.Graph(id='relative-bars', style={'margin-bottom': '0'}),
         ])
 
     def setup_callbacks(self):
-
+        
         ### GRAPH 0
 
         @self.app.callback(
-            Output('relative_bars', 'figure'),
+            Output('features-distribution', 'figure'),
+            Input('features-dropdown', 'value'),
+        )
+        def update_features_distribution(feature: str) -> go.Figure:
+            fig = go.Figure()
+            num_of_bins = 100
+
+            all_chunks = self.metrics_analysis_results.get_all_chunks_metrics()
+            if feature in self.feature_extractor.get_top_punctuation_features():
+                field_extractor = lambda metrics, feature: metrics.punctuation_frequency.get(feature, 0)
+            elif feature in self.feature_extractor.get_top_function_words_features():
+                field_extractor = lambda metrics, feature: metrics.sorted_function_words.get(feature, 0)
+            else:
+                field_extractor = lambda metrics, feature: getattr(metrics, feature)
+
+            feature_values = [field_extractor(m, feature) for m in all_chunks]
+            min_features_value = min(feature_values)
+            max_features_value = max(feature_values)
+
+            fig.add_trace(go.Histogram(
+                x=feature_values,
+                histnorm='percent',
+                xbins=dict(
+                    start=min_features_value,
+                    end=max_features_value,
+                    size=(max_features_value - min_features_value) / num_of_bins
+                ),
+                name="All chunks"
+            ))
+
+            fig.update_layout(
+                title='Feature distribution',
+                xaxis_title=feature,
+                yaxis_title='Percentage',
+                showlegend=True
+            )
+            return fig
+
+        ### GRAPH 1
+
+        @self.app.callback(
+            Output('relative-bars', 'figure'),
             Input('collection1-dropdown-1', 'value'),
             Input('authors1-dropdown-1', 'value'),
             Input('collection2-dropdown-1', 'value'),
@@ -134,6 +188,7 @@ class MetricsAnalysisVisualization(AnalysisVisualization):
         ) -> None:
         self.configuration = settings.configuration
         self.metrics_analysis_results = metrics_analysis_results
+        self.feature_extractor = feature_extractor
         self.dash_app = DashApp( 
             metrics_analysis_results=metrics_analysis_results,
             feature_extractor=feature_extractor
