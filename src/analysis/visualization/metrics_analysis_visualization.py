@@ -1,26 +1,205 @@
 from dataclasses import fields
-from typing import Dict, List
+import pandas as pd
 
 import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from itertools import islice
+from src.analysis.metrics.extractor import FeatureExtractor
 from src.analysis.metrics.models import MetricData, MetricsAnalysisResults
 from src.analysis.visualization.analysis_visualization import AnalysisVisualization
 from src.settings import Settings
+from dash import dcc, html, Dash
+from dash.dependencies import Input, Output
+
+class DashApp:
+
+    class Helper:
+        def _get_collections_button(parent: "DashApp", id: str, collection_idx: int = 0) -> dcc.Dropdown:
+            return dcc.Dropdown(
+                id=id,
+                options=[{'label': collection, 'value': collection} for collection in parent.metrics_analysis_results.collection_names],
+                value=parent.metrics_analysis_results.collection_names[collection_idx],
+                clearable=False,
+                style={'width': '100%'}
+            )
+        
+        def _get_authors_button(parent: "DashApp", id: str, author_idx: int = 0) -> dcc.Dropdown:
+            return dcc.Dropdown(
+                id=id,
+                options=[{'label': author, 'value': author} for author in parent.metrics_analysis_results.author_names],
+                value=parent.metrics_analysis_results.author_names[author_idx],
+                clearable=False,
+                style={'width': '100%'}
+            )
+        
+        def _get_features_button(parent: "DashApp", id: str) -> dcc.Dropdown:
+            return dcc.Dropdown(
+                id=id,
+                options=[{'label': feature, 'value': feature} for feature in parent.feature_extractor.get_feature_names_without_metadata()],
+                value=parent.feature_extractor.get_feature_names_without_metadata()[0],
+                clearable=False,
+                style={'width': '100%'}
+            )
+        
+    def __init__(self, 
+                 metrics_analysis_results: MetricsAnalysisResults,
+                 feature_extractor: FeatureExtractor,
+        ) -> None:
+        self.metrics_analysis_results = metrics_analysis_results
+        self.feature_extractor = feature_extractor
+        self.app = Dash(__name__)
+        self.setup_layout()
+        self.setup_callbacks()
+
+    def setup_layout(self):
+        self.app.layout = html.Div([
+            # Graph 0
+            DashApp.Helper._get_features_button(parent=self, id='features-dropdown'),
+            dcc.Graph(id='features-distribution', style={'margin-bottom': '0'}),
+            # Graph 1
+            html.Div([
+                DashApp.Helper._get_collections_button(parent=self, id='collection1-dropdown-1'),
+                DashApp.Helper._get_authors_button(parent=self, id='authors1-dropdown-1'),
+                DashApp.Helper._get_collections_button(parent=self, id='collection2-dropdown-1', collection_idx=1),
+                DashApp.Helper._get_authors_button(parent=self, id='authors2-dropdown-1', author_idx=1),
+            ], style={'display': 'flex', 'justify-content': 'space-between'}),
+            dcc.Graph(id='relative-bars', style={'margin-bottom': '0'}),
+        ])
+
+    def setup_callbacks(self):
+        
+        ### GRAPH 0
+
+        @self.app.callback(
+            Output('features-distribution', 'figure'),
+            Input('features-dropdown', 'value'),
+        )
+        def update_features_distribution(feature: str) -> go.Figure:
+            fig = go.Figure()
+            num_of_bins = 100
+
+            all_chunks = self.metrics_analysis_results.get_all_chunks_metrics()
+            if feature in self.feature_extractor.get_top_punctuation_features():
+                field_extractor = lambda metrics, feature: metrics.punctuation_frequency.get(feature, 0)
+            elif feature in self.feature_extractor.get_top_function_words_features():
+                field_extractor = lambda metrics, feature: metrics.sorted_function_words.get(feature, 0)
+            else:
+                field_extractor = lambda metrics, feature: getattr(metrics, feature)
+
+            feature_values = [field_extractor(m, feature) for m in all_chunks]
+            min_features_value = min(feature_values)
+            max_features_value = max(feature_values)
+
+            fig.add_trace(go.Histogram(
+                x=feature_values,
+                histnorm='percent',
+                xbins=dict(
+                    start=min_features_value,
+                    end=max_features_value,
+                    size=(max_features_value - min_features_value) / num_of_bins
+                ),
+                name="All chunks"
+            ))
+
+            fig.update_layout(
+                title='Feature distribution',
+                xaxis_title=feature,
+                yaxis_title='Percentage',
+                showlegend=True
+            )
+            return fig
+
+        ### GRAPH 1
+
+        @self.app.callback(
+            Output('relative-bars', 'figure'),
+            Input('collection1-dropdown-1', 'value'),
+            Input('authors1-dropdown-1', 'value'),
+            Input('collection2-dropdown-1', 'value'),
+            Input('authors2-dropdown-1', 'value'),
+        )
+        def update_relative_bars(collection_1: str, author_1: str, collection_2: str, author_2: str) -> go.Figure:
+            metrics_1 = self.metrics_analysis_results.full_author_collection[author_1][collection_1]
+            metrics_2 = self.metrics_analysis_results.full_author_collection[author_2][collection_2]
+            features_1 = self.feature_extractor.get_features(
+                metrics_data=[metrics_1]
+            ).iloc[0]
+            features_2 = self.feature_extractor.get_features(
+                metrics_data=[metrics_2]
+            ).iloc[0]
+
+            feature_names = features_1.index.to_list()
+            for element in ["source_name", "author_name", "collection_name"]:
+                feature_names.remove(element)
+
+            relative_bars = {
+                feature_name: {
+                    'relative_difference': self._get_relative_difference(features_1[feature_name], features_2[feature_name]),
+                    'value_1': features_1[feature_name],
+                    'value_2': features_2[feature_name]
+                }
+                for feature_name in feature_names
+            }
+            relative_bars_df = pd.DataFrame(relative_bars).T
+
+            colors = [AnalysisVisualization.COLORS["negative"] if value < 0 
+                    else AnalysisVisualization.COLORS["positive"] 
+                    for value in relative_bars_df["relative_difference"].values]
+            
+            fig = go.Figure(data=[
+                go.Bar(
+                    name="Mark Twain", 
+                    x=relative_bars_df.index.tolist(), 
+                    y=relative_bars_df["relative_difference"].tolist(),
+                    marker=dict(color=colors),
+                    text=relative_bars_df["value_1"].astype(str) + " - " + relative_bars_df["value_2"].astype(str),
+                )
+            ])
+            fig.update_layout(
+                title="Relative difference of features",
+                xaxis_title="Feature",
+                yaxis_title="Relative difference",
+                font=dict(size=MetricsAnalysisVisualization.FONT_SIZE)
+            )
+
+            return fig
+        
+    def _get_relative_difference(self, value_1, value_2):
+        max = np.max([value_1, value_2])
+        difference = value_1 - value_2
+        relative_difference = difference / max
+        return relative_difference
+    
+    def run(self, port: int):
+        self.app.run(
+            port=port,
+            jupyter_height=800,
+            debug=False,
+        )
 
 class MetricsAnalysisVisualization(AnalysisVisualization):
     FONT_SIZE = 10
 
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self, 
+                 settings: Settings, 
+                 metrics_analysis_results: MetricsAnalysisResults,
+                 feature_extractor: FeatureExtractor,
+        ) -> None:
         self.configuration = settings.configuration
+        self.metrics_analysis_results = metrics_analysis_results
+        self.feature_extractor = feature_extractor
+        self.dash_app = DashApp( 
+            metrics_analysis_results=metrics_analysis_results,
+            feature_extractor=feature_extractor
+        )
 
-    def visualize(self, metrics_analysis_results: MetricsAnalysisResults):
+    def visualize(self):
         """Visualize the analysis data for the authors and models"""
-        self._visualize(metrics_analysis_results)
-        self._visualize_function_words(metrics_analysis_results)
-        self._visualize_punctuation_frequency(metrics_analysis_results)
-        self._visualize_metrics_of_two(metrics_analysis_results)
+        self._visualize(self.metrics_analysis_results)
+        self._visualize_function_words(self.metrics_analysis_results)
+        self._visualize_punctuation_frequency(self.metrics_analysis_results)
+        self._visualize_metrics_of_two(self.metrics_analysis_results)
 
     def _visualize(self, metrics_analysis_results: MetricsAnalysisResults):
         """Visualize the unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""
@@ -194,3 +373,4 @@ class MetricsAnalysisVisualization(AnalysisVisualization):
             title=included_metrics[0],
         )
         fig.show()
+                

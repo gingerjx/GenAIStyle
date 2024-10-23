@@ -24,3 +24,7 @@ class AnalysisVisualization():
         "human": "#3498db", 
         "llm": "#e74c3c"
     }
+    COLORS = {
+        "positive": "#3498db", 
+        "negative": "#e74c3c"
+    }
