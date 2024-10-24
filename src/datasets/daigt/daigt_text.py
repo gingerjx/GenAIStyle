@@ -12,9 +12,12 @@ class DaigtText(Text):
         self.source = row["source"]
         self.model = row["model"]
 
-    def get_text(self):
+    def get_text(self) -> str:
         return self.text
     
+    def set_text(self, text: str) -> None:
+        self.text = text
+        
     def copy(self, text: str) -> "DaigtText":
         return DaigtText(pd.Series({
             "text": text,

@@ -10,10 +10,14 @@ class Book(Text):
         with open(filepath, 'r', encoding='utf-8') as f:
             self.text = f.read()
     
-    def get_text(self):
+    def get_text(self) -> str:
         """Get the text of the book"""
         return self.text
     
+    def set_text(self, text: str):
+        """Set the text of the book"""
+        self.text = text
+
     @staticmethod
     def _extract_title(path: str) -> str:
         """Extract title from a file path"""
