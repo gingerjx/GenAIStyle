@@ -18,3 +18,4 @@ from src.classification.classification_visualization import ClassificationVisual
 from src.analysis.metrics.extractor import FeatureExtractor
 
 from src.datasets.daigt.daigt_dataset import DaigtDataset
+from src.datasets.writing_style.writing_style_dataset import WritingStyleDataset

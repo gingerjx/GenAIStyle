@@ -17,40 +17,29 @@ class Settings:
         
         res_dir: Path = Path("res")
         
-        metadata_dir: Path = res_dir / "metadata"
-        query_filepath: Path = metadata_dir / "queries"
-        all_authors_filepath: Path = metadata_dir / "all/author_list"
-        all_books_csv_filepath: Path = metadata_dir / "all/books.csv"
-        selected_dir_path = metadata_dir / "selected"
-        selected_authors_filepath: Path = selected_dir_path / "author_list"
-        selected_books_csv_filepath: Path = selected_dir_path / "books.csv"
-
-        raw_dir: Path = res_dir / "raw"
-        raw_books_dir: Path = raw_dir / "books"
-        raw_models_dir: Path = raw_dir / "models"
-        raw_models_dirs: Dict[str, Path] = {
-                "gpt-3.5-turbo-0125": raw_models_dir / "gpt-3.5-turbo-0125",
-                "gpt-4o": raw_models_dir / "gpt-4o",
-                "gemini-1.5-flash": raw_models_dir / "gemini-1.5-flash",
-                "open-mixtral-8x7b": raw_models_dir / "open-mixtral-8x7b",
-                "claude-3-haiku-20240307": raw_models_dir / "claude-3-haiku-20240307"
-            }
+        # Writing Style Dataset
         
-        cleaned_dir: Path = res_dir / "cleaned"
-        cleaned_books_dir: Path = cleaned_dir / "books"
-        cleaned_models_dir: Path = cleaned_dir / "models"
-        cleaned_models_dirs: Dict[str, Path] = {
-                "gpt-3.5-turbo-0125": cleaned_models_dir / "gpt-3.5-turbo-0125",
-                "gpt-4o": cleaned_models_dir / "gpt-4o",
-                "gemini-1.5-flash": cleaned_models_dir / "gemini-1.5-flash",
-                "open-mixtral-8x7b": cleaned_models_dir / "open-mixtral-8x7b",
-                "claude-3-haiku-20240307": cleaned_models_dir / "claude-3-haiku-20240307"
-            }
-        
-        results_dir: Path = res_dir / "results"
-        analysis_filepath: Path = results_dir / "analysis.json"
+        ws_dir: Path = res_dir / "datasets/writing_style"
+        ws_metadata_dir: Path = ws_dir / "metadata"
+        ws_query_filepath: Path = ws_metadata_dir / "queries"
+        ws_all_authors_filepath: Path = ws_metadata_dir / "all/author_list"
+        ws_all_books_csv_filepath: Path = ws_metadata_dir / "all/books.csv"
+        ws_selected_dir_path = ws_metadata_dir / "selected"
+        ws_selected_authors_filepath: Path = ws_selected_dir_path / "author_list"
+        ws_selected_books_csv_filepath: Path = ws_selected_dir_path / "books.csv"
 
-        # DaigtDataset
+        ws_raw_dir: Path = ws_dir / "raw"
+        ws_raw_books_dir: Path = ws_raw_dir / "books"
+        ws_raw_models_dir: Path = ws_raw_dir / "models"
+        ws_raw_models_dirs: Dict[str, Path] = {
+                "gpt-3.5-turbo-0125": ws_raw_models_dir / "gpt-3.5-turbo-0125",
+                "gpt-4o": ws_raw_models_dir / "gpt-4o",
+                "gemini-1.5-flash": ws_raw_models_dir / "gemini-1.5-flash",
+                "open-mixtral-8x7b": ws_raw_models_dir / "open-mixtral-8x7b",
+                "claude-3-haiku-20240307": ws_raw_models_dir / "claude-3-haiku-20240307"
+            }
+
+        # Daigt Dataset
 
         daigt_dir: Path = res_dir / "datasets/daigt"
 

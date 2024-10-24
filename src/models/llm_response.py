@@ -13,7 +13,7 @@ class LLMResponse(Text):
         self.created_at = response["created_at"]
         self.model = response["model"]
 
-    def text(self):
+    def get_text(self):
         """Get the text of the response"""
         return self.text()
         

@@ -10,7 +10,7 @@ class Book(Text):
         with open(filepath, 'r', encoding='utf-8') as f:
             self.text = f.read()
     
-    def text(self):
+    def get_text(self):
         """Get the text of the book"""
         return self.text
     
