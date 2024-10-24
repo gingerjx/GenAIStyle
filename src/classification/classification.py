@@ -1,4 +1,5 @@
 from typing import Dict, Tuple, Type
+import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
@@ -24,13 +25,15 @@ class BaseClassification:
         authors_chunks_binary_classification = self._get_authors_chunks_binary_classification(pca_analysis_results)
         collections_chunks_binary_classification = self._get_collections_chunks_binary_classification(pca_analysis_results)
         collection_collection_author_chunks_classification, collection_collection_author_chunks_classification_triangle = self._get_collection_collection_author_chunks_classification(pca_analysis_results)
+        collection_author_author_classification = self._get_collection_author_author_classification(pca_analysis_results)
 
         return ClassificationResults(
             all_chunks_binary_classification=all_chunks_binary_classification,
             authors_chunks_binary_classification=authors_chunks_binary_classification,
             collections_chunks_binary_classification=collections_chunks_binary_classification,
             collection_collection_author_chunks_classification=collection_collection_author_chunks_classification,
-            collection_collection_author_chunks_classification_triangle=collection_collection_author_chunks_classification_triangle
+            collection_collection_author_chunks_classification_triangle=collection_collection_author_chunks_classification_triangle,
+            collection_author_author_classification=collection_author_author_classification,
         )
     
     def _get_authors_chunks_binary_classification(self, pca_analysis_results: PCAAnalysisResults) -> Dict:
@@ -77,6 +80,30 @@ class BaseClassification:
 
         return result, result_trinagle
 
+    def _get_collection_author_author_classification(self, pca_analysis_results: PCAAnalysisResults) -> Dict:
+        tables = {}
+
+        for collection_name in pca_analysis_results.collection_names:
+            tables[collection_name] = pd.DataFrame(index=pca_analysis_results.author_names, columns=pca_analysis_results.author_names)
+
+            for outer_author_name in pca_analysis_results.author_names:
+                for inner_author_name in pca_analysis_results.author_names:
+                    if outer_author_name == inner_author_name:
+                        tables[collection_name].at[outer_author_name, inner_author_name] = None
+                        continue
+                    if not pd.isnull(tables[collection_name].at[inner_author_name, outer_author_name]):
+                        tables[collection_name].at[outer_author_name, inner_author_name] = tables[collection_name].at[inner_author_name, outer_author_name]
+                        continue
+
+                    outer_results = pca_analysis_results.get_collection_author_chunks(collection_name, outer_author_name)
+                    inner_results = pca_analysis_results.get_collection_author_chunks(collection_name, inner_author_name)
+                    tables[collection_name].at[outer_author_name, inner_author_name] = self._fit_and_binary_predict_on_pca(
+                        pca_analysis_results_data=pd.concat([outer_results, inner_results]),
+                        transformation_function=BaseClassification._transform_data_for_authors_classification
+                    )
+
+        return tables
+    
     def _fit_and_binary_predict_on_pca(self, pca_analysis_results_data: pd.DataFrame, transformation_function) -> ClassificationData:
         X, y = transformation_function(pca_analysis_results_data)
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.configuration.test_size, random_state=self.configuration.seed)
@@ -120,7 +147,7 @@ class BaseClassification:
         return X, y
     
     @staticmethod
-    def _already_classified(result, collection_name_outer: str, collection_name_inner: str) -> bool:
+    def _already_classified(result: dict, collection_name_outer: str, collection_name_inner: str) -> bool:
         return collection_name_inner in result and collection_name_outer in result[collection_name_inner]
     
 class LogisticRegressionClassification(BaseClassification):

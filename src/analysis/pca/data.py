@@ -26,3 +26,8 @@ class PCAAnalysisResults:
 
     # Results of author-collection analysis, all chunks are included in the pca. Currently not used.
     author_collection_chunks: Dict[str, Dict[str, PCAAnalysisData]] = None # [author][collection]
+
+    def get_collection_author_chunks(self, collection: str, author: str) -> PCAAnalysisData:
+        chunks_results = self.all_chunks.results
+        collection_chunks = chunks_results[chunks_results['collection_name'] == collection]
+        return collection_chunks[collection_chunks['author_name'] == author]
