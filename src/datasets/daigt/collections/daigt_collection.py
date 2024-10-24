@@ -3,7 +3,7 @@ from typing import List
 
 from pandas import DataFrame
 from src.datasets.daigt.daigt_text import DaigtText
-from src.models.collections.collection import Collection
+from src.datasets.common.collections.collection import Collection
 from src.models.text_chunk import TextChunk
 
 

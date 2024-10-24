@@ -3,7 +3,7 @@ from typing import List
 
 import pandas as pd
 from src.models.book import Book
-from src.models.collections.collection import Collection
+from src.datasets.common.collections.collection import Collection
 import random
 
 from src.models.text_chunk import TextChunk

@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from typing import List
-from src.models.collections.collection import Collection
+from src.datasets.common.collections.collection import Collection
 from src.models.llm_response import LLMResponse
 from src.models.text_chunk import TextChunk
 

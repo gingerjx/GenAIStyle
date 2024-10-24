@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Dict, List
 from src.models.collections.books_collection import BooksCollection
-from src.models.collections.collection import Collection
+from src.datasets.common.collections.collection import Collection
 from src.models.collections.models_collection import ModelsCollection
 from src.settings import Settings
 

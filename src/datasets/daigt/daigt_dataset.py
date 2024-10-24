@@ -1,8 +1,8 @@
 from typing import List
 import pandas as pd
 from src.datasets.daigt.daigt_cleaner import DaigtCleaner
-from src.models.collections.collection import Collection
-from src.models.collections.daigt_collection import DaigtCollection
+from src.datasets.common.collections.collection import Collection
+from src.datasets.daigt.collections.daigt_collection import DaigtCollection
 from src.settings import Settings
 
 

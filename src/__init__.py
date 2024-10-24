@@ -1,6 +1,6 @@
 from src.file_utils import FileUtils
 from src.models.author import Author
-from src.models.collections.collection import Collection
+from src.datasets.common.collections.collection import Collection
 from src.analysis.preprocessing.analysis import Preprocessing
 from src.settings import Settings
 from src.generation.text_generator import TextGenerator

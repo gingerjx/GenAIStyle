@@ -1,6 +1,6 @@
 from src.cleaning.cleaner import Cleaner
 from src.datasets.daigt.daigt_text import DaigtText
-from src.models.collections.daigt_collection import DaigtCollection
+from src.datasets.daigt.collections.daigt_collection import DaigtCollection
 
 
 class DaigtCleaner(Cleaner):
