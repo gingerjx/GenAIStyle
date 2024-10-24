@@ -14,13 +14,14 @@ class BooksCollection(Collection):
         super().__init__(name)
         self.selected_books_csv_filepath = selected_books_csv_filepath
         self.books_dir = books_dir
+        self.seed = seed
         random.seed(seed)
 
     def read(self, author_name: str) -> None:
         """Read selected books for the author from the directory"""
         books_filepaths = BooksCollection._get_books_filepaths(author_name, self.selected_books_csv_filepath, self.books_dir)
         for filepath in books_filepaths:
-            self.texts.append(Book(filepath))
+            self.texts.append(Book.from_file(filepath))
 
     def get_text_chunks(self, extract_book_chunk_size: int = None) -> List[TextChunk]:
         """To get objective author's text (not biased by a single book), books are chunked and then the chunks are shuffled"""

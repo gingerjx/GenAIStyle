@@ -19,7 +19,7 @@ class ModelsCollection(Collection):
             model_data_dir=self.model_data_dir
         )
         for filepath in generated_texts_files:
-            self.texts.append(LLMResponse(filepath))
+            self.texts.append(LLMResponse.from_file(filepath))
 
     def get_text_chunks(self, chunk_size: int = None) -> List[TextChunk]:
         """Get the chunks of the generated texts"""

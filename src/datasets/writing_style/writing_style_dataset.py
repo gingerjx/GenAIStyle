@@ -1,3 +1,4 @@
+from typing import List
 from src.datasets.writing_style.writing_style_cleaner import WritingStyleCleaner
 from src.file_utils import FileUtils
 from src.models.author import Author
@@ -13,7 +14,7 @@ class WritingStyleDataset:
 
         self.cleaner = WritingStyleCleaner(settings)
         self.author_names = FileUtils.read_authors(self.paths.ws_selected_authors_filepath)
-        self.authors = []
+        self.authors: List[Author] = []
 
     def load(self) -> None: 
         for author_name in self.author_names:

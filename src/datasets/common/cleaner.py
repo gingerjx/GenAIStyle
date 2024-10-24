@@ -4,7 +4,6 @@ import re
 class Cleaner:
 
     def __init__(self, settings: Settings) -> None:
-        self.paths = settings.paths
         self.configuration = settings.configuration
     
     def _is_too_small(self, text: str) -> bool:

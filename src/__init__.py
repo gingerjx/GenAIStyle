@@ -19,3 +19,4 @@ from src.analysis.metrics.extractor import FeatureExtractor
 
 from src.datasets.daigt.daigt_dataset import DaigtDataset
 from src.datasets.writing_style.writing_style_dataset import WritingStyleDataset
+from src.analysis.metadata.writing_style.writing_style_metadata_analysis import WritingStyleMetadataAnalysis

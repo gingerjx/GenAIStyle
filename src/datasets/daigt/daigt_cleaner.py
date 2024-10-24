@@ -15,6 +15,6 @@ class DaigtCleaner(Cleaner):
     def _clean_text(self, daigt_text: DaigtText) -> DaigtText:
         """Clean the text"""
         text = self._remove_emojis(daigt_text.get_text())
-        text = Cleaner._remove_ats(daigt_text.get_text())
-        text = Cleaner._remove_html_tags(daigt_text.get_text())
+        text = Cleaner._remove_ats(text)
+        text = Cleaner._remove_html_tags(text)
         return daigt_text.copy(text)
