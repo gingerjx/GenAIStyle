@@ -6,7 +6,8 @@ from src.settings import Settings
 from src.generation.text_generator import TextGenerator
 from src.generation.generated_text import GeneratedText
 from src.cleaning.cleaner import Cleaner
-from src.analysis.metadata.analysis import MetadataAnalysis
+from src.analysis.metadata.metadata_analysis import MetadataAnalysis
+from src.analysis.metadata.daigt.daigt_metadata_analysis import DaigtMetadataAnalysis
 from src.analysis.metrics.analysis import MetricsAnalysis
 from src.analysis.pca.analysis import PCAAnalysis
 from src.analysis.visualization.pca_analysis_visualization import PCAAnalysisVisualization

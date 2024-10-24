@@ -26,7 +26,10 @@ class DaigtDataset:
         for collection_name in self.collection_names:
             raw_collection = self.read_collection(collection_name)
             self.raw_collections.append(raw_collection)
-            self.cleaned_collections.append(self.cleaner.clean(raw_collection))
+
+    def clean(self) -> None:
+        for collection in self.raw_collections:
+            self.cleaned_collections.append(self.cleaner.clean(collection))
 
     def read_collection(self, collection_name: str) -> DaigtCollection:
         collection = DaigtCollection(
