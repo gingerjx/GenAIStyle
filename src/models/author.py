@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import Dict, List
-from src.models.collections.books_collection import BooksCollection
+from src.datasets.writing_style.collections.books_collection import BooksCollection
 from src.datasets.common.collections.collection import Collection
-from src.models.collections.models_collection import ModelsCollection
+from src.datasets.writing_style.collections.models_collection import ModelsCollection
 from src.settings import Settings
 
 class Author():

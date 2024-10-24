@@ -1,9 +1,9 @@
 from src.datasets.common.cleaner import Cleaner
 from src.models.author import Author
-from src.models.book import Book
-from src.models.collections.books_collection import BooksCollection
-from src.models.collections.models_collection import ModelsCollection
-from src.models.llm_response import LLMResponse
+from src.datasets.writing_style.texts.book import Book
+from src.datasets.writing_style.collections.books_collection import BooksCollection
+from src.datasets.writing_style.collections.models_collection import ModelsCollection
+from src.datasets.writing_style.texts.llm_response import LLMResponse
 from src.settings import Settings
 
 class WritingStyleCleaner(Cleaner):

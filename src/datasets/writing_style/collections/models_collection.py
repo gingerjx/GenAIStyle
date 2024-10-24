@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from typing import List
 from src.datasets.common.collections.collection import Collection
-from src.models.llm_response import LLMResponse
+from src.datasets.writing_style.texts.llm_response import LLMResponse
 from src.models.text_chunk import TextChunk
 
 
