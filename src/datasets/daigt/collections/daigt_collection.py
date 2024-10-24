@@ -2,7 +2,7 @@ import random
 from typing import List
 
 from pandas import DataFrame
-from src.datasets.daigt.daigt_text import DaigtText
+from src.datasets.daigt.texts.daigt_text import DaigtText
 from src.datasets.common.collections.collection import Collection
 from src.datasets.common.texts.text_chunk import TextChunk
 
@@ -16,7 +16,7 @@ class DaigtCollection(Collection):
 
     def read(self, data: DataFrame) -> None:
         for index, row in data.iterrows():
-            text_obj = DaigtText(row)
+            text_obj = DaigtText.from_series(row)
             self.texts.append(text_obj)
  
     def get_text_chunks(self, chunk_size: int = None) -> List[TextChunk]:
