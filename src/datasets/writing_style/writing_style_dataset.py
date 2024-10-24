@@ -1,7 +1,7 @@
 from typing import List
 from src.datasets.writing_style.writing_style_cleaner import WritingStyleCleaner
 from src.file_utils import FileUtils
-from src.models.author import Author
+from src.datasets.writing_style.author import Author
 from src.settings import Settings
 
 

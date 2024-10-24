@@ -1,5 +1,5 @@
 from src.file_utils import FileUtils
-from src.models.author import Author
+from src.datasets.writing_style.author import Author
 from src.datasets.common.collections.collection import Collection
 from src.analysis.preprocessing.analysis import Preprocessing
 from src.settings import Settings

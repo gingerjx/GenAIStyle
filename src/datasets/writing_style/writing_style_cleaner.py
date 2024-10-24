@@ -1,5 +1,5 @@
 from src.datasets.common.cleaner import Cleaner
-from src.models.author import Author
+from src.datasets.writing_style.author import Author
 from src.datasets.writing_style.texts.book import Book
 from src.datasets.writing_style.collections.books_collection import BooksCollection
 from src.datasets.writing_style.collections.models_collection import ModelsCollection

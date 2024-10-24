@@ -4,7 +4,7 @@ from typing import List
 from pandas import DataFrame
 from src.datasets.daigt.daigt_text import DaigtText
 from src.datasets.common.collections.collection import Collection
-from src.models.text_chunk import TextChunk
+from src.datasets.common.texts.text_chunk import TextChunk
 
 
 class DaigtCollection(Collection):

@@ -1,10 +1,10 @@
 from dataclasses import dataclass
-from typing import Dict, List, Tuple
+from typing import List
 
 import pyphen
 from src.analysis.preprocessing.data import PreprocessingData, PreprocessingResults
-from src.models.author import Author
-from src.models.text_chunk import TextChunk
+from src.datasets.writing_style.author import Author
+from src.datasets.common.texts.text_chunk import TextChunk
 from src.settings import Settings
 import nltk
 import re

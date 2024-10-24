@@ -1,7 +1,7 @@
 from typing import List
 from src.analysis.metadata.metadata_analysis import MetadataAnalysis
 from src.datasets.daigt.daigt_dataset import DaigtDataset
-from src.models.author import Author
+from src.datasets.writing_style.author import Author
 from src.datasets.common.collections.collection import Collection
 
 
