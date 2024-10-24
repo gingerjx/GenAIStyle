@@ -1,9 +1,9 @@
 from typing import List
-from src.models.text import Text
+from src.datasets.common.texts.text import Text
 from nltk.tokenize import sent_tokenize
 from abc import ABC, abstractmethod
 
-from src.models.text_chunk import TextChunk
+from src.datasets.common.texts.text_chunk import TextChunk
 
 class Collection(ABC):
     

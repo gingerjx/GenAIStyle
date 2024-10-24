@@ -6,8 +6,6 @@ from src.datasets.writing_style.texts.book import Book
 from src.datasets.common.collections.collection import Collection
 import random
 
-from src.models.text_chunk import TextChunk
-
 class BooksCollection(Collection):
     
     def __init__(self, name: str, selected_books_csv_filepath: Path, books_dir: Path, seed: int):
@@ -23,7 +21,7 @@ class BooksCollection(Collection):
         for filepath in books_filepaths:
             self.texts.append(Book.from_file(filepath))
 
-    def get_text_chunks(self, extract_book_chunk_size: int = None) -> List[TextChunk]:
+    def get_text_chunks(self, extract_book_chunk_size: int = None) -> List[Book]:
         """To get objective author's text (not biased by a single book), books are chunked and then the chunks are shuffled"""
         if extract_book_chunk_size is None:
             raise ValueError("extract_book_chunk_size must be provided for BooksCollection")
@@ -34,9 +32,9 @@ class BooksCollection(Collection):
         return chunks
     
     @staticmethod
-    def _chunk_text(book: Book, chunk_size: int) -> List[TextChunk]:
+    def _chunk_text(book: Book, chunk_size: int) -> List[Book]:
         chunks_sentences = Collection._chunk_text(book.text, chunk_size)
-        return [TextChunk(sentences=sentences, source_name=book.title) for sentences in chunks_sentences]
+        return [Book(sentences=sentences, source_name=book.title) for sentences in chunks_sentences]
     
     @staticmethod
     def _get_books_filepaths(author_name: str, selected_books_csv_filepath: str, books_dir: str) -> List[Path]:

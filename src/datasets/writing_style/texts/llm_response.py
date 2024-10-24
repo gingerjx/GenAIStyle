@@ -1,4 +1,4 @@
-from src.models.text import Text
+from src.datasets.common.texts.text import Text
 import json
 
 class LLMResponse(Text):
