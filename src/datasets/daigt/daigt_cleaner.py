@@ -1,4 +1,4 @@
-from src.cleaning.cleaner import Cleaner
+from src.datasets.common.cleaner import Cleaner
 from src.datasets.daigt.daigt_text import DaigtText
 from src.datasets.daigt.collections.daigt_collection import DaigtCollection
 

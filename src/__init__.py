@@ -5,7 +5,7 @@ from src.analysis.preprocessing.analysis import Preprocessing
 from src.settings import Settings
 from src.generation.text_generator import TextGenerator
 from src.generation.generated_text import GeneratedText
-from src.cleaning.cleaner import Cleaner
+from src.datasets.common.cleaner import Cleaner
 from src.analysis.metadata.metadata_analysis import MetadataAnalysis
 from src.analysis.metadata.daigt.daigt_metadata_analysis import DaigtMetadataAnalysis
 from src.analysis.metrics.analysis import MetricsAnalysis
