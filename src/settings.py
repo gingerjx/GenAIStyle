@@ -49,6 +49,13 @@ class Settings:
         
         results_dir: Path = res_dir / "results"
         analysis_filepath: Path = results_dir / "analysis.json"
+
+        # DaigtDataset
+
+        daigt_dir: Path = res_dir / "datasets/daigt"
+
+        daigt_raw_dir: Path = daigt_dir / "raw"
+        daigt_raw_dataset_filepath: Path = daigt_raw_dir / "train_v4_drcat_01.csv"
           
     class Configuration:
 

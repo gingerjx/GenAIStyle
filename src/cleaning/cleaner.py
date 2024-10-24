@@ -62,7 +62,6 @@ class Cleaner:
                 with open(cleaned_filepath, "w", encoding="utf-8") as f:
                     f.write(text)
 
-
     def _clean_generated_text(self, text: str) -> str:
         """Clean the text"""
         if self._is_too_small(text):

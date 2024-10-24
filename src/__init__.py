@@ -15,3 +15,5 @@ from src.classification.classification import *
 from src.classification.classification_data import ClassificationResultsTransformer
 from src.classification.classification_visualization import ClassificationVisualization
 from src.analysis.metrics.extractor import FeatureExtractor
+
+from src.datasets.daigt.daigt_dataset import DaigtDataset

@@ -7,4 +7,4 @@ class Text(ABC):
         self.filepath = filepath
 
     @abstractmethod
-    def text(self): pass
+    def get_text(self): pass
