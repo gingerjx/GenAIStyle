@@ -39,41 +39,43 @@ class BaseClassification:
     def _get_authors_chunks_binary_classification(self, pca_analysis_results: PCAAnalysisResults) -> Dict:
         return {
             author_name: self._fit_and_binary_predict_on_pca(
-                pca_analysis_results_data=pca_analysis_data.results,
+                pca_analysis_results_data=pca_analysis_results.get_authors_chunks_results(author=author_name),
                 transformation_function=BaseClassification._transform_data_for_binary_collection_classification
             ) 
-            for author_name, pca_analysis_data 
-            in pca_analysis_results.authors_chunks.items()
+            for author_name in pca_analysis_results.author_names
         }
     
     def _get_collections_chunks_binary_classification(self, pca_analysis_results: PCAAnalysisResults) -> Dict:
         return {
             collection_name: self._fit_and_binary_predict_on_pca(
-                pca_analysis_results_data=pca_analysis_data.results,
+                pca_analysis_results_data=pca_analysis_results.get_collections_chunks_results(collection_name),
                 transformation_function=BaseClassification._transform_data_for_authors_classification
             )
-            for collection_name, pca_analysis_data 
-            in pca_analysis_results.collections_chunks.items()
+            for collection_name in pca_analysis_results.collection_names
         }
     
     def _get_collection_collection_author_chunks_classification(self, pca_analysis_results: PCAAnalysisResults) -> Tuple:
         result = {}
         result_trinagle = {}
 
-        for author_name, collections in pca_analysis_results.author_collection_collection_chunks.items():
+        for author_name in pca_analysis_results.author_names:
             result[author_name] = {}
             result_trinagle[author_name] = {}
 
-            for collection_name_outer, collection in collections.items():
+            for collection_name_outer in pca_analysis_results.collection_names:
                 result[author_name][collection_name_outer] = {}
                 result_trinagle[author_name][collection_name_outer] = {}
 
-                for collection_name_inner, pca_analysis_data in collection.items():
+                for collection_name_inner in pca_analysis_results.collection_names:
+                    if collection_name_outer == collection_name_inner:
+                        result[author_name][collection_name_outer][collection_name_inner] = None
+                        continue
                     if BaseClassification._already_classified(result[author_name], collection_name_outer, collection_name_inner):
                         result[author_name][collection_name_outer][collection_name_inner] = result[author_name][collection_name_inner][collection_name_outer]
                         continue
+                    
                     output = self._fit_and_binary_predict_on_pca(
-                        pca_analysis_results_data=pca_analysis_data.results,
+                        pca_analysis_results_data=pca_analysis_results.get_author_collection_collection_chunks_results(author_name, collection_name_outer, collection_name_inner),
                         transformation_function=BaseClassification._transform_data_for_collection_classification
                     )
                     result_trinagle[author_name][collection_name_outer][collection_name_inner] = result[author_name][collection_name_outer][collection_name_inner] = output
@@ -95,8 +97,8 @@ class BaseClassification:
                         tables[collection_name].at[outer_author_name, inner_author_name] = tables[collection_name].at[inner_author_name, outer_author_name]
                         continue
 
-                    outer_results = pca_analysis_results.get_collection_author_chunks(collection_name, outer_author_name)
-                    inner_results = pca_analysis_results.get_collection_author_chunks(collection_name, inner_author_name)
+                    outer_results = pca_analysis_results.get_collection_author_chunks_results(collection_name, outer_author_name)
+                    inner_results = pca_analysis_results.get_collection_author_chunks_results(collection_name, inner_author_name)
                     tables[collection_name].at[outer_author_name, inner_author_name] = self._fit_and_binary_predict_on_pca(
                         pca_analysis_results_data=pd.concat([outer_results, inner_results]),
                         transformation_function=BaseClassification._transform_data_for_authors_classification
