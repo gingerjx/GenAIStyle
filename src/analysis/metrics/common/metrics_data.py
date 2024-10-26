@@ -1,3 +1,5 @@
+from abc import abstractmethod
+import abc
 from dataclasses import dataclass, field
 from typing import Dict, List
 
@@ -20,3 +22,14 @@ class MetricData:
     herdans_c: float
     maas: float
     simpsons_index: float
+
+@dataclass
+class MetricsAnalysisResults(abc.ABC):
+
+    @abstractmethod
+    def get_all_full_metrics(self) -> List[MetricData]:
+        pass
+    
+    @abstractmethod
+    def get_all_chunks_metrics(self) -> List[MetricData]:
+        pass

@@ -1,11 +1,11 @@
 from dataclasses import dataclass, field
 from typing import Dict, List
 
-from src.analysis.metrics.common.metrics_data import MetricData
+from src.analysis.metrics.common.metrics_data import MetricData, MetricsAnalysisResults
 
 
 @dataclass
-class DaigtMetricsAnalysisResults:
+class DaigtMetricsAnalysisResults(MetricsAnalysisResults):
 
     collection_names: List[str]
     full_collection: Dict[str, MetricData] = field(init=False, default_factory=dict)              # [collection]

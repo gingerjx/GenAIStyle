@@ -69,6 +69,6 @@ class FeatureExtractor:
         punctuation_names = []
         for metric_data in metrics_data:
             sorted_punctuation = dict(sorted(metric_data.punctuation_frequency.items(), key=lambda item: item[1], reverse=True))
-            top_n_punctuation = list(metric_data.punctuation_frequency.keys())[:self.configuration.top_n_punctuation]
+            top_n_punctuation = list(sorted_punctuation.keys())[:self.configuration.top_n_punctuation]
             punctuation_names.extend(top_n_punctuation)
         return list(set(punctuation_names))

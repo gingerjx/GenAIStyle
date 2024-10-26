@@ -1,11 +1,11 @@
 from dataclasses import dataclass, field
 from typing import Dict, List
 
-from src.analysis.metrics.common.metrics_data import MetricData
+from src.analysis.metrics.common.metrics_data import MetricData, MetricsAnalysisResults
 
 
 @dataclass
-class WritingStyleMetricsAnalysisResults:
+class WritingStyleMetricsAnalysisResults(MetricsAnalysisResults):
 
     author_names: List[str]
     collection_names: List[str]
