@@ -22,3 +22,4 @@ from src.datasets.writing_style.writing_style_dataset import WritingStyleDataset
 from src.analysis.metadata.writing_style.writing_style_metadata_analysis import WritingStyleMetadataAnalysis
 from src.analysis.preprocessing.wiriting_style.wiriting_style_preprocessing import WritingStylePreprocessing
 from src.analysis.preprocessing.daigt.daigt_preprocessing import DaigtPreprocessing
+from src.analysis.metrics.daigt.daigt_metrics_analysis import DaigtMetricsAnalysis

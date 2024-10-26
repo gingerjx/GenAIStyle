@@ -28,8 +28,8 @@ class MetricsAnalysisResults:
     collection_names: List[str]
     full_author_collection: Dict[str, Dict[str, MetricData]] = field(init=False, default_factory=dict)              # [author][collection]
     chunks_author_collection: Dict[str, Dict[str, List[MetricData]]] = field(init=False, default_factory=dict)      # [author][collection][chunk_id]
-    full_collection_author: Dict[str, Dict[str, MetricData]] = field(init=False, default_factory=dict)              # [author][collection]
-    chunks_collection_author: Dict[str, Dict[str, List[MetricData]]] = field(init=False, default_factory=dict)      # [author][collection][chunk_id]
+    full_collection_author: Dict[str, Dict[str, MetricData]] = field(init=False, default_factory=dict)              # [collection][author]
+    chunks_collection_author: Dict[str, Dict[str, List[MetricData]]] = field(init=False, default_factory=dict)      # [collection][author][chunk_id]
     global_top_function_words: List[str] = field(init=False, default_factory=list)
 
     def __post_init__(self) -> None:
