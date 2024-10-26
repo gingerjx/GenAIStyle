@@ -2,7 +2,7 @@ from collections import Counter
 import math
 from string import punctuation
 from typing import Dict, List
-from src.analysis.metrics.models import MetricData, MetricsAnalysisResults
+from src.analysis.metrics.common.metrics_data import MetricData, MetricsAnalysisResults
 from src.analysis.preprocessing.common.preprocessing_data import PreprocessingData
 import nltk
 from functionwords import FunctionWords

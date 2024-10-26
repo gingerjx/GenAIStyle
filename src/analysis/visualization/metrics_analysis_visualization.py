@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from itertools import islice
 from src.analysis.metrics.extractor import FeatureExtractor
-from src.analysis.metrics.models import MetricData, MetricsAnalysisResults
+from src.analysis.metrics.common.metrics_data import MetricData, MetricsAnalysisResults
 from src.analysis.visualization.analysis_visualization import AnalysisVisualization
 from src.settings import Settings
 from dash import dcc, html, Dash

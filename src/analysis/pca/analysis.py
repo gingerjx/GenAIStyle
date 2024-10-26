@@ -4,7 +4,7 @@ import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.discriminant_analysis import StandardScaler
 from src.analysis.metrics.extractor import FeatureExtractor
-from src.analysis.metrics.models import MetricsAnalysisResults
+from src.analysis.metrics.common.metrics_data import MetricsAnalysisResults
 from src.analysis.pca.data import PCAAnalysisData, PCAAnalysisResults
 
 from src.settings import Settings

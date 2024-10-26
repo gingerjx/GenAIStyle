@@ -2,7 +2,7 @@ from dataclasses import fields
 from typing import List
 
 import pandas as pd
-from src.analysis.metrics.models import MetricData, MetricsAnalysisResults
+from src.analysis.metrics.common.metrics_data import MetricData, MetricsAnalysisResults
 from src.settings import Settings
 
 
