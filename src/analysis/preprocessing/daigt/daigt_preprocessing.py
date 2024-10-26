@@ -23,7 +23,9 @@ class DaigtPreprocessing(Preprocessing):
 
     def preprocess(self, dataset: DaigtDataset) -> DaigtPreprocessingResults:
         """Preprocess the data"""
-        preprocessing_results = DaigtPreprocessingResults()
+        preprocessing_results = DaigtPreprocessingResults(
+            collection_names=[collection.name for collection in dataset.cleaned_collections]
+        )
 
         for collection in dataset.cleaned_collections:
             preprocessed_chunks, preprocessed_full = super().preprocess(collection)
