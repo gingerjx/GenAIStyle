@@ -1,4 +1,6 @@
 from typing import List
+
+import pandas as pd
 from src.datasets.writing_style.writing_style_cleaner import WritingStyleCleaner
 from src.file_utils import FileUtils
 from src.datasets.writing_style.author import Author
@@ -29,3 +31,14 @@ class WritingStyleDataset:
     def clean(self) -> None:
         for author in self.authors:
             self.cleaner.clean(author)
+
+    def info(self) -> pd.DataFrame:
+        table = pd.DataFrame(index=self.author_names, columns=self._get_collection_names())
+        for author in self.authors:
+            for collection in author.cleaned_collections:
+                collection_text = collection.get_merged_text()
+                table.loc[author.name, collection.name] = len(collection_text)
+        return table
+
+    def _get_collection_names(self) -> List[str]:
+        return list(self.paths.ws_raw_models_dirs.keys())

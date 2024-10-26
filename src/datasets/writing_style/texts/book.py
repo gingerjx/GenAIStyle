@@ -5,7 +5,7 @@ class Book(Text):
     AUTHOR_NAME_TITLE_SEPARATOR: str = "___"
 
     def __init__(self, text: str, filepath: str, title: str):
-        self.title = Book._extract_title(filepath)
+        self.title = title
         self.text = text
         self.filepath = filepath
     

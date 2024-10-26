@@ -33,21 +33,3 @@ class PreprocessingData:
         self.num_of_complex_words = len(self.complex_words)
         self.num_of_sentences = len(self.sentences)
         self.num_of_words = len(self.words)
-
-@dataclass
-class PreprocessingResults:
-    
-    author_names: List[str]
-    collection_names: List[str]
-    full: Dict[str, Dict[str, PreprocessingData]] = field(init=False, default_factory=dict)              # [author][model]
-    chunks: Dict[str, Dict[str, List[PreprocessingData]]] = field(init=False, default_factory=dict)      # [author][model][chunk_id]
-
-    def __post_init__(self) -> None:
-        for author_name in self.author_names:   
-            self.chunks[author_name] = {}
-            self.full[author_name] = {}
-            for collection_name in self.collection_names:
-                self.full[author_name][collection_name] = PreprocessingData()
-                self.chunks[author_name].update({
-                    collection_name: []
-                })

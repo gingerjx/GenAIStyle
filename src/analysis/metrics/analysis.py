@@ -3,10 +3,11 @@ import math
 from string import punctuation
 from typing import Dict, List
 from src.analysis.metrics.models import MetricData, MetricsAnalysisResults
-from src.analysis.preprocessing.data import PreprocessingData, PreprocessingResults
+from src.analysis.preprocessing.common.preprocessing_data import PreprocessingData
 import nltk
 from functionwords import FunctionWords
 
+from src.analysis.preprocessing.wiriting_style.writing_style_preprocessing_data import WritingStylePreprocessingResults
 from src.settings import Settings
 
 
@@ -16,7 +17,7 @@ class MetricsAnalysis:
     def __init__(self, settings: Settings) -> None:
         self.configuration = settings.configuration
 
-    def analyze(self, preprocessing_results: PreprocessingResults) -> MetricsAnalysisResults:
+    def analyze(self, preprocessing_results: WritingStylePreprocessingResults) -> MetricsAnalysisResults:
         """Analyze the authors and their collections"""
         metrics_analysis_results = MetricsAnalysisResults(
             author_names=preprocessing_results.author_names,

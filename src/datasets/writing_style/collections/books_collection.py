@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import List
 
 import pandas as pd
+from src.datasets.common.texts.text_chunk import TextChunk
 from src.datasets.writing_style.texts.book import Book
 from src.datasets.common.collections.collection import Collection
 import random
@@ -32,9 +33,9 @@ class BooksCollection(Collection):
         return chunks
     
     @staticmethod
-    def _chunk_text(book: Book, chunk_size: int) -> List[Book]:
+    def _chunk_text(book: Book, chunk_size: int) -> List[TextChunk]:
         chunks_sentences = Collection._chunk_text(book.text, chunk_size)
-        return [Book(sentences=sentences, source_name=book.title) for sentences in chunks_sentences]
+        return [TextChunk(sentences=sentences, source_name=book.title) for sentences in chunks_sentences]
     
     @staticmethod
     def _get_books_filepaths(author_name: str, selected_books_csv_filepath: str, books_dir: str) -> List[Path]:
