@@ -3,7 +3,7 @@ import plotly.graph_objects as go
 from dash import dcc, html, Dash
 from dash.dependencies import Input, Output
 from plotly.subplots import make_subplots
-from src.analysis.visualization.metrics_analysis_visualization import AnalysisVisualization
+from src.analysis.metrics.writing_style.visualization.writing_style_metrics_analysis_visualization import AnalysisVisualization
 from src.analysis.pca.data import PCAAnalysisResults
 
 class DashApp:

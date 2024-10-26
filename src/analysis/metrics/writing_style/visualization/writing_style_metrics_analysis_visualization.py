@@ -5,7 +5,7 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from itertools import islice
-from src.analysis.metrics.extractor import FeatureExtractor
+from src.analysis.feature.common.feature_extractor import FeatureExtractor
 from src.analysis.metrics.common.metrics_data import MetricData, MetricsAnalysisResults
 from src.analysis.visualization.analysis_visualization import AnalysisVisualization
 from src.settings import Settings
@@ -160,7 +160,7 @@ class DashApp:
                 title="Relative difference of features",
                 xaxis_title="Feature",
                 yaxis_title="Relative difference",
-                font=dict(size=MetricsAnalysisVisualization.FONT_SIZE)
+                font=dict(size=WritingStyleMetricsAnalysisVisualization.FONT_SIZE)
             )
 
             return fig
@@ -178,7 +178,7 @@ class DashApp:
             debug=False,
         )
 
-class MetricsAnalysisVisualization(AnalysisVisualization):
+class WritingStyleMetricsAnalysisVisualization(AnalysisVisualization):
     FONT_SIZE = 10
 
     def __init__(self, 
@@ -241,7 +241,7 @@ class MetricsAnalysisVisualization(AnalysisVisualization):
                     fig.add_trace(go.Bar(
                         name=collection_name, 
                         x=metrics_analysis_results.author_names, 
-                        marker_color=MetricsAnalysisVisualization.COLLECTION_COLORS_LIST[i],
+                        marker_color=WritingStyleMetricsAnalysisVisualization.COLLECTION_COLORS_LIST[i],
                         y=value, 
                         showlegend=j==0
                     ), row=j+1, col=1)
@@ -275,7 +275,7 @@ class MetricsAnalysisVisualization(AnalysisVisualization):
                     name=collection_name, 
                     x=list(author_top_function_words.keys()), 
                     y=list(author_top_function_words.values()), 
-                    marker_color=MetricsAnalysisVisualization.COLLECTION_COLORS_LIST[i],
+                    marker_color=WritingStyleMetricsAnalysisVisualization.COLLECTION_COLORS_LIST[i],
                     showlegend=j==0
                 ), row=i+1, col=j+1)
 
@@ -313,7 +313,7 @@ class MetricsAnalysisVisualization(AnalysisVisualization):
                         name=collection_name, 
                         x=list(sorted_keys), 
                         y=list(sorted_values), 
-                        marker_color=MetricsAnalysisVisualization.COLLECTION_COLORS_LIST[i],
+                        marker_color=WritingStyleMetricsAnalysisVisualization.COLLECTION_COLORS_LIST[i],
                         showlegend=show_legend,
                         mode="markers" 
                     ), row=row, col=col
@@ -356,7 +356,7 @@ class MetricsAnalysisVisualization(AnalysisVisualization):
                 fig.add_trace(go.Scatter(
                         name=collection_name, 
                         x=metrics_analysis_results.author_names, 
-                        marker_color=MetricsAnalysisVisualization.COLLECTION_COLORS_LIST[i],
+                        marker_color=WritingStyleMetricsAnalysisVisualization.COLLECTION_COLORS_LIST[i],
                         y=value,
                         mode="markers",
                         visible=(metric_name == included_metrics[0])

@@ -11,11 +11,11 @@ from src.analysis.metadata.daigt.daigt_metadata_analysis import DaigtMetadataAna
 from src.analysis.metrics.common.metrics_analysis import MetricsAnalysis
 from src.analysis.pca.analysis import PCAAnalysis
 from src.analysis.visualization.pca_analysis_visualization import PCAAnalysisVisualization
-from src.analysis.visualization.metrics_analysis_visualization import MetricsAnalysisVisualization
+from src.analysis.metrics.writing_style.visualization.writing_style_metrics_analysis_visualization import WritingStyleMetricsAnalysisVisualization
 from src.classification.classification import *
 from src.classification.classification_data import ClassificationResultsTransformer
 from src.classification.classification_visualization import ClassificationVisualization
-from src.analysis.metrics.extractor import FeatureExtractor
+from src.analysis.feature.common.feature_extractor import FeatureExtractor
 
 from src.datasets.daigt.daigt_dataset import DaigtDataset
 from src.datasets.writing_style.writing_style_dataset import WritingStyleDataset
