@@ -16,6 +16,7 @@ class DaigtPreprocessing(Preprocessing):
         sentences: List[str]
 
     def __init__(self, settings: Settings) -> None:
+        super().__init__(settings)
         self.extract_book_chunk_size = None
         self.analysis_number_of_words = settings.configuration.daigt_analysis_number_of_words
         self.analysis_chunk_number_of_words = settings.configuration.daigt_analysis_chunk_number_of_words

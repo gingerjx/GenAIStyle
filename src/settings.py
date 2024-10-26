@@ -58,12 +58,12 @@ class Settings:
         # Writing Style Dataset Analysis
         ws_response_number_of_words: int = 3000                                                              # Expected number of words used during response generation
         ws_extract_book_chunk_size: int = 5 * ws_response_number_of_words                                    # Number of characters used as a chunk size during preprocessing of the books. Average english word length * expected number of words used during response generation
-        ws_analysis_chunk_number_of_words: int = 5000                                                        # Number of words used as a chunk size during analysis. Has to be divisor of `analysis_number_of_words`
+        ws_analysis_chunk_number_of_words: int = 5000                                                        # Number of words used as a chunk size during analysis. Has to be divisor of `ws_analysis_number_of_words`
         ws_analysis_number_of_words: int = 200000                                                            # Number of words used during analysis   
         ws_analysis_number_of_chunks: int = ws_analysis_number_of_words // ws_analysis_chunk_number_of_words # Number of chunks used during analysis
 
         # Daigt Dataset Analysis
-        daigt_analysis_chunk_number_of_words: int = 5000                                                        # Number of words used as a chunk size during analysis. Has to be divisor of `analysis_number_of_words`
+        daigt_analysis_chunk_number_of_words: int = 5000                                                        # Number of words used as a chunk size during analysis. Has to be divisor of `daigt_analysis_number_of_words`
         daigt_analysis_number_of_words: int = None                                                              # Number of words used during analysis  
 
         # Classification
