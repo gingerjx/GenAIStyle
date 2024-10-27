@@ -25,3 +25,4 @@ from src.analysis.preprocessing.daigt.daigt_preprocessing import DaigtPreprocess
 from src.analysis.metrics.daigt.daigt_metrics_analysis import DaigtMetricsAnalysis
 from src.analysis.metrics.writing_style.writing_style_metrics_analysis import WritingStyleMetricsAnalysis
 from src.analysis.pca.writing_style.visualization.writing_style_pca_analysis_visualization import WritingStylePCAAnalysisVisualization
+from src.analysis.pca.daigt.daigt_pca_analysis import DaigtPCAAnalysis

@@ -37,12 +37,14 @@ class WritingStylePCAAnalysis:
     def _get_all_chunks(self, metrics_analysis_results: WritingStyleMetricsAnalysisResults) -> PCAAnalysisData:
         chunks_metrics = metrics_analysis_results.get_all_chunks_metrics()
         pca_data = self.feature_extractor.get_features(chunks_metrics)
-        pca_analysis_df, top_features, explained_variance_ratio_ = WritingStylePCAAnalysis._get_pca_analysis(pca_data)
+        pca, pca_analysis_df, top_features, explained_variance_ratio_, scaler = WritingStylePCAAnalysis._get_pca_analysis(pca_data)
         return PCAAnalysisData(
+            pca=pca,
             data=pca_data,
             results=pca_analysis_df,
             pc_variance=explained_variance_ratio_,
-            top_features=top_features
+            top_features=top_features,
+            scaler=scaler
         )
     
     def _get_authors_chunks(self, metrics_analysis_results: WritingStyleMetricsAnalysisResults) -> Dict[str, PCAAnalysisData]:
@@ -53,13 +55,15 @@ class WritingStylePCAAnalysis:
             for collection_name in metrics_analysis_results.collection_names:
                 chunks_metrics.extend(metrics_analysis_results.chunks_author_collection[author_name][collection_name])
             pca_data = self.feature_extractor.get_features(chunks_metrics)
-            pca_analysis_df, top_features, explained_variance_ratio_ = WritingStylePCAAnalysis._get_pca_analysis(pca_data)
+            pca, pca_analysis_df, top_features, explained_variance_ratio_, scaler = WritingStylePCAAnalysis._get_pca_analysis(pca_data)
 
             collections_per_author_analysis[author_name] = PCAAnalysisData(
+                pca=pca,
                 data=pca_data,
                 results=pca_analysis_df,
                 pc_variance=explained_variance_ratio_,
-                top_features=top_features
+                top_features=top_features,
+                scaler=scaler,
             )
             
         return collections_per_author_analysis
@@ -72,13 +76,15 @@ class WritingStylePCAAnalysis:
             for author_name in metrics_analysis_results.author_names:
                 chunks_metrics.extend(metrics_analysis_results.chunks_author_collection[author_name][collection_name])
             pca_data = self.feature_extractor.get_features(chunks_metrics)
-            pca_analysis_df, top_features, explained_variance_ratio_ = WritingStylePCAAnalysis._get_pca_analysis(pca_data)
+            pca, pca_analysis_df, top_features, explained_variance_ratio_, scaler = WritingStylePCAAnalysis._get_pca_analysis(pca_data)
 
             authors_per_collection_analysis[collection_name] = PCAAnalysisData(
+                pca=pca,
                 data=pca_data,
                 results=pca_analysis_df,
                 pc_variance=explained_variance_ratio_,
-                top_features=top_features
+                top_features=top_features,
+                scaler=scaler,
             )
             
         return authors_per_collection_analysis
@@ -100,13 +106,15 @@ class WritingStylePCAAnalysis:
                     chunks_inner = metrics_analysis_results.chunks_author_collection[author_name][collection_name_inner]
                     chunks_outer = metrics_analysis_results.chunks_author_collection[author_name][collection_name_outer]
                     pca_data = self.feature_extractor.get_features(chunks_inner + chunks_outer)
-                    pca_analysis_df, top_features, explained_variance_ratio_ = WritingStylePCAAnalysis._get_pca_analysis(pca_data)
+                    pca, pca_analysis_df, top_features, explained_variance_ratio_, scaler = WritingStylePCAAnalysis._get_pca_analysis(pca_data)
 
                     collection_vs_collection_per_author_analysis[author_name][collection_name_outer][collection_name_inner] = PCAAnalysisData(
+                        pca=pca,
                         data=pca_data,
                         results=pca_analysis_df,
                         pc_variance=explained_variance_ratio_,
-                        top_features=top_features
+                        top_features=top_features,
+                        scaler=scaler
                     )
 
         return collection_vs_collection_per_author_analysis
@@ -119,13 +127,15 @@ class WritingStylePCAAnalysis:
             for collection_name in metrics_analysis_results.collection_names:
                 chunks_metrics = metrics_analysis_results.chunks_author_collection[author_name][collection_name]
                 pca_data = self.feature_extractor.get_features(chunks_metrics)
-                pca_analysis_df, top_features, explained_variance_ratio_ = WritingStylePCAAnalysis._get_pca_analysis(pca_data)
+                pca, pca_analysis_df, top_features, explained_variance_ratio_, scaler = WritingStylePCAAnalysis._get_pca_analysis(pca_data)
 
                 author_collection_analysis[author_name][collection_name] = PCAAnalysisData(
+                    pca=pca,
                     data=pca_data,
                     results=pca_analysis_df,
                     pc_variance=explained_variance_ratio_,
-                    top_features=top_features
+                    top_features=top_features,
+                    scaler=scaler,
                 )
             
         return author_collection_analysis
@@ -141,7 +151,8 @@ class WritingStylePCAAnalysis:
         features = [column for column in pca_data.columns if column not in targets]
 
         x = pca_data.loc[:, features].values
-        x_scaled = StandardScaler().fit_transform(x)
+        scaler = StandardScaler()
+        x_scaled = scaler.fit_transform(x)
         pca = PCA(n_components=2)
         principal_components = pca.fit_transform(x_scaled)
         pc_df = pd.DataFrame(data = principal_components, columns = ["PC1", "PC2"])
@@ -153,5 +164,5 @@ class WritingStylePCAAnalysis:
             'PC2': loadings['PC2'].abs().sort_values(ascending=False)[:WritingStylePCAAnalysis.TOP_FEATURES]
         }
 
-        return pca_df, top_features, pca.explained_variance_ratio_
+        return pca, pca_df, top_features, pca.explained_variance_ratio_, scaler
     
