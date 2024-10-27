@@ -1,12 +1,11 @@
 from typing import Dict, Tuple, Type
-import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
-from src.analysis.pca.data import PCAAnalysisResults
 from sklearn.metrics import accuracy_score, classification_report
 import pandas as pd
-from sklearn.model_selection import StratifiedKFold, train_test_split
+from sklearn.model_selection import train_test_split
+from src.analysis.pca.writing_style.writing_style_pca_data import WritingStylePCAAnalysisResults
 from src.classification.classification_data import ClassificationData, ClassificationResults
 from src.settings import Settings
     
@@ -17,7 +16,7 @@ class BaseClassification:
         self.model_class: Type = None
         self.model_kwargs: Dict = None
 
-    def classify(self, pca_analysis_results: PCAAnalysisResults) -> ClassificationResults:
+    def classify(self, pca_analysis_results: WritingStylePCAAnalysisResults) -> ClassificationResults:
         all_chunks_binary_classification = self._fit_and_binary_predict_on_pca(
             pca_analysis_results_data=pca_analysis_results.all_chunks.results,
             transformation_function=BaseClassification._transform_data_for_binary_collection_classification
@@ -36,7 +35,7 @@ class BaseClassification:
             collection_author_author_classification=collection_author_author_classification,
         )
     
-    def _get_authors_chunks_binary_classification(self, pca_analysis_results: PCAAnalysisResults) -> Dict:
+    def _get_authors_chunks_binary_classification(self, pca_analysis_results: WritingStylePCAAnalysisResults) -> Dict:
         return {
             author_name: self._fit_and_binary_predict_on_pca(
                 pca_analysis_results_data=pca_analysis_results.get_authors_chunks_results(author=author_name),
@@ -45,7 +44,7 @@ class BaseClassification:
             for author_name in pca_analysis_results.author_names
         }
     
-    def _get_collections_chunks_binary_classification(self, pca_analysis_results: PCAAnalysisResults) -> Dict:
+    def _get_collections_chunks_binary_classification(self, pca_analysis_results: WritingStylePCAAnalysisResults) -> Dict:
         return {
             collection_name: self._fit_and_binary_predict_on_pca(
                 pca_analysis_results_data=pca_analysis_results.get_collections_chunks_results(collection_name),
@@ -54,7 +53,7 @@ class BaseClassification:
             for collection_name in pca_analysis_results.collection_names
         }
     
-    def _get_collection_collection_author_chunks_classification(self, pca_analysis_results: PCAAnalysisResults) -> Tuple:
+    def _get_collection_collection_author_chunks_classification(self, pca_analysis_results: WritingStylePCAAnalysisResults) -> Tuple:
         result = {}
         result_trinagle = {}
 
@@ -82,7 +81,7 @@ class BaseClassification:
 
         return result, result_trinagle
 
-    def _get_collection_author_author_classification(self, pca_analysis_results: PCAAnalysisResults) -> Dict:
+    def _get_collection_author_author_classification(self, pca_analysis_results: WritingStylePCAAnalysisResults) -> Dict:
         tables = {}
 
         for collection_name in pca_analysis_results.collection_names:

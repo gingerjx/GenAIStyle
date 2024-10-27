@@ -4,7 +4,7 @@ from dash import dcc, html, Dash
 from dash.dependencies import Input, Output
 from plotly.subplots import make_subplots
 from src.analysis.metrics.writing_style.visualization.writing_style_metrics_analysis_visualization import AnalysisVisualization
-from src.analysis.pca.data import PCAAnalysisResults
+from src.analysis.pca.writing_style.writing_style_pca_data import WritingStylePCAAnalysisResults
 
 class DashApp:
     
@@ -22,7 +22,7 @@ class DashApp:
                 style={'width': '100%'}
             )
 
-        def _get_collections_button(parent: "PCAAnalysisVisualization", id: str, collection_idx: int = 0) -> dcc.Dropdown:
+        def _get_collections_button(parent: "DashApp", id: str, collection_idx: int = 0) -> dcc.Dropdown:
             return dcc.Dropdown(
                 id=id,
                 options=[{'label': collection, 'value': collection} for collection in parent.pca_analysis_results.collection_names],
@@ -31,7 +31,7 @@ class DashApp:
                 style={'width': '100%'}
             )
         
-        def _get_authors_button(parent: "PCAAnalysisVisualization", id: str) -> dcc.Dropdown:
+        def _get_authors_button(parent: "DashApp", id: str) -> dcc.Dropdown:
             return dcc.Dropdown(
                 id=id,
                 options=[{'label': author, 'value': author} for author in parent.pca_analysis_results.author_names],
@@ -48,33 +48,32 @@ class DashApp:
             ])
         
         @staticmethod
-        def _add_collection_trace(fig: go.Figure, pca: PCAAnalysisResults, collection_name: str) -> None:
+        def _add_collection_trace(fig: go.Figure, pca: WritingStylePCAAnalysisResults, collection_name: str) -> None:
             mask = pca.results['collection_name'] == collection_name
             fig.add_trace(go.Scatter(
                 x=pca.results.loc[mask, 'PC1'],
                 y=pca.results.loc[mask, 'PC2'],
                 mode='markers',
-                marker=dict(color=PCAAnalysisVisualization.COLLECTION_COLORS[collection_name]),
+                marker=dict(color=WritingStylePCAAnalysisVisualization.COLLECTION_COLORS[collection_name]),
                 name=collection_name,
                 text=pca.results.loc[mask, 'author_name'] + " - " + pca.results.loc[mask, 'source_name'],
                 hoverinfo='text'
             ))
 
         @staticmethod
-        def _add_author_trace(fig: go.Figure, pca: PCAAnalysisResults, author_name: str) -> None:
+        def _add_author_trace(fig: go.Figure, pca: WritingStylePCAAnalysisResults, author_name: str) -> None:
             mask = pca.results['author_name'] == author_name
             fig.add_trace(go.Scatter(
                 x=pca.results.loc[mask, 'PC1'],
                 y=pca.results.loc[mask, 'PC2'],
                 mode='markers',
-                marker=dict(color=PCAAnalysisVisualization.AUTHOR_COLORS[author_name]),
+                marker=dict(color=WritingStylePCAAnalysisVisualization.AUTHOR_COLORS[author_name]),
                 name=author_name,
                 text=pca.results.loc[mask, 'collection_name'] + " - " + pca.results.loc[mask, 'source_name'],
                 hoverinfo='text'
             ))
 
-
-    def __init__(self, pca_analysis_results: PCAAnalysisResults):
+    def __init__(self, pca_analysis_results: WritingStylePCAAnalysisResults):
         self.pca_analysis_results = pca_analysis_results
         self.app = Dash(__name__)
         self.setup_layout()
@@ -237,12 +236,12 @@ class DashApp:
             debug=True,
         )
 
-class PCAAnalysisVisualization(AnalysisVisualization):
+class WritingStylePCAAnalysisVisualization(AnalysisVisualization):
     
-    def __init__(self, pca_analysis_results: PCAAnalysisResults):
+    def __init__(self, pca_analysis_results: WritingStylePCAAnalysisResults):
         self.dash_app = DashApp(pca_analysis_results)
     
-    def visualize_top_features(pca_analysis_results: PCAAnalysisResults) -> None:
+    def visualize_top_features(self, pca_analysis_results: WritingStylePCAAnalysisResults) -> None:
         top_features = pca_analysis_results.all_chunks.top_features
 
         # Create subplots

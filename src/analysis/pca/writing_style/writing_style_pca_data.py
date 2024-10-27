@@ -1,17 +1,11 @@
-from typing import Dict, List
 from dataclasses import dataclass
-import pandas as pd
+from typing import Dict, List
+
+from src.analysis.pca.common.pca_data import PCAAnalysisData
+
 
 @dataclass
-class PCAAnalysisData:
-    source_name = None
-    data: dict = None
-    results: pd.DataFrame = None
-    pc_variance: List[float] = None
-    top_features: Dict[str, List[str]] = None
-
-@dataclass
-class PCAAnalysisResults:
+class WritingStylePCAAnalysisResults:
     author_names: List[str]
     collection_names: List[str]
 
