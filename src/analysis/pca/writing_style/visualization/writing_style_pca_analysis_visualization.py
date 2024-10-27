@@ -1,4 +1,3 @@
-from enum import Enum
 import plotly.graph_objects as go
 from dash import dcc, html, Dash
 from dash.dependencies import Input, Output

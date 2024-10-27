@@ -13,17 +13,19 @@ class DaigtPCAAnalysis:
     def __init__(self, 
                  settings: Settings, 
                  writing_style_feature_extractor: FeatureExtractor,
-                 writing_style_pca_analysis_results: WritingStylePCAAnalysisResults) -> None:
+                 writing_style_pca_analysis_results: WritingStylePCAAnalysisResults
+        ) -> None:
         self.configuration = settings.configuration
         self.writing_style_feature_extractor = writing_style_feature_extractor
         self.writing_style_pca_analysis_results = writing_style_pca_analysis_results
 
-    def analyze(self, metrics_analysis_results: DaigtMetricsAnalysisResults) -> None:
+    def analyze(self, metrics_analysis_results: DaigtMetricsAnalysisResults) -> DaigtPCAResults:
         chunks_metrics = metrics_analysis_results.get_all_chunks_metrics()
         pca_data = self.writing_style_feature_extractor.get_features(chunks_metrics)
         pca, scaler, pca_df = self._transform(pca_data)
 
         return DaigtPCAResults(
+            collection_names=metrics_analysis_results.collection_names,
             all_chunks=PCAAnalysisData(
                 pca=pca,
                 data=pca_data,
@@ -35,7 +37,6 @@ class DaigtPCAAnalysis:
     def _transform(self, pca_data: pd.DataFrame):
         targets = ["source_name", "collection_name", "author_name"]
         features = [column for column in pca_data.columns if column not in targets]
-        targets.remove("author_name")
 
         scaler = self.writing_style_pca_analysis_results.all_chunks.scaler
         pca = self.writing_style_pca_analysis_results.all_chunks.pca

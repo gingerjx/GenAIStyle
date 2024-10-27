@@ -63,8 +63,8 @@ class Settings:
         ws_analysis_number_of_chunks: int = ws_analysis_number_of_words // ws_analysis_chunk_number_of_words # Number of chunks used during analysis
 
         # Daigt Dataset Analysis
-        daigt_analysis_chunk_number_of_words: int = 500                                                          # Number of words used as a chunk size during analysis. Has to be divisor of `daigt_analysis_number_of_words`
-        daigt_analysis_number_of_words: int = 10000                                                              # Number of words used during analysis  
+        daigt_analysis_chunk_number_of_words: int = 5000                                                          # Number of words used as a chunk size during analysis. Has to be divisor of `daigt_analysis_number_of_words`
+        daigt_analysis_number_of_words: int = None                                                                # Number of words used during analysis  
 
         # Classification
         training_max_iter: int = 100                                                                # Maximum number of iterations for the logistic regression
