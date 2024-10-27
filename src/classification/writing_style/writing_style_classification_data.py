@@ -12,7 +12,7 @@ class ClassificationData:
     y: pd.Series
 
 @dataclass
-class ClassificationResults:
+class WritingStyleClassificationResults:
     # Binary classifications
 
     # Results of Classification performed on all chunks, all authors and collections are included in the pca.
@@ -31,7 +31,7 @@ class ClassificationResults:
     all_chunks_binary_classification: ClassificationData
 
 
-class ClassificationResultsTransformer:
+class WritingStyleClassificationResultsTransformer:
 
     @staticmethod
     def print_all_chunks_results(logistic_regression_data: ClassificationData) -> str:

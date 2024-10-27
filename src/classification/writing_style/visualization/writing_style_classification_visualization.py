@@ -2,9 +2,9 @@ import numpy as np
 import plotly.graph_objects as go
 
 from src.analysis.visualization.analysis_visualization import AnalysisVisualization
-from src.classification.classification_data import ClassificationData, ClassificationResults
+from src.classification.writing_style.writing_style_classification_data import ClassificationData
 
-class ClassificationVisualization(AnalysisVisualization):
+class WritingStyleClassificationVisualization(AnalysisVisualization):
 
     @staticmethod
     def visualize_binary_logistic_regression_classification(classification_results: ClassificationData):

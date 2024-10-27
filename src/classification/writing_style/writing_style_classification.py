@@ -6,27 +6,27 @@ from sklearn.metrics import accuracy_score, classification_report
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from src.analysis.pca.writing_style.writing_style_pca_data import WritingStylePCAAnalysisResults
-from src.classification.classification_data import ClassificationData, ClassificationResults
+from src.classification.writing_style.writing_style_classification_data import ClassificationData, WritingStyleClassificationResults
 from src.settings import Settings
     
-class BaseClassification:
+class WritingStyleBaseClassification:
 
     def __init__(self, settings: Settings):
         self.configuration = settings.configuration
         self.model_class: Type = None
         self.model_kwargs: Dict = None
 
-    def classify(self, pca_analysis_results: WritingStylePCAAnalysisResults) -> ClassificationResults:
+    def classify(self, pca_analysis_results: WritingStylePCAAnalysisResults) -> WritingStyleClassificationResults:
         all_chunks_binary_classification = self._fit_and_binary_predict_on_pca(
             pca_analysis_results_data=pca_analysis_results.all_chunks.results,
-            transformation_function=BaseClassification._transform_data_for_binary_collection_classification
+            transformation_function=WritingStyleBaseClassification._transform_data_for_binary_collection_classification
         )
         authors_chunks_binary_classification = self._get_authors_chunks_binary_classification(pca_analysis_results)
         collections_chunks_binary_classification = self._get_collections_chunks_binary_classification(pca_analysis_results)
         collection_collection_author_chunks_classification, collection_collection_author_chunks_classification_triangle = self._get_collection_collection_author_chunks_classification(pca_analysis_results)
         collection_author_author_classification = self._get_collection_author_author_classification(pca_analysis_results)
 
-        return ClassificationResults(
+        return WritingStyleClassificationResults(
             all_chunks_binary_classification=all_chunks_binary_classification,
             authors_chunks_binary_classification=authors_chunks_binary_classification,
             collections_chunks_binary_classification=collections_chunks_binary_classification,
@@ -39,7 +39,7 @@ class BaseClassification:
         return {
             author_name: self._fit_and_binary_predict_on_pca(
                 pca_analysis_results_data=pca_analysis_results.get_authors_chunks_results(author=author_name),
-                transformation_function=BaseClassification._transform_data_for_binary_collection_classification
+                transformation_function=WritingStyleBaseClassification._transform_data_for_binary_collection_classification
             ) 
             for author_name in pca_analysis_results.author_names
         }
@@ -48,7 +48,7 @@ class BaseClassification:
         return {
             collection_name: self._fit_and_binary_predict_on_pca(
                 pca_analysis_results_data=pca_analysis_results.get_collections_chunks_results(collection_name),
-                transformation_function=BaseClassification._transform_data_for_authors_classification
+                transformation_function=WritingStyleBaseClassification._transform_data_for_authors_classification
             )
             for collection_name in pca_analysis_results.collection_names
         }
@@ -69,13 +69,13 @@ class BaseClassification:
                     if collection_name_outer == collection_name_inner:
                         result[author_name][collection_name_outer][collection_name_inner] = None
                         continue
-                    if BaseClassification._already_classified(result[author_name], collection_name_outer, collection_name_inner):
+                    if WritingStyleBaseClassification._already_classified(result[author_name], collection_name_outer, collection_name_inner):
                         result[author_name][collection_name_outer][collection_name_inner] = result[author_name][collection_name_inner][collection_name_outer]
                         continue
                     
                     output = self._fit_and_binary_predict_on_pca(
                         pca_analysis_results_data=pca_analysis_results.get_author_collection_collection_chunks_results(author_name, collection_name_outer, collection_name_inner),
-                        transformation_function=BaseClassification._transform_data_for_collection_classification
+                        transformation_function=WritingStyleBaseClassification._transform_data_for_collection_classification
                     )
                     result_trinagle[author_name][collection_name_outer][collection_name_inner] = result[author_name][collection_name_outer][collection_name_inner] = output
 
@@ -100,7 +100,7 @@ class BaseClassification:
                     inner_results = pca_analysis_results.get_collection_author_chunks_results(collection_name, inner_author_name)
                     tables[collection_name].at[outer_author_name, inner_author_name] = self._fit_and_binary_predict_on_pca(
                         pca_analysis_results_data=pd.concat([outer_results, inner_results]),
-                        transformation_function=BaseClassification._transform_data_for_authors_classification
+                        transformation_function=WritingStyleBaseClassification._transform_data_for_authors_classification
                     )
 
         return tables
@@ -125,7 +125,7 @@ class BaseClassification:
 
     @staticmethod
     def _transform_data_for_binary_collection_classification(pca_analysis_results_data: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
-        X, y = BaseClassification._transform_data_for_collection_classification(pca_analysis_results_data)
+        X, y = WritingStyleBaseClassification._transform_data_for_collection_classification(pca_analysis_results_data)
         y = y.apply(
             lambda x: 'human' if x == 'books' else 'llm'
         )
@@ -151,21 +151,21 @@ class BaseClassification:
     def _already_classified(result: dict, collection_name_outer: str, collection_name_inner: str) -> bool:
         return collection_name_inner in result and collection_name_outer in result[collection_name_inner]
     
-class LogisticRegressionClassification(BaseClassification):
+class WritingStyleLogisticRegressionClassification(WritingStyleBaseClassification):
 
     def __init__(self, settings: Settings):
         super().__init__(settings)
         self.model_class = LogisticRegression
         self.model_kwargs = {}
 
-class SVMClassification(BaseClassification):
+class WritingStyleSVMClassification(WritingStyleBaseClassification):
 
     def __init__(self, settings: Settings):
         super().__init__(settings)
         self.model_class = SVC
         self.model_kwargs = {}
 
-class DecisionTreeClassification(BaseClassification):
+class WritingStyleDecisionTreeClassification(WritingStyleBaseClassification):
 
     def __init__(self, settings: Settings):
         super().__init__(settings)

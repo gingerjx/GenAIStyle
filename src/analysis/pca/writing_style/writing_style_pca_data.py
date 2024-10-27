@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Dict, List
 
+import pandas as pd
+
 from src.analysis.pca.common.pca_data import PCAAnalysisData
 
 

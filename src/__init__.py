@@ -12,9 +12,9 @@ from src.analysis.metrics.common.metrics_analysis import MetricsAnalysis
 from src.analysis.pca.writing_style.writing_style_pca_analysis import WritingStylePCAAnalysis
 from src.analysis.pca.writing_style.visualization.writing_style_pca_analysis_visualization import WritingStylePCAAnalysisResults
 from src.analysis.metrics.writing_style.visualization.writing_style_metrics_analysis_visualization import WritingStyleMetricsAnalysisVisualization
-from src.classification.classification import *
-from src.classification.classification_data import ClassificationResultsTransformer
-from src.classification.classification_visualization import ClassificationVisualization
+from src.classification.writing_style.writing_style_classification import *
+from src.classification.writing_style.writing_style_classification_data import WritingStyleClassificationResultsTransformer
+from src.classification.writing_style.visualization.writing_style_classification_visualization import WritingStyleClassificationVisualization
 from src.analysis.feature.common.feature_extractor import FeatureExtractor
 
 from src.datasets.daigt.daigt_dataset import DaigtDataset
@@ -27,3 +27,4 @@ from src.analysis.metrics.writing_style.writing_style_metrics_analysis import Wr
 from src.analysis.pca.writing_style.visualization.writing_style_pca_analysis_visualization import WritingStylePCAAnalysisVisualization
 from src.analysis.pca.daigt.daigt_pca_analysis import DaigtPCAAnalysis
 from src.analysis.pca.daigt.visualization.daigt_pca_visualization import DaigtPCAVisualization
+from src.classification.writing_style.visualization.writing_style_classification_visualization import WritingStyleClassificationVisualization
