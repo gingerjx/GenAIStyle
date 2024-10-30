@@ -1,8 +1,11 @@
 from dataclasses import dataclass
 from typing import List
 
+import nltk
+
 from src.analysis.preprocessing.common.preprocessing import Preprocessing
 from src.analysis.preprocessing.daigt.daigt_preprocessing_data import DaigtPreprocessingResults
+from src.datasets.common.texts.text_chunk import TextChunk
 from src.datasets.daigt.daigt_dataset import DaigtDataset
 from src.settings import Settings
 
@@ -33,3 +36,21 @@ class DaigtPreprocessing(Preprocessing):
             preprocessing_results.full[collection.name] = preprocessed_full
 
         return preprocessing_results
+    
+    def _get_split(self, text_chunks: List[TextChunk]) -> List[_SplitChunk]:
+        split_chunks = []
+
+        for chunk in text_chunks:
+            current_chunk_splits = []
+
+            for sentence in chunk.sentences:
+                sentence_split = nltk.word_tokenize(sentence)
+                current_chunk_splits.extend(sentence_split)
+
+            split_chunks.append(Preprocessing._SplitChunk(
+                source_name=chunk.source_name, 
+                splits=current_chunk_splits, 
+                sentences=chunk.sentences)
+            )
+
+        return split_chunks
