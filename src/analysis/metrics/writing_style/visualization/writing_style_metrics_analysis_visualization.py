@@ -143,8 +143,8 @@ class DashApp:
             }
             relative_bars_df = pd.DataFrame(relative_bars).T
 
-            colors = [AnalysisVisualization.COLORS["negative"] if value < 0 
-                    else AnalysisVisualization.COLORS["positive"] 
+            colors = [AnalysisVisualization.PN_COLORS["negative"] if value < 0 
+                    else AnalysisVisualization.PN_COLORS["positive"] 
                     for value in relative_bars_df["relative_difference"].values]
             
             fig = go.Figure(data=[
