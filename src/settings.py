@@ -16,7 +16,8 @@ class Settings:
     class Paths:
         
         res_dir: Path = Path("res")
-        
+        sessions_dir: Path = res_dir / "sessions"
+
         # Writing Style Dataset
         
         ws_dir: Path = res_dir / "datasets/writing_style"
@@ -38,6 +39,9 @@ class Settings:
                 "open-mixtral-8x7b": ws_raw_models_dir / "open-mixtral-8x7b",
                 "claude-3-haiku-20240307": ws_raw_models_dir / "claude-3-haiku-20240307"
             }
+        
+        ws_dataset_dump_file = sessions_dir / "writing_style_dataset.db"
+        ws_pca_classificaiton_dump_file = sessions_dir / "writing_style_pca_classification.db"
 
         # Daigt Dataset
 
@@ -45,6 +49,9 @@ class Settings:
 
         daigt_raw_dir: Path = daigt_dir / "raw"
         daigt_raw_dataset_filepath: Path = daigt_raw_dir / "train_v4_drcat_01.csv"
+
+        daigt_dataset_dump_file = sessions_dir / "daigt_dataset.db"
+        daigt_pca_classificaiton_dump_file = sessions_dir / "daigt_pca_classification.db"
           
     class Configuration:
 
