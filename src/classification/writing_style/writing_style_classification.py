@@ -6,10 +6,11 @@ from sklearn.metrics import accuracy_score, classification_report
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from src.analysis.pca.writing_style.writing_style_pca_data import WritingStylePCAAnalysisResults
+from src.classification.common.pca_classification import BasePCAClassification
 from src.classification.writing_style.writing_style_classification_data import ClassificationData, WritingStyleClassificationResults
 from src.settings import Settings
     
-class WritingStyleBaseClassification:
+class WritingStyleBaseClassification(BasePCAClassification):
 
     def __init__(self, settings: Settings):
         self.configuration = settings.configuration
@@ -129,14 +130,6 @@ class WritingStyleBaseClassification:
         y = y.apply(
             lambda x: 'human' if x == 'books' else 'llm'
         )
-        return X, y
-
-    @staticmethod
-    def _transform_data_for_collection_classification(pca_analysis_results_data: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
-        df = pca_analysis_results_data.copy()
-        df = df.drop(columns=['source_name', 'author_name'])
-        X = df.drop(columns=['collection_name'])
-        y = df['collection_name']
         return X, y
     
     @staticmethod

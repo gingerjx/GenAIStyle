@@ -28,3 +28,4 @@ from src.analysis.pca.writing_style.visualization.writing_style_pca_analysis_vis
 from src.analysis.pca.daigt.daigt_pca_analysis import DaigtPCAAnalysis
 from src.analysis.pca.daigt.visualization.daigt_pca_visualization import DaigtPCAVisualization
 from src.classification.writing_style.visualization.writing_style_classification_visualization import WritingStyleClassificationVisualization
+from src.classification.daigt.daigt_pca_classification import *

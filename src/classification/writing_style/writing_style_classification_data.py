@@ -3,13 +3,7 @@ from typing import Dict
 import pandas as pd
 from IPython.display import display_html
 
-@dataclass
-class ClassificationData:
-    accuracy: float
-    report: str
-    model: object
-    X: pd.DataFrame
-    y: pd.Series
+from src.classification.common.pca_classification_data import ClassificationData
 
 @dataclass
 class WritingStyleClassificationResults:
