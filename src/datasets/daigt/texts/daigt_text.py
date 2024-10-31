@@ -4,7 +4,8 @@ from src.datasets.common.texts.text import Text
 
 class DaigtText(Text):
 
-    def __init__(self, text: str, label: str, prompt_name: str, source: str, model: str):
+    def __init__(self, index: int, text: str, label: str, prompt_name: str, source: str, model: str):
+        self.index = index
         self.text = text
         self.label = label
         self.prompt_name = prompt_name
@@ -20,6 +21,7 @@ class DaigtText(Text):
     def copy(self, text: str) -> "DaigtText":
         return DaigtText(
             text = text,
+            index=self.index,
             label = self.label,
             prompt_name = self.prompt_name,
             source = self.source,
@@ -27,8 +29,9 @@ class DaigtText(Text):
         )
     
     @staticmethod
-    def from_series(series: pd.Series) -> "DaigtText":
+    def from_series(index: int, series: pd.Series) -> "DaigtText":
         return DaigtText(
+            index = index,
             text = series["text"],
             label = series["label"],
             prompt_name = series["prompt_name"],

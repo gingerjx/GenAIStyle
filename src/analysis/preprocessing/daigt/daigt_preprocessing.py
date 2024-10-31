@@ -13,7 +13,6 @@ class DaigtPreprocessing(Preprocessing):
 
     @dataclass
     class _SplitChunk:
-
         source_name: str
         splits: List[str]
         sentences: List[str]

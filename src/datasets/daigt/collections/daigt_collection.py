@@ -15,8 +15,11 @@ class DaigtCollection(Collection):
         random.seed(seed)
 
     def read(self, data: DataFrame) -> None:
-        for index, row in data.iterrows():
-            text_obj = DaigtText.from_series(row)
+        for index, series in data.iterrows():
+            text_obj = DaigtText.from_series(
+                index=index,
+                series=series,
+            )
             self.texts.append(text_obj)
  
     def get_text_chunks(self, chunk_size: int = None) -> List[TextChunk]:
@@ -29,4 +32,4 @@ class DaigtCollection(Collection):
     @staticmethod
     def _chunk_text(text: DaigtText, chunk_size: int) -> List[TextChunk]:
         chunks_sentences = Collection._chunk_text(text.get_text(), chunk_size)
-        return [TextChunk(sentences=sentences, source_name=text.prompt_name) for sentences in chunks_sentences]
+        return [TextChunk(sentences=sentences, source_name=text.index) for sentences in chunks_sentences]
