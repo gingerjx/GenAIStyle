@@ -2,7 +2,7 @@ from typing import Tuple
 import pandas as pd
 
 
-class BasePCAClassification:
+class BaseClassification:
 
     @staticmethod
     def _transform_data_for_collection_classification(pca_analysis_results_data: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
