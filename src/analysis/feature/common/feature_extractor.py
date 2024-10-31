@@ -34,14 +34,17 @@ class FeatureExtractor:
     
     def get_features(self, metrics_data: List[MetricData]) -> pd.DataFrame:
         """Get the PCA of the analysis data"""
-        df = pd.DataFrame([], columns=self.feature_names)
-
+        features = {feature_name: [] for feature_name in self.feature_names}
+        
         for metric_data in metrics_data:
-            serie = [getattr(metric_data, column) for column in self.processed_columns]
-            serie.extend([metric_data.punctuation_frequency[column] for column in self.top_punctuations])
-            serie.extend([metric_data.sorted_function_words.get(column, 0)for column in self.top_function_words_names])
-            df.loc[len(df)] = serie
-        return df
+            for column in self.processed_columns:
+                features[column].append(getattr(metric_data, column))
+            for column in self.top_punctuations:
+                features[column].append(metric_data.punctuation_frequency.get(column, 0))
+            for column in self.top_function_words_names:
+                features[column].append(metric_data.sorted_function_words.get(column, 0))
+
+        return pd.DataFrame(features)
 
     def _get_processed_columns(self) -> List[str]:
         """Get the columns that are not function words or punctuations"""

@@ -23,11 +23,8 @@ class DaigtAllFeaturesXGBoostClassification(BaseClassification):
         )
 
     def _fit_and_predict_all_chunks_binary_classification(self, metrics_analysis_results: DaigtMetricsAnalysisResults) -> ClassificationData:
-        print(f"[{strftime('%H:%M:%S', localtime())}] Step 1")
         all_chunks = metrics_analysis_results.get_all_chunks_metrics()
-        print(f"[{strftime('%H:%M:%S', localtime())}] Step 2")
         chunks_df = self.feature_extractor.get_features(all_chunks)
-        print(f"[{strftime('%H:%M:%S', localtime())}] Step 3")
         chunks_df.columns = [
             str(col).replace('[', 'left_square_bracket')
                 .replace(']', 'right_square_bracket')
