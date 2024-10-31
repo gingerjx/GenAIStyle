@@ -16,56 +16,62 @@ class Settings:
     class Paths:
         
         res_dir: Path = Path("res")
-        
-        metadata_dir: Path = res_dir / "metadata"
-        query_filepath: Path = metadata_dir / "queries"
-        all_authors_filepath: Path = metadata_dir / "all/author_list"
-        all_books_csv_filepath: Path = metadata_dir / "all/books.csv"
-        selected_dir_path = metadata_dir / "selected"
-        selected_authors_filepath: Path = selected_dir_path / "author_list"
-        selected_books_csv_filepath: Path = selected_dir_path / "books.csv"
+        sessions_dir: Path = res_dir / "sessions"
 
-        raw_dir: Path = res_dir / "raw"
-        raw_books_dir: Path = raw_dir / "books"
-        raw_models_dir: Path = raw_dir / "models"
-        raw_models_dirs: Dict[str, Path] = {
-                "gpt-3.5-turbo-0125": raw_models_dir / "gpt-3.5-turbo-0125",
-                "gpt-4o": raw_models_dir / "gpt-4o",
-                "gemini-1.5-flash": raw_models_dir / "gemini-1.5-flash",
-                "open-mixtral-8x7b": raw_models_dir / "open-mixtral-8x7b",
-                "claude-3-haiku-20240307": raw_models_dir / "claude-3-haiku-20240307"
+        # Writing Style Dataset
+        
+        ws_dir: Path = res_dir / "datasets/writing_style"
+        ws_metadata_dir: Path = ws_dir / "metadata"
+        ws_query_filepath: Path = ws_metadata_dir / "queries"
+        ws_all_authors_filepath: Path = ws_metadata_dir / "all/author_list"
+        ws_all_books_csv_filepath: Path = ws_metadata_dir / "all/books.csv"
+        ws_selected_dir_path = ws_metadata_dir / "selected"
+        ws_selected_authors_filepath: Path = ws_selected_dir_path / "author_list"
+        ws_selected_books_csv_filepath: Path = ws_selected_dir_path / "books.csv"
+
+        ws_raw_dir: Path = ws_dir / "raw"
+        ws_raw_books_dir: Path = ws_raw_dir / "books"
+        ws_raw_models_dir: Path = ws_raw_dir / "models"
+        ws_raw_models_dirs: Dict[str, Path] = {
+                "gpt-3.5-turbo-0125": ws_raw_models_dir / "gpt-3.5-turbo-0125",
+                "gpt-4o": ws_raw_models_dir / "gpt-4o",
+                "gemini-1.5-flash": ws_raw_models_dir / "gemini-1.5-flash",
+                "open-mixtral-8x7b": ws_raw_models_dir / "open-mixtral-8x7b",
+                "claude-3-haiku-20240307": ws_raw_models_dir / "claude-3-haiku-20240307"
             }
         
-        cleaned_dir: Path = res_dir / "cleaned"
-        cleaned_books_dir: Path = cleaned_dir / "books"
-        cleaned_models_dir: Path = cleaned_dir / "models"
-        cleaned_models_dirs: Dict[str, Path] = {
-                "gpt-3.5-turbo-0125": cleaned_models_dir / "gpt-3.5-turbo-0125",
-                "gpt-4o": cleaned_models_dir / "gpt-4o",
-                "gemini-1.5-flash": cleaned_models_dir / "gemini-1.5-flash",
-                "open-mixtral-8x7b": cleaned_models_dir / "open-mixtral-8x7b",
-                "claude-3-haiku-20240307": cleaned_models_dir / "claude-3-haiku-20240307"
-            }
-        
-        results_dir: Path = res_dir / "results"
-        analysis_filepath: Path = results_dir / "analysis.json"
+        ws_dataset_dump_file = sessions_dir / "writing_style_dataset.db"
+        ws_pca_classificaiton_dump_file = sessions_dir / "writing_style_pca_classification.db"
+
+        # Daigt Dataset
+
+        daigt_dir: Path = res_dir / "datasets/daigt"
+
+        daigt_raw_dir: Path = daigt_dir / "raw"
+        daigt_raw_dataset_filepath: Path = daigt_raw_dir / "train_v4_drcat_01.csv"
+
+        daigt_dataset_dump_file = sessions_dir / "daigt_dataset.db"
+        daigt_pca_classificaiton_dump_file = sessions_dir / "daigt_pca_classification.db"
           
     class Configuration:
 
         seed: int = 42                                                                              # Seed for random state
-
-        # Analysis
-        read_analysis_from_file: bool = False                                                       # Read analysis data from file
-        response_number_of_words: int = 3000                                                        # Expected number of words used during response generation
-        extract_book_chunk_size: int = 5 * response_number_of_words                                 # Number of characters used as a chunk size during preprocessing of the books. Average english word length * expected number of words used during response generation
-        analysis_chunk_number_of_words: int = 5000                                                  # Number of words used as a chunk size during analysis. Has to be divisor of `analysis_number_of_words`
-        analysis_number_of_words: int = 200000                                                      # Number of words used during analysis   
-        analysis_number_of_chunks: int = analysis_number_of_words // analysis_chunk_number_of_words # Number of chunks used during analysis
         min_response_number_of_words: int = 100                                                     # Minimum number of words of the response text to be considered
-        min_repeat_size: int = 3                                                                    # Minimum length of the repeated substring
+        min_repeat_size: int = 2                                                                    # Minimum length of the repeated substring
         repeat_threshold: int = 3                                                                   # Minimum number of repeated substrings to be considered
         top_n_function_words: int = 10                                                              # Number of top function words to be considered
-        top_n_punctuation: int = 5                                                                  # Number of top punctuation to be considered
+        top_n_punctuation: int = 10                                                                 # Number of top punctuation to be considered
+
+        # Writing Style Dataset Analysis
+        ws_response_number_of_words: int = 3000                                                              # Expected number of words used during response generation
+        ws_extract_book_chunk_size: int = 5 * ws_response_number_of_words                                    # Number of characters used as a chunk size during preprocessing of the books. Average english word length * expected number of words used during response generation
+        ws_analysis_chunk_number_of_words: int = 5000                                                        # Number of words used as a chunk size during analysis. Has to be divisor of `ws_analysis_number_of_words`
+        ws_analysis_number_of_words: int = 200000                                                            # Number of words used during analysis   
+        ws_analysis_number_of_chunks: int = ws_analysis_number_of_words // ws_analysis_chunk_number_of_words # Number of chunks used during analysis
+
+        # Daigt Dataset Analysis
+        daigt_analysis_chunk_number_of_words: int = 5000                                                          # Number of words used as a chunk size during analysis. Has to be divisor of `daigt_analysis_number_of_words`
+        daigt_analysis_number_of_words: int = None                                                                # Number of words used during analysis  
 
         # Classification
         training_max_iter: int = 100                                                                # Maximum number of iterations for the logistic regression
