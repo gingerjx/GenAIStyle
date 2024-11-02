@@ -5,22 +5,20 @@ from sklearn.metrics import classification_report, accuracy_score
 from sklearn.model_selection import train_test_split
 from src.analysis.feature.common.feature_extractor import FeatureExtractor
 from src.analysis.metrics.daigt.daigt_metrics_data import DaigtMetricsAnalysisResults
+from src.classification.all_features.common.all_features_classification import AllFeaturesXGBoostClassification
 from src.classification.all_features.daigt.daigt_all_features_classification_data import DaigtAllFeaturesClassificationResults
 from src.classification.all_features.writing_style.writing_style_all_features_classification_data import WritingStyleAllFeaturesClassificationResults
-from src.classification.common.pca_classification import BaseClassification
 from src.classification.common.pca_classification_data import ClassificationData
 from src.settings import Settings
-import xgboost as xgb
-from time import strftime, localtime
 
-class DaigtAllFeaturesXGBoostClassification(BaseClassification):
+class DaigtAllFeaturesXGBoostClassification(AllFeaturesXGBoostClassification):
             
     def __init__(self, 
                  settings: Settings, 
                  feature_extractor: FeatureExtractor,
                  ws_xgboost_results: WritingStyleAllFeaturesClassificationResults) -> None:
+        super().__init__(feature_extractor)
         self.configuration = settings.configuration
-        self.feature_extractor = feature_extractor
         self.ws_xgboost_results = ws_xgboost_results
 
     def predict(self, metrics_analysis_results: DaigtMetricsAnalysisResults) -> DaigtAllFeaturesClassificationResults:
@@ -29,15 +27,7 @@ class DaigtAllFeaturesXGBoostClassification(BaseClassification):
         )
 
     def _predict_all_chunks_binary_classification(self, metrics_analysis_results: DaigtMetricsAnalysisResults) -> ClassificationData:
-        all_chunks = metrics_analysis_results.get_all_chunks_metrics()
-        chunks_df = self.feature_extractor.get_features(all_chunks)
-        chunks_df.columns = [
-            str(col).replace('[', 'left_square_bracket')
-                .replace(']', 'right_square_bracket')
-                .replace('<', 'less_than')
-                .replace('>', 'more_than') 
-            for col in chunks_df.columns
-        ]
+        chunks_df = self._get_chunks_dataframe(metrics_analysis_results)
 
         X, y = DaigtAllFeaturesXGBoostClassification._transform_data_for_binary_collection_classification(chunks_df)
 
@@ -47,10 +37,10 @@ class DaigtAllFeaturesXGBoostClassification(BaseClassification):
         accuracy = accuracy_score(y, y_pred)
         report = classification_report(y, y_pred)
 
-        explainer = shap.Explainer(xgb_classifier)
-        shap_values = explainer(X)
-
-        shap.summary_plot(shap_values, X, feature_names=X.columns)
+        self._explain_prediction(
+            model=xgb_classifier, 
+            X=X
+        )
         
         return ClassificationData(
                 report=report,
