@@ -1,5 +1,6 @@
 from typing import Tuple
 import pandas as pd
+import shap
 from sklearn.metrics import classification_report, accuracy_score
 from sklearn.model_selection import train_test_split
 from src.analysis.feature.common.feature_extractor import FeatureExtractor
@@ -45,6 +46,11 @@ class DaigtAllFeaturesXGBoostClassification(BaseClassification):
 
         accuracy = accuracy_score(y, y_pred)
         report = classification_report(y, y_pred)
+
+        explainer = shap.Explainer(xgb_classifier)
+        shap_values = explainer(X)
+
+        shap.summary_plot(shap_values, X, feature_names=X.columns)
         
         return ClassificationData(
                 report=report,

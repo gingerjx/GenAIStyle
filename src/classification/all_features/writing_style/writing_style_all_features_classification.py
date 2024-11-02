@@ -9,6 +9,7 @@ from src.classification.common.pca_classification import BaseClassification
 from src.classification.common.pca_classification_data import ClassificationData
 from src.settings import Settings
 import xgboost as xgb
+import shap
 
 class WritingStyleAllFeaturesXGBoostClassification(BaseClassification):
 
@@ -24,6 +25,8 @@ class WritingStyleAllFeaturesXGBoostClassification(BaseClassification):
     def _fit_and_predict_all_chunks_binary_classification(self, metrics_analysis_results: WritingStyleMetricsAnalysisResults) -> ClassificationData:
         all_chunks = metrics_analysis_results.get_all_chunks_metrics()
         chunks_df = self.feature_extractor.get_features(all_chunks)
+
+        # Ensure all feature names are strings and remove invalid characters
         chunks_df.columns = [
             str(col).replace('[', 'left_square_bracket')
                 .replace(']', 'right_square_bracket')
@@ -48,7 +51,12 @@ class WritingStyleAllFeaturesXGBoostClassification(BaseClassification):
 
         accuracy = accuracy_score(y_test, y_pred)
         report = classification_report(y_test, y_pred)
-        
+
+        explainer = shap.TreeExplainer(xgb_classifier)
+        shap_values = explainer(X_test)
+
+        shap.summary_plot(shap_values, X_test, feature_names=X_test.columns)
+
         return ClassificationData(
                 report=report,
                 accuracy=accuracy,
