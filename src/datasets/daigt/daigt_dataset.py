@@ -27,6 +27,9 @@ class DaigtDataset:
             raw_collection = self.read_collection(collection_name)
             self.raw_collections.append(raw_collection)
 
+    def head(self) -> None:
+        return self.csv.head()
+
     def clean(self) -> None:
         for collection in self.raw_collections:
             self.cleaned_collections.append(self.cleaner.clean(collection))
