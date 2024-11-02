@@ -13,7 +13,7 @@ class WritingStyleAllFeaturesXGBoostClassification(AllFeaturesXGBoostClassificat
             settings=settings,
             feature_extractor=feature_extractor
         )
-
+    
     def fit_and_predict(self, metrics_analysis_results: WritingStyleMetricsAnalysisResults) -> WritingStyleAllFeaturesClassificationResults:
         return WritingStyleAllFeaturesClassificationResults(
             all_chunks_binary_classification=self._fit_and_predict_all_chunks_binary_classification(

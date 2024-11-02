@@ -24,7 +24,11 @@ class DaigtAllFeaturesXGBoostClassification(AllFeaturesXGBoostClassification):
 
     def predict(self, metrics_analysis_results: DaigtMetricsAnalysisResults) -> DaigtAllFeaturesClassificationResults:
         return DaigtAllFeaturesClassificationResults(
-            all_chunks_binary_classification=self._predict_all_chunks_binary_classification(metrics_analysis_results)
+            all_chunks_binary_classification=self._predict_all_chunks_binary_classification(
+                model=self.ws_xgboost_results.all_chunks_binary_classification.model,
+                metrics_analysis_results=metrics_analysis_results,
+                transform_function=DaigtAllFeaturesXGBoostClassification._transform_data_for_binary_collection_classification
+            )
         )
 
     def fit_and_predict(self, metrics_analysis_results: DaigtMetricsAnalysisResults) -> DaigtAllFeaturesClassificationResults:
@@ -34,30 +38,6 @@ class DaigtAllFeaturesXGBoostClassification(AllFeaturesXGBoostClassification):
                 transform_function=DaigtAllFeaturesXGBoostClassification._transform_data_for_binary_collection_classification
             )
         )
-    
-    def _predict_all_chunks_binary_classification(self, metrics_analysis_results: DaigtMetricsAnalysisResults) -> ClassificationData:
-        chunks_df = self._get_chunks_dataframe(metrics_analysis_results)
-
-        X, y = DaigtAllFeaturesXGBoostClassification._transform_data_for_binary_collection_classification(chunks_df)
-
-        xgb_classifier = self.ws_xgboost_results.all_chunks_binary_classification.model
-        y_pred = xgb_classifier.predict(X)
-
-        accuracy = accuracy_score(y, y_pred)
-        report = classification_report(y, y_pred)
-
-        self._explain_prediction(
-            model=xgb_classifier, 
-            X=X
-        )
-        
-        return ClassificationData(
-                report=report,
-                accuracy=accuracy,
-                model=xgb_classifier,
-                X=X,
-                y=y
-            )
     
     @staticmethod
     def _transform_data_for_binary_collection_classification(pca_results_data: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:

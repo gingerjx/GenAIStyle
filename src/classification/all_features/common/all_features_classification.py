@@ -36,6 +36,33 @@ class AllFeaturesXGBoostClassification(BaseClassification):
         shap_values = explainer(X)
         shap.summary_plot(shap_values, X, feature_names=X.columns)
 
+    def _predict_all_chunks_binary_classification(self,
+            model: xgb.XGBClassifier,
+            metrics_analysis_results: MetricsAnalysisResults,
+            transform_function
+        ) -> ClassificationData:
+        chunks_df = self._get_chunks_dataframe(metrics_analysis_results)
+
+        X, y = transform_function(chunks_df)
+
+        y_pred = model.predict(X)
+
+        accuracy = accuracy_score(y, y_pred)
+        report = classification_report(y, y_pred)
+
+        self._explain_prediction(
+            model=model, 
+            X=X
+        )
+        
+        return ClassificationData(
+                report=report,
+                accuracy=accuracy,
+                model=model,
+                X=X,
+                y=y
+            )
+    
     def _fit_and_predict_all_chunks_binary_classification(self, 
         metrics_analysis_results: MetricsAnalysisResults,
         transform_function,
