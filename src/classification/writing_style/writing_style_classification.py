@@ -6,11 +6,11 @@ from sklearn.metrics import accuracy_score, classification_report
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from src.analysis.pca.writing_style.writing_style_pca_data import WritingStylePCAAnalysisResults
-from src.classification.common.pca_classification import BasePCAClassification
+from src.classification.common.pca_classification import BaseClassification
 from src.classification.writing_style.writing_style_classification_data import ClassificationData, WritingStyleClassificationResults
 from src.settings import Settings
     
-class WritingStyleBaseClassification(BasePCAClassification):
+class WritingStyleBaseClassification(BaseClassification):
 
     def __init__(self, settings: Settings):
         self.configuration = settings.configuration

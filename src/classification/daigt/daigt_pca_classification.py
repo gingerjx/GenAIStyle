@@ -2,13 +2,13 @@ from typing import Tuple
 import pandas as pd
 from sklearn.metrics import accuracy_score, classification_report
 from src.analysis.pca.daigt.daigt_pca_data import DaigtPCAResults
-from src.classification.common.pca_classification import BasePCAClassification
+from src.classification.common.pca_classification import BaseClassification
 from src.classification.common.pca_classification_data import ClassificationData
 from src.classification.writing_style.writing_style_classification_data import WritingStyleClassificationResults
 from src.settings import Settings
 
 
-class DaigtBaseClassification(BasePCAClassification):
+class DaigtBaseClassification(BaseClassification):
 
     def __init__(self, settings: Settings):
         self.configuration = settings.configuration

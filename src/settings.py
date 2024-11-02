@@ -42,7 +42,8 @@ class Settings:
         
         ws_dataset_dump_file = sessions_dir / "writing_style_dataset.db"
         ws_pca_classificaiton_dump_file = sessions_dir / "writing_style_pca_classification.db"
-
+        ws_all_features_classification_dump_file = sessions_dir / "writing_style_all_features_classification.db"
+        
         # Daigt Dataset
 
         daigt_dir: Path = res_dir / "datasets/daigt"
