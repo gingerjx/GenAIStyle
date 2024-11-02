@@ -38,3 +38,9 @@ class DaigtDataset:
         )
         collection.read(self.csv[self.csv["model"] == collection_name])
         return collection
+    
+    def get_number_of_texts(self) -> int:
+        number_of_texts = 0
+        for collection in self.cleaned_collections:
+            number_of_texts += len(collection.texts)
+        return number_of_texts
