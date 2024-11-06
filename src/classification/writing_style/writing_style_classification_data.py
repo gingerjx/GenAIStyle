@@ -75,6 +75,6 @@ class WritingStyleClassificationResultsTransformer:
             display_html(f"<h1>{collection_name}</h1>", raw=True)
             accuracy_df = authors_classification.map(map_func)
             display_html(f"<p>Average accuracy {accuracy_df.mean().mean()}", raw=True)
-            accuracy_html = accuracy_df.style.background_gradient(cmap='RdYlGn').to_html()
+            accuracy_html = accuracy_df.style.background_gradient(cmap='RdYlGn', axis=None).to_html()
             display_html(accuracy_html,raw=True)
         
