@@ -69,6 +69,7 @@ class Settings:
         ws_analysis_chunk_number_of_words: int = 5000                                                        # Number of words used as a chunk size during analysis. Has to be divisor of `ws_analysis_number_of_words`
         ws_analysis_number_of_words: int = 200000                                                            # Number of words used during analysis   
         ws_analysis_number_of_chunks: int = ws_analysis_number_of_words // ws_analysis_chunk_number_of_words # Number of chunks used during analysis
+        ws_entropy_analysis_number_of_bins: int = 100                                                        # Number of bins used during entropy analysis
 
         # Daigt Dataset Analysis
         daigt_analysis_chunk_number_of_words: int = 5000                                                          # Number of words used as a chunk size during analysis. Has to be divisor of `daigt_analysis_number_of_words`
