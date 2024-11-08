@@ -39,5 +39,6 @@ class ChunkSequenceEntropyData:
 
 @dataclass
 class EntropyResults:
-    distributions: Dict[str, FeatureDistributionData]
-    all_chunks_features_entropy: Dict[MetricData, ChunkFeatureEntropyData]
+    distributions: Dict[str, FeatureDistributionData]                # [feature_name]
+    all_chunks_features_entropy: Dict[str, ChunkFeatureEntropyData]  # [chunk_id]
+    all_chunks_sequence_entropy: Dict[str, ChunkSequenceEntropyData] # [chunk_id]

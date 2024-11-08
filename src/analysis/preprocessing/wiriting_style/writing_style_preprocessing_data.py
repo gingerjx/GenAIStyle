@@ -33,3 +33,6 @@ class WritingStylePreprocessingResults:
                 data_series["collection"] = collection_name
                 df = pd.concat([df, data_series.to_frame().T],ignore_index=True)
         return df
+    
+    def get_all_chunks_preprocessing_data(self) -> List[PreprocessingData]:
+        return [chunk_data for author_name in self.author_names for collection_name in self.collection_names for chunk_data in self.chunks[author_name][collection_name]]

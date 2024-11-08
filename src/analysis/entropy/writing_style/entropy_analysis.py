@@ -7,23 +7,84 @@ from src.analysis.feature.common.feature_extractor import FeatureExtractor
 from src.analysis.metrics.common.metrics_data import MetricData
 from src.analysis.metrics.writing_style.writing_style_metrics_data import WritingStyleMetricsAnalysisResults
 from src.analysis.preprocessing.common.preprocessing_data import PreprocessingData
+from src.analysis.preprocessing.wiriting_style.writing_style_preprocessing_data import WritingStylePreprocessingResults
 from src.settings import Settings
 from pandas._libs.interval import Interval
 
+class EntropySequenceAnalysis:
+
+    def __init__(self, words: List[str]) -> None:
+        self.words = [word.lower() for word in words]
+        self.N = len(self.words)
+        self.words_dict = {word: [] for word in set(self.words)}
+
+    def analyze(self) -> float:
+        result = []
+
+        for current_start in range(self.N):
+            word = self.words[current_start]
+
+            if result and result[-1] > 1:
+                result.append(result[-1] - 1)
+                self.words_dict[word].append(current_start)
+                continue
+
+            if len(self.words_dict[word]) > 0:
+                result.append(self._find_shortest_unique_subsequence(current_start=current_start))
+            else:
+                result.append(1)
+
+            self.words_dict[word].append(current_start)
+
+        return result
+
+    def _find_shortest_unique_subsequence(self, current_start: int) -> int:
+        word = self.words[current_start]
+        indices = self.words_dict[word]
+        results = []
+
+        for prev_start in indices:
+            results.append(self.__find_shortest_unique_subsequence(
+                    prev_start=prev_start, 
+                    current_start=current_start
+                )
+            )
+
+        return max(results)
+
+    def __find_shortest_unique_subsequence(self, prev_start: int, current_start: int) -> int:
+        shift = 1
+        while self.N >= current_start + shift:
+            if self.words[prev_start : prev_start+shift] == self.words[current_start : current_start+shift]:
+                shift += 1
+            else:
+                return shift
+        return shift
+    
 class EntropyAnalysis:
     
     def __init__(self, settings: Settings, feature_extractor: FeatureExtractor) -> None:
         self.configuration = settings.configuration
         self.feature_extractor = feature_extractor
 
-    def analyze(self, metrics_analysis_results: WritingStyleMetricsAnalysisResults) -> None:
-        distributions = self._get_entropy_data(metrics_analysis_results)
-        all_chunks_features_entropy = self._get_chunks_features_entropy(
-            metrics_analysis_results=metrics_analysis_results,
-            distributions=distributions
-        )
-        # sequence_entropy = self._calculate_sequence_entropy(["To", "be", "or", "not", "to", "be", "there", "to", "make", "it", "true" ])
-        pass
+    def analyze(self, 
+        preprocessing_results: WritingStylePreprocessingResults,
+        metrics_analysis_results: WritingStyleMetricsAnalysisResults, 
+    ) -> EntropyResults:
+        # words = ["To", "be", "or", 'not', 'to', 'be', 'there', 'to', 'make', 'it', "true"]
+        # sequence_entropy = self._calculate_sequence_entropy(words)
+        
+        # distributions = self._get_entropy_data(metrics_analysis_results)
+        # all_chunks_features_entropy = self._get_chunks_features_entropy(
+        #     metrics_analysis_results=metrics_analysis_results,
+        #     distributions=distributions
+        # )
+        all_chunks_sequence_entropy = self._get_chunks_sequence_entropy(preprocessing_results)
+        # return EntropyResults(
+        #     distributions=distributions,
+        #     all_chunks_features_entropy=all_chunks_features_entropy,
+        #     all_chunks_sequence_entropy=all_chunks_sequence_entropy
+        # )
     
     def _get_entropy_data(self, metrics_analysis_results: WritingStyleMetricsAnalysisResults) -> Dict[str, FeatureDistributionData]:
         all_chunks = metrics_analysis_results.get_all_chunks_metrics()    
@@ -108,7 +169,7 @@ class EntropyAnalysis:
                 bin = self._find_bin(feature_value, feature_distribution.bins)
                 entropy_values[feature_name] = self._calculate_entropy(bin.probability)
             
-            all_chunks_features_entropy[chunk_metrics] = ChunkFeatureEntropyData(
+            all_chunks_features_entropy[chunk_metrics.chunk_id] = ChunkFeatureEntropyData(
                 total_entropy=sum(entropy_values.values()),
                 features_entropy=entropy_values
             )
@@ -123,31 +184,25 @@ class EntropyAnalysis:
 
     def _calculate_entropy(self, probability: float) -> float:
         return -np.log2(probability)
+    
+    def _get_chunks_sequence_entropy(self, preprocessing_results: WritingStylePreprocessingResults) -> Dict[MetricData, ChunkSequenceEntropyData]:
+        all_chunks_sequence_entropy = {}
+        
+        for i, chunk_metrics in enumerate(preprocessing_results.get_all_chunks_preprocessing_data()):
+            print(f"{i}/2400...")
+            sequence_entropy = EntropySequenceAnalysis(chunk_metrics.words).analyze()       
+            all_chunks_sequence_entropy[chunk_metrics.chunk_id] = sequence_entropy
 
+        return all_chunks_sequence_entropy
+    
     def _calculate_sequence_entropy(self, words: List[str]) -> float:
         words_lower = [word.lower() for word in words]
         N = len(words_lower)
-        match_lengths = []
 
         for i in range(N):
-
-            match_length = 1
-            while i + match_length <= N:
-                subseq = words_lower[i:i + match_length]
-                
-                found = False
-                for j in range(i):
-                    if words_lower[j:j + match_length] == subseq:
-                        found = True
-                        break
-
-                if not found:
-                    match_lengths.append(match_length)
-                    break
-                
-                match_length += 1
-
-        return ChunkSequenceEntropyData(
-            total_entropy=N * np.log2(N) / sum(match_lengths),
-            match_lengths=match_lengths
-        )
+            previous_words = words_lower[:i]
+            word = words_lower[i]
+            found = previous_words.index(word)
+            pass
+        
+        return None
