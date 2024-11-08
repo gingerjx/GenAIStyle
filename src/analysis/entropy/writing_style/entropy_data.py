@@ -2,8 +2,10 @@ from dataclasses import dataclass
 from typing import Dict, List
 from pandas._libs.interval import Interval
 
+from src.analysis.metrics.common.metrics_data import MetricData
+
 @dataclass
-class EntropyFeatureData:
+class FeatureData:
     name: str
     value: float
     collection_name: str
@@ -16,7 +18,7 @@ class BinData:
     index: int
     count: int
     probability: float
-    features: List[EntropyFeatureData]
+    features: List[FeatureData]
 
 @dataclass
 class FeatureDistributionData:
@@ -26,5 +28,11 @@ class FeatureDistributionData:
     bins: List[BinData]
 
 @dataclass
-class EntropyData:
+class ChunkFeatureEntropyData:
+    total_entropy: float
+    features_entropy: Dict[str, float]
+    
+@dataclass
+class EntropyResults:
     distributions: Dict[str, FeatureDistributionData]
+    all_chunks_features_entropy: Dict[MetricData, ChunkFeatureEntropyData]
