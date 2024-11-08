@@ -2,7 +2,7 @@ from typing import Any, Callable, Dict, List
 
 import numpy as np
 import pandas as pd
-from src.analysis.entropy.writing_style.entropy_data import BinData, ChunkFeatureEntropyData, ChunkSequenceEntropyData, EntropyResults, FeatureData, FeatureDistributionData
+from src.analysis.entropy.writing_style.writing_style_entropy_data import BinData, ChunkFeatureEntropyData, ChunkSequenceEntropyData, EntropyResults, FeatureData, FeatureDistributionData
 from src.analysis.feature.common.feature_extractor import FeatureExtractor
 from src.analysis.metrics.common.metrics_data import MetricData
 from src.analysis.metrics.writing_style.writing_style_metrics_data import WritingStyleMetricsAnalysisResults
