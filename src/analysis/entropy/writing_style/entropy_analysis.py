@@ -2,7 +2,7 @@ from typing import Any, Callable, Dict, List
 
 import numpy as np
 import pandas as pd
-from src.analysis.entropy.writing_style.entropy_data import BinData, ChunkFeatureEntropyData, EntropyResults, FeatureData, FeatureDistributionData
+from src.analysis.entropy.writing_style.entropy_data import BinData, ChunkFeatureEntropyData, ChunkSequenceEntropyData, EntropyResults, FeatureData, FeatureDistributionData
 from src.analysis.feature.common.feature_extractor import FeatureExtractor
 from src.analysis.metrics.common.metrics_data import MetricData
 from src.analysis.metrics.writing_style.writing_style_metrics_data import WritingStyleMetricsAnalysisResults
@@ -17,11 +17,11 @@ class EntropyAnalysis:
         self.feature_extractor = feature_extractor
 
     def analyze(self, metrics_analysis_results: WritingStyleMetricsAnalysisResults) -> None:
-        distributions = self._get_entropy_data(metrics_analysis_results)
-        all_chunks_features_entropy = self._get_chunks_features_entropy(
-            metrics_analysis_results=metrics_analysis_results,
-            distributions=distributions
-        )
+        # distributions = self._get_entropy_data(metrics_analysis_results)
+        # all_chunks_features_entropy = self._get_chunks_features_entropy(
+        #     metrics_analysis_results=metrics_analysis_results,
+        #     distributions=distributions
+        # )
         sequence_entropy = self._calculate_sequence_entropy(["To", "be", "or", "not", "to", "be", "there", "to", "make", "it", "true" ])
         pass
     
@@ -125,33 +125,29 @@ class EntropyAnalysis:
         return -np.log2(probability)
 
     def _calculate_sequence_entropy(self, words: List[str]) -> float:
-        N = len(words)
-        
-        # Step 2: Calculate match lengths (Λ_i)
+        words_lower = [word.lower() for word in words]
+        N = len(words_lower)
         match_lengths = []
+
         for i in range(N):
-            # Start with the shortest subsequence length of 1
+
             match_length = 1
             while i + match_length <= N:
-                # Subsequence starting at current position of given length
-                subseq = words[i:i + match_length]
+                subseq = words_lower[i:i + match_length]
                 
-                # Check if this subsequence has appeared before this position
                 found = False
                 for j in range(i):
-                    if words[j:j + match_length] == subseq:
+                    if words_lower[j:j + match_length] == subseq:
                         found = True
                         break
-                
-                # If subsequence was not found before, we have our match length
+
                 if not found:
                     match_lengths.append(match_length)
                     break
                 
-                # Otherwise, increase the subsequence length and try again
                 match_length += 1
 
-        # Step 3: Calculate entropy using the formula
-        entropy = (N * np.log2(N)) / sum(match_lengths)
-        
-        return entropy
+        return ChunkSequenceEntropyData(
+            total_entropy=N * np.log2(N) / sum(match_lengths),
+            match_lengths=match_lengths
+        )
