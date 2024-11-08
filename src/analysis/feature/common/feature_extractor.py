@@ -21,6 +21,7 @@ class FeatureExtractor:
     
     def get_feature_names_without_metadata(self) -> List[str]:
         copy = self.feature_names.copy()
+        copy.remove("chunk_id")
         copy.remove("source_name")
         copy.remove("collection_name")
         copy.remove("author_name")

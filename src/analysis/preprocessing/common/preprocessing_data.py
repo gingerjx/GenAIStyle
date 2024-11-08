@@ -6,6 +6,7 @@ import pandas as pd
 @dataclass
 class PreprocessingData:
 
+    chunk_id: str = ""
     source_name: str = "*"
 
     text: str = ""

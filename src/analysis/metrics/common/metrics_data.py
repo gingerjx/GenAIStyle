@@ -6,9 +6,12 @@ from typing import Dict, List
 
 @dataclass
 class MetricData:
+
+    chunk_id: str
     source_name: str
     author_name: str
     collection_name: str
+    
     unique_word_count: int
     average_word_length: float
     average_sentence_length: float

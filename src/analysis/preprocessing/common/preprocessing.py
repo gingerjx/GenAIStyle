@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Tuple
+import uuid
 
 import pyphen
 from src.analysis.preprocessing.common.preprocessing_data import PreprocessingData
@@ -50,6 +51,7 @@ class Preprocessing:
         words = self._get_words(split_chunk.splits)
         num_of_syllabes, complex_words = self._get_num_of_syllabes_and_complex_words(words)
         return PreprocessingData(
+            chunk_id=str(uuid.uuid4()),
             source_name=split_chunk.source_name,
             text=text, 
             split=split_chunk.splits,

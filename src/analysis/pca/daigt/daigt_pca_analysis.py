@@ -35,7 +35,7 @@ class DaigtPCAAnalysis:
         )
 
     def _transform(self, pca_data: pd.DataFrame):
-        targets = ["source_name", "collection_name", "author_name"]
+        targets = ["chunk_id", "source_name", "collection_name", "author_name"]
         features = [column for column in pca_data.columns if column not in targets]
 
         scaler = self.writing_style_pca_analysis_results.all_chunks.scaler

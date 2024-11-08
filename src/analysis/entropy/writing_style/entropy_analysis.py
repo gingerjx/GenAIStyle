@@ -17,12 +17,12 @@ class EntropyAnalysis:
         self.feature_extractor = feature_extractor
 
     def analyze(self, metrics_analysis_results: WritingStyleMetricsAnalysisResults) -> None:
-        # distributions = self._get_entropy_data(metrics_analysis_results)
-        # all_chunks_features_entropy = self._get_chunks_features_entropy(
-        #     metrics_analysis_results=metrics_analysis_results,
-        #     distributions=distributions
-        # )
-        sequence_entropy = self._calculate_sequence_entropy(["To", "be", "or", "not", "to", "be", "there", "to", "make", "it", "true" ])
+        distributions = self._get_entropy_data(metrics_analysis_results)
+        all_chunks_features_entropy = self._get_chunks_features_entropy(
+            metrics_analysis_results=metrics_analysis_results,
+            distributions=distributions
+        )
+        # sequence_entropy = self._calculate_sequence_entropy(["To", "be", "or", "not", "to", "be", "there", "to", "make", "it", "true" ])
         pass
     
     def _get_entropy_data(self, metrics_analysis_results: WritingStyleMetricsAnalysisResults) -> Dict[str, FeatureDistributionData]:
