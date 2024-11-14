@@ -31,11 +31,13 @@ class FeatureDistributionData:
 class ChunkFeatureEntropyData:
     total_entropy: float
     features_entropy: Dict[str, float]
+    collection_name: str = None
 
 @dataclass 
 class ChunkSequenceEntropyData:
     total_entropy: float
     match_lengths: List[float]
+    collection_name: str = None
 
 @dataclass
 class EntropyResults:

@@ -18,7 +18,7 @@ class EntropySequenceAnalysis:
         self.N = len(self.words)
         self.words_dict = {word: [] for word in set(self.words)}
 
-    def analyze(self) -> float:
+    def analyze(self) -> ChunkSequenceEntropyData:
         match_lengths = []
 
         for current_start in range(self.N):
@@ -64,7 +64,7 @@ class EntropySequenceAnalysis:
                 return shift
         return shift
     
-class EntropyAnalysis:
+class WritingStyleEntropyAnalysis:
     
     def __init__(self, settings: Settings, feature_extractor: FeatureExtractor) -> None:
         self.configuration = settings.configuration
@@ -189,7 +189,8 @@ class EntropyAnalysis:
         all_chunks_sequence_entropy = {}
         
         for chunk_metrics in preprocessing_results.get_all_chunks_preprocessing_data():
-            sequence_entropy = EntropySequenceAnalysis(chunk_metrics.words).analyze()       
+            sequence_entropy = EntropySequenceAnalysis(chunk_metrics.words).analyze()
+            sequence_entropy.collection_name = chunk_metrics.collection_name 
             all_chunks_sequence_entropy[chunk_metrics.chunk_id] = sequence_entropy
 
         return all_chunks_sequence_entropy
