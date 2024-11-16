@@ -4,8 +4,9 @@ from src.analysis.visualization.analysis_visualization import AnalysisVisualizat
 from dash import dcc, html, Dash
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
+import numpy as np
 
-class WritingStyleEntropyAnalysisVisualization(AnalysisVisualization):
+class WritingStyleEntropyAnalysisVisualizationDashApp(AnalysisVisualization):
 
     def __init__(self, 
                  preprocessing_results: WritingStylePreprocessingResults,
@@ -74,3 +75,32 @@ class WritingStyleEntropyAnalysisVisualization(AnalysisVisualization):
 
         return df
 
+
+class WritingStyleEntropyAnalysisVisualization(AnalysisVisualization):
+    
+    def __init__(self, entropy_analysis_results: EntropyResults):
+        self.entropy_analysis_results = entropy_analysis_results
+
+    def visualize(self):
+        self._visualize_heatmap()
+
+    def _visualize_heatmap(self):
+        self._find_average_samples() 
+
+    def _find_average_samples(self):
+        collection_name = "books"
+        feature_entropies = self.entropy_analysis_results.all_chunks_features_entropy[collection_name].values()
+        features_entropies_values = [list(entropy.features_entropy.values()) for entropy in feature_entropies]
+        features_entropies_values = np.array(features_entropies_values)
+        
+        means = np.mean(features_entropies_values, axis=0)
+        std_devs = np.std(features_entropies_values, axis=0, ddof=1)  # Sample standard deviation (ddof=1)
+        std_errors = std_devs / np.sqrt(features_entropies_values.shape[0])  
+
+        pass
+        # import matplotlib.pyplot as plt
+        # plt.figure(figsize=(8, 5))
+        # plt.bar([i for i in range(means.shape[0])], means, yerr=std_errors, capsize=5, alpha=0.7, color='skyblue')
+        # plt.ylabel("Feature Values")
+        # plt.title("Feature Averages with Uncertainty (Standard Error Bars)")
+        # plt.show()

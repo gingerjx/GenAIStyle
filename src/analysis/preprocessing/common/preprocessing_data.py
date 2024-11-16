@@ -1,15 +1,14 @@
 from dataclasses import dataclass, field
-from typing import Dict, List
+from typing import List
+import uuid
 
 import pandas as pd
 
 @dataclass
 class PreprocessingData:
 
-    chunk_id: str = ""
-    source_name: str = "*"
+    collection_name: str
 
-    text: str = ""
     split: List[str] = field(default_factory=list)
     words: List[str] = field(default_factory=list)
     complex_words: List[str] = field(default_factory=list)
@@ -20,6 +19,10 @@ class PreprocessingData:
     num_of_complex_words: int = 0
     num_of_sentences: int = 0
     num_of_words: int = 0
+
+    chunk_id: str = str(uuid.uuid4())
+    source_name: str = "*"
+    text: str = ""
 
     def append_data(self, data: 'PreprocessingData') -> None:
         self.text += data.text

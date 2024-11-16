@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List
 from pandas._libs.interval import Interval
 
@@ -28,19 +28,33 @@ class FeatureDistributionData:
     bins: List[BinData]
 
 @dataclass
-class ChunkFeatureEntropyData:
-    total_entropy: float
-    features_entropy: Dict[str, float]
-    collection_name: str = None
+class CollectionEntropyAverageData:
+    average: float = 0.0
+    average_uncertainty: float = 0.0
+    std: float = 0.0
+
+@dataclass
+class ChunkFeaturesEntropyData:
+    features_entropy: Dict[str, float] = field(default_factory=dict)
 
 @dataclass 
 class ChunkSequenceEntropyData:
-    total_entropy: float
+    entropy: float
     match_lengths: List[float]
-    collection_name: str = None
+
+@dataclass
+class CollectionEntropyData:
+    chunks_features_entropies: Dict[str, ChunkFeaturesEntropyData] = field(default_factory=dict)
+    chunks_sequence_entropy: Dict[str, ChunkSequenceEntropyData] = field(default_factory=dict)
+    average_data: Dict[str, CollectionEntropyAverageData] = field(default_factory=dict)
 
 @dataclass
 class EntropyResults:
-    distributions: Dict[str, FeatureDistributionData]                # [feature_name]
-    all_chunks_features_entropy: Dict[str, ChunkFeatureEntropyData]  # [chunk_id]
-    all_chunks_sequence_entropy: Dict[str, ChunkSequenceEntropyData] # [chunk_id]
+    collection_names: List[str]
+
+    features_distributions: Dict[str, FeatureDistributionData] = field(default_factory=dict)  # [feature_name]
+    collections_entropies: Dict[str, CollectionEntropyData] = field(default_factory=dict)     # [collection_name]
+
+    def __post_init__(self) -> None:
+        for collection_name in self.collection_names:   
+            self.collections_entropies[collection_name] = CollectionEntropyData()

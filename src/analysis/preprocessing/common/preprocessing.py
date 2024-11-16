@@ -35,24 +35,27 @@ class Preprocessing:
     def preprocess(self, collection: Collection) -> Tuple[List[PreprocessingData], PreprocessingData]:
         """Preprocess the data"""
         preprocessed_chunks = []
-        preprocessed_full = PreprocessingData()
+        preprocessed_full = PreprocessingData(
+            collection_name=collection.name,
+        )
         text_chunks = collection.get_text_chunks(self.extract_book_chunk_size)
         split_chunks = self._get_split(text_chunks)
 
         for split_chunk in split_chunks:
-            chunk_preprocessing_data = self._get_chunk_preprocessing_data(split_chunk)
+            chunk_preprocessing_data = self._get_chunk_preprocessing_data(split_chunk, collection)
             preprocessed_chunks.append(chunk_preprocessing_data)
             preprocessed_full.append_data(chunk_preprocessing_data)
 
         return preprocessed_chunks, preprocessed_full
     
-    def _get_chunk_preprocessing_data(self, split_chunk: _SplitChunk) -> PreprocessingData:
+    def _get_chunk_preprocessing_data(self, split_chunk: _SplitChunk, collection: Collection) -> PreprocessingData:
         text = self._get_text(split_chunk.sentences)
         words = self._get_words(split_chunk.splits)
         num_of_syllabes, complex_words = self._get_num_of_syllabes_and_complex_words(words)
         return PreprocessingData(
             chunk_id=str(uuid.uuid4()),
             source_name=split_chunk.source_name,
+            collection_name=collection.name,
             text=text, 
             split=split_chunk.splits,
             words=words, 

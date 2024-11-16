@@ -2,7 +2,7 @@ from typing import Any, Callable, Dict, List
 
 import numpy as np
 import pandas as pd
-from src.analysis.entropy.writing_style.writing_style_entropy_data import BinData, ChunkFeatureEntropyData, ChunkSequenceEntropyData, EntropyResults, FeatureData, FeatureDistributionData
+from src.analysis.entropy.writing_style.writing_style_entropy_data import *
 from src.analysis.feature.common.feature_extractor import FeatureExtractor
 from src.analysis.metrics.common.metrics_data import MetricData
 from src.analysis.metrics.writing_style.writing_style_metrics_data import WritingStyleMetricsAnalysisResults
@@ -37,7 +37,7 @@ class EntropySequenceAnalysis:
             self.words_dict[word].append(current_start)
 
         return ChunkSequenceEntropyData(
-            total_entropy=self.N * np.log2(self.N) / sum(match_lengths),
+            entropy=self.N * np.log2(self.N) / sum(match_lengths),
             match_lengths=match_lengths
         )
 
@@ -74,19 +74,24 @@ class WritingStyleEntropyAnalysis:
         preprocessing_results: WritingStylePreprocessingResults,
         metrics_analysis_results: WritingStyleMetricsAnalysisResults, 
     ) -> EntropyResults:
-        distributions = self._get_entropy_data(metrics_analysis_results)
-        all_chunks_features_entropy = self._get_chunks_features_entropy(
+        entropy_results = EntropyResults(
+            collection_names=preprocessing_results.collection_names
+        )
+
+        entropy_results.features_distributions = self._get_features_distributions(metrics_analysis_results)
+        entropy_results = self._get_chunks_features_entropies(
             metrics_analysis_results=metrics_analysis_results,
-            distributions=distributions
+            entropy_results=entropy_results
         )
-        all_chunks_sequence_entropy = self._get_chunks_sequence_entropy(preprocessing_results)
-        return EntropyResults(
-            distributions=distributions,
-            all_chunks_features_entropy=all_chunks_features_entropy,
-            all_chunks_sequence_entropy=all_chunks_sequence_entropy
+        entropy_results = self._get_chunks_sequence_entropy(
+            preprocessing_results=preprocessing_results,
+            entropy_results=entropy_results
         )
+        self._calculate_entropies_average_data(entropy_results)
+        
+        return entropy_results
     
-    def _get_entropy_data(self, metrics_analysis_results: WritingStyleMetricsAnalysisResults) -> Dict[str, FeatureDistributionData]:
+    def _get_features_distributions(self, metrics_analysis_results: WritingStyleMetricsAnalysisResults) -> Dict[str, FeatureDistributionData]:
         all_chunks = metrics_analysis_results.get_all_chunks_metrics()    
         feature_names = self.feature_extractor.get_feature_names_without_metadata()
         distributions = {}
@@ -155,26 +160,22 @@ class WritingStyleEntropyAnalysis:
         else:
             return lambda metrics, feature_name: getattr(metrics, feature_name)
 
-    def _get_chunks_features_entropy(self, metrics_analysis_results: WritingStyleMetricsAnalysisResults, distributions: Dict[str, FeatureDistributionData]) -> Dict[MetricData, ChunkFeatureEntropyData]:
-        all_chunks_features_entropy = {}
-        
+    def _get_chunks_features_entropies(self, metrics_analysis_results: WritingStyleMetricsAnalysisResults, entropy_results: EntropyResults) -> EntropyResults:
         for chunk_metrics in metrics_analysis_results.get_all_chunks_metrics():
             feature_names = self.feature_extractor.get_feature_names_without_metadata()
-            entropy_values = {}
+            chunk_features_entropy_data = ChunkFeaturesEntropyData()
 
             for feature_name in feature_names:
-                feature_distribution = distributions[feature_name]
+                feature_distribution = entropy_results.features_distributions[feature_name]
                 field_extractor = self._get_field_extractor(feature_name)
                 feature_value = field_extractor(chunk_metrics, feature_name)
                 bin = self._find_bin(feature_value, feature_distribution.bins)
-                entropy_values[feature_name] = self._calculate_entropy(bin.probability)
+                chunk_features_entropy_data.features_entropy[feature_name] = self._calculate_entropy(bin.probability)
             
-            all_chunks_features_entropy[chunk_metrics.chunk_id] = ChunkFeatureEntropyData(
-                total_entropy=sum(entropy_values.values()),
-                features_entropy=entropy_values
-            )
+            entropy_results.collections_entropies[chunk_metrics.collection_name] \
+                .chunks_features_entropies[chunk_metrics.chunk_id] = chunk_features_entropy_data
 
-        return all_chunks_features_entropy
+        return entropy_results
              
     def _find_bin(self, value: Any, bins: List[BinData]) -> BinData:
         for bin in bins:
@@ -185,12 +186,49 @@ class WritingStyleEntropyAnalysis:
     def _calculate_entropy(self, probability: float) -> float:
         return -np.log2(probability)
     
-    def _get_chunks_sequence_entropy(self, preprocessing_results: WritingStylePreprocessingResults) -> Dict[str, ChunkSequenceEntropyData]:
-        all_chunks_sequence_entropy = {}
-        
+    def _get_chunks_sequence_entropy(self, preprocessing_results: WritingStylePreprocessingResults, entropy_results: EntropyResults) -> EntropyResults:   
         for chunk_metrics in preprocessing_results.get_all_chunks_preprocessing_data():
             sequence_entropy = EntropySequenceAnalysis(chunk_metrics.words).analyze()
-            sequence_entropy.collection_name = chunk_metrics.collection_name 
-            all_chunks_sequence_entropy[chunk_metrics.chunk_id] = sequence_entropy
+            entropy_results.collections_entropies[chunk_metrics.collection_name] \
+                .chunks_sequence_entropy[chunk_metrics.chunk_id] = sequence_entropy
 
-        return all_chunks_sequence_entropy
+        return entropy_results
+    
+    def _calculate_entropies_average_data(self, entropy_results: EntropyResults) -> EntropyResults:
+        feature_names = self.feature_extractor.get_feature_names_without_metadata()
+        for collection_names in entropy_results.collection_names:
+            collection_entropies = entropy_results.collections_entropies[collection_names] 
+            collection_entropies_list = [
+                list(chunk_features_entropies.features_entropy.values()) 
+                for chunk_features_entropies in collection_entropies.chunks_features_entropies.values()
+            ]
+            collection_entropies_list = np.array(collection_entropies_list)
+
+            means = np.mean(collection_entropies_list, axis=0)
+            std_devs = np.std(collection_entropies_list, axis=0, ddof=1)
+            std_errors = std_devs / np.sqrt(collection_entropies_list.shape[0])  
+
+            for i, feature_name in enumerate(feature_names):
+                feature_entropy_average_data = CollectionEntropyAverageData(
+                    average=means[i],
+                    average_uncertainty=std_errors[i],
+                    std=std_devs[i]
+                )
+                collection_entropies.average_data[feature_name] = feature_entropy_average_data
+        
+        for collection_name in entropy_results.collection_names:
+            collection_entropies = entropy_results.collections_entropies[collection_name]
+            sequence_entropies = [entropy.entropy for entropy in collection_entropies.chunks_sequence_entropy.values()]
+            sequence_entropies = np.array(sequence_entropies)
+
+            average = np.mean(sequence_entropies)
+            std_dev = np.std(sequence_entropies, ddof=1)
+            std_error = std_dev / np.sqrt(sequence_entropies.shape[0])
+
+            collection_entropies.average_data["sequence"] = CollectionEntropyAverageData(
+                average=average,
+                average_uncertainty=std_error,
+                std=std_dev
+            )
+
+        return entropy_results
