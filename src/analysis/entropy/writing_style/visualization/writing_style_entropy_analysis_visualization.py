@@ -1,4 +1,5 @@
 from src.analysis.entropy.writing_style.writing_style_entropy_data import EntropyResults
+from src.analysis.feature.common.feature_extractor import FeatureExtractor
 from src.analysis.preprocessing.wiriting_style.writing_style_preprocessing_data import WritingStylePreprocessingResults
 from src.analysis.visualization.analysis_visualization import AnalysisVisualization
 from dash import dcc, html, Dash
@@ -78,29 +79,47 @@ class WritingStyleEntropyAnalysisVisualizationDashApp(AnalysisVisualization):
 
 class WritingStyleEntropyAnalysisVisualization(AnalysisVisualization):
     
-    def __init__(self, entropy_analysis_results: EntropyResults):
+    def __init__(self, feature_extractor: FeatureExtractor, entropy_analysis_results: EntropyResults):
         self.entropy_analysis_results = entropy_analysis_results
+        self.feature_extractor = feature_extractor
 
     def visualize(self):
         self._visualize_heatmap()
 
     def _visualize_heatmap(self):
-        self._find_average_samples() 
-
-    def _find_average_samples(self):
-        collection_name = "books"
-        feature_entropies = self.entropy_analysis_results.all_chunks_features_entropy[collection_name].values()
-        features_entropies_values = [list(entropy.features_entropy.values()) for entropy in feature_entropies]
-        features_entropies_values = np.array(features_entropies_values)
-        
-        means = np.mean(features_entropies_values, axis=0)
-        std_devs = np.std(features_entropies_values, axis=0, ddof=1)  # Sample standard deviation (ddof=1)
-        std_errors = std_devs / np.sqrt(features_entropies_values.shape[0])  
-
+        self._display_average_uncertainty() 
         pass
-        # import matplotlib.pyplot as plt
-        # plt.figure(figsize=(8, 5))
-        # plt.bar([i for i in range(means.shape[0])], means, yerr=std_errors, capsize=5, alpha=0.7, color='skyblue')
-        # plt.ylabel("Feature Values")
-        # plt.title("Feature Averages with Uncertainty (Standard Error Bars)")
-        # plt.show()
+
+    def _display_average_uncertainty(self):
+        feautre_names = self.feature_extractor.get_feature_names_without_metadata()
+        collection_entropies = self.entropy_analysis_results.collections_entropies["books"] 
+        collection_entropies_list = [
+            list(chunk_features_entropies.features_entropy.values()) 
+            for chunk_features_entropies in collection_entropies.chunks_features_entropies.values()
+        ]
+        collection_entropies_list = np.transpose(np.array(collection_entropies_list))
+
+        fig = go.Figure()
+        for i, feauture_entropies in enumerate(collection_entropies_list):
+            fig.add_trace(
+                go.Box(
+                    y=feauture_entropies, 
+                    name=feautre_names[i], 
+                    boxmean='sd'
+                )
+            )
+        
+        sequence_entropies = np.array([
+            sequence_entropy.entropy 
+            for sequence_entropy in collection_entropies.chunks_sequence_entropy.values()
+        ])
+        fig.add_trace(
+            go.Box(
+                y=sequence_entropies, 
+                name="sequence", 
+                boxmean='sd'
+            )
+        )
+        
+        fig.update_layout(title=f'Box Plot of books entropies', yaxis_title='Value', showlegend=False)
+        fig.show()

@@ -47,6 +47,7 @@ class CollectionEntropyData:
     chunks_features_entropies: Dict[str, ChunkFeaturesEntropyData] = field(default_factory=dict)
     chunks_sequence_entropy: Dict[str, ChunkSequenceEntropyData] = field(default_factory=dict)
     average_data: Dict[str, CollectionEntropyAverageData] = field(default_factory=dict)
+    average_chunk_id: str = ""
 
 @dataclass
 class EntropyResults:

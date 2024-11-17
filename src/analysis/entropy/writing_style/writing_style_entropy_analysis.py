@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -195,40 +195,64 @@ class WritingStyleEntropyAnalysis:
         return entropy_results
     
     def _calculate_entropies_average_data(self, entropy_results: EntropyResults) -> EntropyResults:
-        feature_names = self.feature_extractor.get_feature_names_without_metadata()
-        for collection_names in entropy_results.collection_names:
-            collection_entropies = entropy_results.collections_entropies[collection_names] 
-            collection_entropies_list = [
-                list(chunk_features_entropies.features_entropy.values()) 
-                for chunk_features_entropies in collection_entropies.chunks_features_entropies.values()
-            ]
-            collection_entropies_list = np.array(collection_entropies_list)
-
-            means = np.mean(collection_entropies_list, axis=0)
-            std_devs = np.std(collection_entropies_list, axis=0, ddof=1)
-            std_errors = std_devs / np.sqrt(collection_entropies_list.shape[0])  
-
-            for i, feature_name in enumerate(feature_names):
-                feature_entropy_average_data = CollectionEntropyAverageData(
-                    average=means[i],
-                    average_uncertainty=std_errors[i],
-                    std=std_devs[i]
-                )
-                collection_entropies.average_data[feature_name] = feature_entropy_average_data
-        
         for collection_name in entropy_results.collection_names:
-            collection_entropies = entropy_results.collections_entropies[collection_name]
-            sequence_entropies = [entropy.entropy for entropy in collection_entropies.chunks_sequence_entropy.values()]
-            sequence_entropies = np.array(sequence_entropies)
+            collection_entropies = entropy_results.collections_entropies[collection_name] 
+            collection_entropies, feature_entropies, feature_averages, feature_std_errors = self._calculate_feature_entropies_average_data(collection_entropies)
+            collection_entropies, sequence_entropies, sequence_average, sequence_std_error = self._calculate_sequence_entropies_average_data(collection_entropies)
 
-            average = np.mean(sequence_entropies)
-            std_dev = np.std(sequence_entropies, ddof=1)
-            std_error = std_dev / np.sqrt(sequence_entropies.shape[0])
-
-            collection_entropies.average_data["sequence"] = CollectionEntropyAverageData(
-                average=average,
-                average_uncertainty=std_error,
-                std=std_dev
-            )
+            N = feature_entropies.shape[0]
+            data = np.hstack((feature_entropies, sequence_entropies.reshape(N, 1)))
+            averages = np.append(feature_averages, sequence_average)
+            std_errors = np.append(feature_std_errors, sequence_std_error)
+            average_chunk_index = self._find_collections_average_chunk(data, averages, std_errors)
+            average_chunk_id = list(collection_entropies.chunks_features_entropies.keys())[average_chunk_index]
+            collection_entropies.average_chunk_id = average_chunk_id
 
         return entropy_results
+    
+    def _calculate_feature_entropies_average_data(self, collection_entropies: CollectionEntropyData
+        ) -> Tuple[CollectionEntropyData, np.ndarray, np.ndarray, np.ndarray]:
+        feature_names = self.feature_extractor.get_feature_names_without_metadata()
+        feature_entropies = [
+            list(chunk_features_entropies.features_entropy.values()) 
+            for chunk_features_entropies in collection_entropies.chunks_features_entropies.values()
+        ]
+        feature_entropies = np.array(feature_entropies)
+        feature_averages = np.mean(feature_entropies, axis=0)
+        feature_std_devs = np.std(feature_entropies, axis=0, ddof=1)
+        feature_std_errors = feature_std_devs / np.sqrt(feature_entropies.shape[0])  
+
+        for i, feature_name in enumerate(feature_names):
+            feature_entropy_average_data = CollectionEntropyAverageData(
+                average=feature_averages[i],
+                average_uncertainty=feature_std_errors[i],
+                std=feature_std_devs[i]
+            )
+            collection_entropies.average_data[feature_name] = feature_entropy_average_data
+
+        return collection_entropies, feature_entropies, feature_averages, feature_std_errors
+    
+    def _calculate_sequence_entropies_average_data(self, collection_entropies: CollectionEntropyData
+        ) -> Tuple[CollectionEntropyData, np.ndarray, float, float]:
+        sequence_entropies = [entropy.entropy for entropy in collection_entropies.chunks_sequence_entropy.values()]
+        sequence_entropies = np.array(sequence_entropies)
+
+        sequence_average = np.mean(sequence_entropies)
+        sequence_std_dev = np.std(sequence_entropies, ddof=1)
+        sequence_std_error = sequence_std_dev / np.sqrt(sequence_entropies.shape[0])
+
+        collection_entropies.average_data["sequence"] = CollectionEntropyAverageData(
+            average=sequence_average,
+            average_uncertainty=sequence_std_error,
+            std=sequence_std_dev
+        )
+
+        return collection_entropies, sequence_entropies, sequence_average, sequence_std_error
+
+    def _find_collections_average_chunk(self, collection_entropies_list, means, std_errors) -> EntropyResults:
+        weights = 1 / (std_errors + 1e-8)  # Add small value to avoid division by zero
+        weighted_distances = np.array([
+            np.sum(weights * (sample - means) ** 2) for sample in collection_entropies_list
+        ])
+        representative_sample_index = np.argmin(weighted_distances)
+        return representative_sample_index
