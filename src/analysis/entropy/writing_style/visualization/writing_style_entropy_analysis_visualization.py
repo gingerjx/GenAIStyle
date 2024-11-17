@@ -6,87 +6,154 @@ from dash import dcc, html, Dash
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
 import numpy as np
+from IPython.display import display, Markdown, Latex, HTML
 
 class WritingStyleEntropyAnalysisVisualizationDashApp(AnalysisVisualization):
 
+    class Helper():
+        @staticmethod
+        def get_collection_buttons(parent: "WritingStyleEntropyAnalysisVisualizationDashApp", id: str, init: int = 0) -> dcc.Dropdown:
+            return dcc.Dropdown(
+                id=id,
+                options=[
+                    {'label': collection_name, 'value': collection_name}
+                    for collection_name in parent.entropy_analysis_results.collection_names
+                ],
+                value=parent.entropy_analysis_results.collection_names[init]
+            )
+
     def __init__(self, 
                  preprocessing_results: WritingStylePreprocessingResults,
-                 entropy_analysis_results: EntropyResults
+                 entropy_analysis_results: EntropyResults,
+                 max_tokens_to_display: int = 1000
     ) -> None:
-        self.preprocessing_results = None # Change it!!!
+        self.preprocessing_results = preprocessing_results
         self.entropy_analysis_results = entropy_analysis_results
+        self.max_tokens_to_display = max_tokens_to_display
+
         self.app = Dash(__name__)
         self.setup_layout()
         self.setup_callbacks()
 
     def setup_layout(self):
         self.app.layout = html.Div([
-            dcc.Dropdown(
-                id='features-dropdown',
-                options=[
-                    {'label': 'Feature 1', 'value': 'feature1'},
-                    {'label': 'Feature 2', 'value': 'feature2'},
-                ],
-                value='feature1'
-            ),
-            html.Div(
-                id='chunks_sequence_entropy', 
-                style={"background-color": "white"}
-            ),
+            html.Div([
+                html.Div([
+                    self.Helper.get_collection_buttons(self, 'collection-sequence-entropy-dropdown-1'),
+                    html.P(id="collection-sequence-entropy-score-1"),
+                    html.Div(id='collection-sequence-entropy-1'),
+                ], style={"padding": "10px"}),
+                html.Hr(),
+                html.Div([
+                    self.Helper.get_collection_buttons(self, 'collection-sequence-entropy-dropdown-2', init=1),
+                    html.P(id="collection-sequence-entropy-score-2"),
+                    html.Div(id='collection-sequence-entropy-2'),
+                ], style={"padding": "10px"}),
+            ], style={
+                "background-color": "white", 
+                "width": "100%", 
+                "display": "flex", 
+                "flex-direction": "row", 
+                "align-items": "center"
+            }),
         ])
 
     def setup_callbacks(self):
         @self.app.callback(
-            Output('chunks_sequence_entropy', 'children'),
-            Input('features-dropdown', 'value'),
+            Output('collection-sequence-entropy-1', 'children'),
+            Input('collection-sequence-entropy-dropdown-1', 'value'),
         )
-        def chunks_sequence_entropy(feature: str) -> html.Div:
+        def collection_sequence_entropy_1(collection_name: str) -> html.Div:
+            return _collection_sequence_entropy(collection_name)
+
+        @self.app.callback(
+            Output('collection-sequence-entropy-score-1', 'children'),
+            Input('collection-sequence-entropy-dropdown-1', 'value'),
+        )
+        def collection_sequence_entropy_score_2(collection_name: str) -> str:
+            return _collection_sequence_entropy_score(collection_name)
+        
+        @self.app.callback(
+            Output('collection-sequence-entropy-2', 'children'),
+            Input('collection-sequence-entropy-dropdown-2', 'value'),
+        )
+        def collection_sequence_entropy_2(collection_name: str) -> html.Div:
+            return _collection_sequence_entropy(collection_name)
+
+        @self.app.callback(
+            Output('collection-sequence-entropy-score-2', 'children'),
+            Input('collection-sequence-entropy-dropdown-2', 'value'),
+        )
+        def collection_sequence_entropy_score_2(collection_name: str) -> str:
+            return _collection_sequence_entropy_score(collection_name)
+        
+        def _collection_sequence_entropy_score(collection_name: str) -> str:
+            # Calculate the entropy score based on the selected collection
+            collection_entropies = self.entropy_analysis_results.collections_entropies[collection_name]
+            average_chunk_id = collection_entropies.average_chunk_id
+            entropy_score = collection_entropies.chunks_sequence_entropy[average_chunk_id].entropy
+            return f"Sequence entropy Score: {entropy_score:.2f}"
+
+        def _collection_sequence_entropy(collection_name: str) -> html.Div:
             words_elements = []
             all_chunks = self.preprocessing_results.get_all_chunks_preprocessing_data()
+            books_collection_entropies = self.entropy_analysis_results.collections_entropies[collection_name]
+            books_average_chunk_id = books_collection_entropies.average_chunk_id
+            books_average_chunk = [chunk for chunk in all_chunks if books_average_chunk_id == chunk.chunk_id][0]
+            books_average_sequence_entropy = books_collection_entropies.chunks_sequence_entropy[books_average_chunk_id]
 
-            for chunk_id, chunk_sequence in self.entropy_analysis_results.all_chunks_sequence_entropy.items():
-                chunk = [chunk for chunk in all_chunks if chunk_id == chunk.chunk_id][0]
-                for token, token_repetition in zip(chunk.split[:500], chunk_sequence.match_lengths[:500]):
-                    words_elements.append(html.Span(token + " ", style={"background-color": "white"}))
+            match_lengths_idx = 0
+            for token in books_average_chunk.split[:self.max_tokens_to_display]:
+                if token not in books_average_chunk.words:
+                    words_elements.append(self._style_token(token, 1))
+                    continue
+
+                token_repetition = books_average_sequence_entropy.match_lengths[match_lengths_idx]
+                match_lengths_idx += 1
+                words_elements.append(self._style_token(" ", 1))
+                words_elements.append(self._style_token(token, token_repetition))
 
             return words_elements
         
+    def _style_token(self, token: str, token_repetition: int) -> html.Span:
+        if token_repetition == 1:
+            background_color = "#FFFFFF"  # White
+        else:
+            max_repetition = 10 
+            intensity = min(token_repetition / max_repetition, 1.0)
+            start_color = (248, 252, 100)  # RGB for #FCF5CF
+            end_color = (201, 102, 83)     # RGB for #F2CC00
+            red_value = int(start_color[0] + (end_color[0] - start_color[0]) * intensity)
+            green_value = int(start_color[1] + (end_color[1] - start_color[1]) * intensity)
+            blue_value = int(start_color[2] + (end_color[2] - start_color[2]) * intensity)
+            background_color = f'rgb({red_value}, {green_value}, {blue_value})'
+
+        return html.Span(token, style={"background-color": background_color, "color": "black"})
+    
     def run(self, port: int):
-        # self.app.run(
-        #     port=port,
-        #     jupyter_height=800,
-        #     debug=False,
-        # )  
-        import numpy as np
-        import pandas as pd
-
-        collection_names = ["books", "gpt-3.5-turbo-0125", "gpt-4o", "gemini-1.5-flash", "open-mixtral-8x7b", "claude-3-haiku-20240307"]
-        df = pd.DataFrame(columns=collection_names)
-
-        sequence_entropies = list(self.entropy_analysis_results.all_chunks_sequence_entropy.values())
-        feaure_entropies = list(self.entropy_analysis_results.all_chunks_features_entropy.values())
-
-        for i, collection_name in enumerate(collection_names):
-            entropies_per_collection = len(sequence_entropies) // 6
-            left_range = i * entropies_per_collection
-            right_range = (i + 1) * entropies_per_collection
-            se = np.array([entropy.total_entropy for entropy in sequence_entropies[left_range:right_range]])
-            fe = np.array([entropy.total_entropy for entropy in feaure_entropies[left_range:right_range]])
-            df[collection_name] = pd.Series(data=[se.mean(), fe.mean()], index=["sequence_entropy", "feature_entropy"])
-
-        return df
+        self.app.run(
+            port=port,
+            jupyter_height=800,
+            debug=False,
+        )  
 
 
 class WritingStyleEntropyAnalysisVisualization(AnalysisVisualization):
     
-    def __init__(self, feature_extractor: FeatureExtractor, entropy_analysis_results: EntropyResults):
+    def __init__(self, 
+                 feature_extractor: FeatureExtractor, 
+                 preprocessing_results: WritingStylePreprocessingResults,
+                 entropy_analysis_results: EntropyResults
+    ) -> None:
         self.entropy_analysis_results = entropy_analysis_results
         self.feature_extractor = feature_extractor
+        self.preprocessing_results = preprocessing_results
+        self.dash_app = WritingStyleEntropyAnalysisVisualizationDashApp(
+            preprocessing_results=preprocessing_results,
+            entropy_analysis_results=entropy_analysis_results
+        )
 
     def visualize(self):
-        self._visualize_heatmap()
-
-    def _visualize_heatmap(self):
         self._visualize_average_chunks_entropies()
         # self._visualize_averages_uncertainty() 
         pass
