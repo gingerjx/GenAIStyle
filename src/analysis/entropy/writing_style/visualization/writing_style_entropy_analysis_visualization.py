@@ -87,10 +87,30 @@ class WritingStyleEntropyAnalysisVisualization(AnalysisVisualization):
         self._visualize_heatmap()
 
     def _visualize_heatmap(self):
-        self._display_average_uncertainty() 
+        self._visualize_average_chunks_entropies()
+        # self._visualize_averages_uncertainty() 
         pass
+    
+    def _visualize_average_chunks_entropies(self):
+        data = []
 
-    def _display_average_uncertainty(self):
+        for collection_name in self.entropy_analysis_results.collection_names:
+            collections_entropies = self.entropy_analysis_results.collections_entropies[collection_name]
+            average_chunk_id = collections_entropies.average_chunk_id
+            collection_chunks_entropies = list(collections_entropies.chunks_features_entropies[average_chunk_id].features_entropy.values())
+            collection_chunks_entropies.append(collections_entropies.chunks_sequence_entropy[average_chunk_id].entropy)
+            data.append(collection_chunks_entropies)
+
+        fig = go.Figure(data=go.Heatmap(
+            z=data,
+            x=self.feature_extractor.get_feature_names_without_metadata() + ["sequence"],
+            y=self.entropy_analysis_results.collection_names,
+            colorscale='Viridis',
+        ))
+        fig.update_layout(title='Heatmap of average chunks entropies', xaxis_title='Feature', yaxis_title='Collection')
+        fig.show()
+
+    def _visualize_averages_uncertainty(self):
         feautre_names = self.feature_extractor.get_feature_names_without_metadata()
         collection_entropies = self.entropy_analysis_results.collections_entropies["books"] 
         collection_entropies_list = [
