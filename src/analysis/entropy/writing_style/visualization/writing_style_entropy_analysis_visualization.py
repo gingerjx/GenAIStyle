@@ -25,10 +25,12 @@ class WritingStyleEntropyAnalysisVisualizationDashApp(AnalysisVisualization):
     def __init__(self, 
                  preprocessing_results: WritingStylePreprocessingResults,
                  entropy_analysis_results: EntropyResults,
+                 feature_extractor: FeatureExtractor,
                  max_tokens_to_display: int = 1000
     ) -> None:
         self.preprocessing_results = preprocessing_results
         self.entropy_analysis_results = entropy_analysis_results
+        self.feature_extractor = feature_extractor
         self.max_tokens_to_display = max_tokens_to_display
 
         self.app = Dash(__name__)
@@ -37,6 +39,10 @@ class WritingStyleEntropyAnalysisVisualizationDashApp(AnalysisVisualization):
 
     def setup_layout(self):
         self.app.layout = html.Div([
+            html.Div([
+                self.Helper.get_collection_buttons(self, 'collection-averages-uncertainty-dropdown'),
+                dcc.Graph(id='collection-averages-uncertainty'),
+            ]),
             html.Div([
                 html.Div([
                     self.Helper.get_collection_buttons(self, 'collection-sequence-entropy-dropdown-1'),
@@ -59,6 +65,49 @@ class WritingStyleEntropyAnalysisVisualizationDashApp(AnalysisVisualization):
         ])
 
     def setup_callbacks(self):
+        
+        # Graph 1
+
+        @self.app.callback(
+            Output('collection-averages-uncertainty', 'figure'),
+            Input('collection-averages-uncertainty-dropdown', 'value'),
+        )
+        def collection_averages_uncertainty(collection_name: str) -> dcc.Graph:
+            feautre_names = self.feature_extractor.get_feature_names_without_metadata()
+            collection_entropies = self.entropy_analysis_results.collections_entropies[collection_name] 
+            collection_entropies_list = [
+                list(chunk_features_entropies.features_entropy.values()) 
+                for chunk_features_entropies in collection_entropies.chunks_features_entropies.values()
+            ]
+            collection_entropies_list = np.transpose(np.array(collection_entropies_list))
+
+            fig = go.Figure()
+            for i, feauture_entropies in enumerate(collection_entropies_list):
+                fig.add_trace(
+                    go.Box(
+                        y=feauture_entropies, 
+                        name=feautre_names[i], 
+                        boxmean='sd'
+                    )
+                )
+            
+            sequence_entropies = np.array([
+                sequence_entropy.entropy 
+                for sequence_entropy in collection_entropies.chunks_sequence_entropy.values()
+            ])
+            fig.add_trace(
+                go.Box(
+                    y=sequence_entropies, 
+                    name="sequence", 
+                    boxmean='sd'
+                )
+            )
+            
+            fig.update_layout(title=f'Box Plots of {collection_name} entropies', yaxis_title='Value', showlegend=False)
+            return fig
+        
+        # Visualization 2
+        
         @self.app.callback(
             Output('collection-sequence-entropy-1', 'children'),
             Input('collection-sequence-entropy-dropdown-1', 'value'),
@@ -92,7 +141,7 @@ class WritingStyleEntropyAnalysisVisualizationDashApp(AnalysisVisualization):
             collection_entropies = self.entropy_analysis_results.collections_entropies[collection_name]
             average_chunk_id = collection_entropies.average_chunk_id
             entropy_score = collection_entropies.chunks_sequence_entropy[average_chunk_id].entropy
-            return f"Sequence entropy Score: {entropy_score:.2f}"
+            return f"Displayed tokens: {self.max_tokens_to_display}. Sequence entropy Score: {entropy_score:.2f}"
 
         def _collection_sequence_entropy(collection_name: str) -> html.Div:
             words_elements = []
@@ -113,6 +162,7 @@ class WritingStyleEntropyAnalysisVisualizationDashApp(AnalysisVisualization):
                 words_elements.append(self._style_token(" ", 1))
                 words_elements.append(self._style_token(token, token_repetition))
 
+            words_elements.append(self._style_token("...", 1))
             return words_elements
         
     def _style_token(self, token: str, token_repetition: int) -> html.Span:
@@ -150,12 +200,12 @@ class WritingStyleEntropyAnalysisVisualization(AnalysisVisualization):
         self.preprocessing_results = preprocessing_results
         self.dash_app = WritingStyleEntropyAnalysisVisualizationDashApp(
             preprocessing_results=preprocessing_results,
-            entropy_analysis_results=entropy_analysis_results
+            entropy_analysis_results=entropy_analysis_results,
+            feature_extractor=feature_extractor
         )
 
     def visualize(self):
-        self._visualize_average_chunks_entropies()
-        # self._visualize_averages_uncertainty() 
+        # self._visualize_average_chunks_entropies()
         pass
     
     def _visualize_average_chunks_entropies(self):
@@ -175,38 +225,4 @@ class WritingStyleEntropyAnalysisVisualization(AnalysisVisualization):
             colorscale='Viridis',
         ))
         fig.update_layout(title='Heatmap of average chunks entropies', xaxis_title='Feature', yaxis_title='Collection')
-        fig.show()
-
-    def _visualize_averages_uncertainty(self):
-        feautre_names = self.feature_extractor.get_feature_names_without_metadata()
-        collection_entropies = self.entropy_analysis_results.collections_entropies["books"] 
-        collection_entropies_list = [
-            list(chunk_features_entropies.features_entropy.values()) 
-            for chunk_features_entropies in collection_entropies.chunks_features_entropies.values()
-        ]
-        collection_entropies_list = np.transpose(np.array(collection_entropies_list))
-
-        fig = go.Figure()
-        for i, feauture_entropies in enumerate(collection_entropies_list):
-            fig.add_trace(
-                go.Box(
-                    y=feauture_entropies, 
-                    name=feautre_names[i], 
-                    boxmean='sd'
-                )
-            )
-        
-        sequence_entropies = np.array([
-            sequence_entropy.entropy 
-            for sequence_entropy in collection_entropies.chunks_sequence_entropy.values()
-        ])
-        fig.add_trace(
-            go.Box(
-                y=sequence_entropies, 
-                name="sequence", 
-                boxmean='sd'
-            )
-        )
-        
-        fig.update_layout(title=f'Box Plot of books entropies', yaxis_title='Value', showlegend=False)
         fig.show()
