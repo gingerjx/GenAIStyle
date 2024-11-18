@@ -61,7 +61,7 @@ class Settings:
         min_repeat_size: int = 2                                                                    # Minimum length of the repeated substring
         repeat_threshold: int = 3                                                                   # Minimum number of repeated substrings to be considered
         top_n_function_words: int = 10                                                              # Number of top function words to be considered
-        top_n_punctuation: int = 10                                                                 # Number of top punctuation to be considered
+        top_n_punctuation: int = 5                                                                  # Number of top punctuation to be considered
 
         # Writing Style Dataset Analysis
         ws_response_number_of_words: int = 3000                                                              # Expected number of words used during response generation
