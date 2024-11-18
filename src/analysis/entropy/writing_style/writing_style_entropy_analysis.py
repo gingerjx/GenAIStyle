@@ -24,7 +24,7 @@ class EntropySequenceAnalysis:
         for current_start in range(self.N):
             word = self.words[current_start]
 
-            if match_lengths and match_lengths[-1] > 1:
+            if match_lengths and match_lengths[-1] > 2:
                 match_lengths.append(match_lengths[-1] - 1)
                 self.words_dict[word].append(current_start)
                 continue
