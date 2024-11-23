@@ -301,9 +301,7 @@ class WritingStyleEntropyAnalysisVisualization(AnalysisVisualization):
         )
 
     def visualize(self):
-        # self._visualize_average_chunks_entropies()
-        # self._vis()
-        pass
+        self._visualize_average_chunks_entropies()
     
     def _visualize_average_chunks_entropies(self):
         data = []
@@ -323,16 +321,3 @@ class WritingStyleEntropyAnalysisVisualization(AnalysisVisualization):
         ))
         fig.update_layout(title='Heatmap of average chunks entropies', xaxis_title='Feature', yaxis_title='Collection')
         fig.show()
-
-    def _vis(self):
-        collection_name = "books"
-        pass
-
-    def _find_top_entropy_features(self, collection_name: str) -> List[str]:
-        features = self.feature_extractor.get_top_punctuation_features() + self.feature_extractor.get_top_function_words_features()
-        collection_entropies = self.entropy_analysis_results.collections_entropies[collection_name]
-        collection_average_chunk_id = collection_entropies.average_chunk_id
-        collection_features_entropies = collection_entropies.chunks_features_entropies[collection_average_chunk_id].features_entropy
-        collection_selected_features_entropies = {key: collection_features_entropies[key] for key in features}
-        collection_selected_features_entropies = dict(sorted(collection_selected_features_entropies.items(), key=lambda item: item[1], reverse=True))
-        return list(collection_selected_features_entropies.keys())[:5]
