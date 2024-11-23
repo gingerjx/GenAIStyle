@@ -60,6 +60,7 @@ class WritingStyleCleaner(Cleaner):
             cleanead_text = self._remove_emojis(cleanead_text)
             cleanead_text = Cleaner._remove_ats(cleanead_text)
             cleanead_text = Cleaner._remove_html_tags(cleanead_text)
+            cleanead_text = Cleaner._remove_bold_formatting(cleanead_text)
             cleaned_response.set_text(cleanead_text)
             cleaned_collection.texts.append(cleaned_response)
 

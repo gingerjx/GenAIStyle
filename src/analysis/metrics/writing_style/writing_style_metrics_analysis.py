@@ -17,6 +17,7 @@ class WritingStyleMetricsAnalysis(MetricsAnalysis):
             for collection_name in preprocessing_results.collection_names:
                 for preprocessing_chunk_data in preprocessing_results.chunks[author_name][collection_name]:
                     metrics_analysis = MetricData(
+                        chunk_id=preprocessing_chunk_data.chunk_id,
                         author_name=author_name,
                         collection_name=collection_name,
                         **MetricsAnalysis._analyze(preprocessing_chunk_data)
@@ -26,6 +27,7 @@ class WritingStyleMetricsAnalysis(MetricsAnalysis):
                     
                 preprocessing_data = preprocessing_results.full[author_name][collection_name]
                 metrics_analysis = MetricData(
+                    chunk_id=preprocessing_chunk_data.chunk_id,
                     author_name=author_name,
                     collection_name=collection_name,
                     **MetricsAnalysis._analyze(preprocessing_data)

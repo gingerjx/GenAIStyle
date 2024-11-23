@@ -61,7 +61,7 @@ class Settings:
         min_repeat_size: int = 2                                                                    # Minimum length of the repeated substring
         repeat_threshold: int = 3                                                                   # Minimum number of repeated substrings to be considered
         top_n_function_words: int = 10                                                              # Number of top function words to be considered
-        top_n_punctuation: int = 10                                                                 # Number of top punctuation to be considered
+        top_n_punctuation: int = 5                                                                  # Number of top punctuation to be considered
 
         # Writing Style Dataset Analysis
         ws_response_number_of_words: int = 3000                                                              # Expected number of words used during response generation
@@ -69,6 +69,7 @@ class Settings:
         ws_analysis_chunk_number_of_words: int = 5000                                                        # Number of words used as a chunk size during analysis. Has to be divisor of `ws_analysis_number_of_words`
         ws_analysis_number_of_words: int = 200000                                                            # Number of words used during analysis   
         ws_analysis_number_of_chunks: int = ws_analysis_number_of_words // ws_analysis_chunk_number_of_words # Number of chunks used during analysis
+        ws_entropy_analysis_number_of_bins: int = 100                                                        # Number of bins used during entropy analysis
 
         # Daigt Dataset Analysis
         daigt_analysis_chunk_number_of_words: int = 5000                                                          # Number of words used as a chunk size during analysis. Has to be divisor of `daigt_analysis_number_of_words`

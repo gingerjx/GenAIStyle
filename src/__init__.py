@@ -31,3 +31,5 @@ from src.classification.writing_style.visualization.writing_style_classification
 from src.classification.daigt.daigt_pca_classification import *
 from src.classification.all_features.writing_style.writing_style_all_features_classification import *
 from src.classification.all_features.daigt.daigt_all_features_classification import *
+from src.analysis.entropy.writing_style.writing_style_entropy_analysis import WritingStyleEntropyAnalysis
+from src.analysis.entropy.writing_style.visualization.writing_style_entropy_analysis_visualization import WritingStyleEntropyAnalysisVisualization

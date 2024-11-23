@@ -130,7 +130,7 @@ class DashApp:
             ).iloc[0]
 
             feature_names = features_1.index.to_list()
-            for element in ["source_name", "author_name", "collection_name"]:
+            for element in ["chunk_id", "source_name", "author_name", "collection_name"]:
                 feature_names.remove(element)
 
             relative_bars = {
@@ -332,7 +332,7 @@ class WritingStyleMetricsAnalysisVisualization(AnalysisVisualization):
     def _visualize_metrics_of_two(self, metrics_analysis_results: MetricsAnalysisResults):
         """Visualize the unique_word_counts, average_word_lengths and average_sentence_lengths for the authors and models"""
         fig = go.Figure()
-        excluded_metrics = ["source_name", "author_name", "collection_name", "sorted_function_words", "punctuation_frequency"]
+        excluded_metrics = ["chunk_id", "source_name", "author_name", "collection_name", "sorted_function_words", "punctuation_frequency"]
         included_metrics = [f.name for f in fields(MetricData) if f.name not in excluded_metrics]
         buttons = []
         for i, metric_name in enumerate(included_metrics):

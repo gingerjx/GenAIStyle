@@ -92,3 +92,9 @@ class Cleaner:
         """Remove note annotations from the text"""
         pattern = r'\{.*?\}'
         return re.sub(pattern, '', text)
+    
+    @staticmethod
+    def _remove_bold_formatting(text: str) -> str:
+        """Remove bold formatting from the text"""
+        pattern = r'\*{1,2}(.*?)\*{1,2}'
+        return re.sub(pattern, r'\1', text, flags=re.DOTALL)

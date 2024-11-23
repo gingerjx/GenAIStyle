@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Dict, List
+import uuid
 
 import pandas as pd
 
@@ -19,7 +20,10 @@ class WritingStylePreprocessingResults:
             self.chunks[author_name] = {}
             self.full[author_name] = {}
             for collection_name in self.collection_names:
-                self.full[author_name][collection_name] = PreprocessingData()
+                self.full[author_name][collection_name] = PreprocessingData(
+                    collection_name=collection_name,
+                    chunk_id=str(uuid.uuid4())
+                )
                 self.chunks[author_name].update({
                     collection_name: []
                 })
@@ -33,3 +37,6 @@ class WritingStylePreprocessingResults:
                 data_series["collection"] = collection_name
                 df = pd.concat([df, data_series.to_frame().T],ignore_index=True)
         return df
+    
+    def get_all_chunks_preprocessing_data(self) -> List[PreprocessingData]:
+        return [chunk_data for author_name in self.author_names for collection_name in self.collection_names for chunk_data in self.chunks[author_name][collection_name]]
