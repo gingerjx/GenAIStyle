@@ -311,11 +311,12 @@ class WritingStyleEntropyAnalysisVisualization(AnalysisVisualization):
             average_chunk_id = collections_entropies.average_chunk_id
             collection_chunks_entropies = list(collections_entropies.chunks_features_entropies[average_chunk_id].features_entropy.values())
             collection_chunks_entropies.append(collections_entropies.chunks_sequence_entropy[average_chunk_id].entropy)
+            collection_chunks_entropies.append(collections_entropies.chunks_ws_words_entropy[average_chunk_id].entropy)
             data.append(collection_chunks_entropies)
 
         fig = go.Figure(data=go.Heatmap(
             z=data,
-            x=self.feature_extractor.get_feature_names_without_metadata() + ["sequence"],
+            x=self.feature_extractor.get_feature_names_without_metadata() + ["sequence", "ws_words"],
             y=self.entropy_analysis_results.collection_names,
             colorscale='Viridis',
         ))
