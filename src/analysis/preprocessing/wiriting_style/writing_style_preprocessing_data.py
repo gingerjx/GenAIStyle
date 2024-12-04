@@ -14,7 +14,6 @@ class WritingStylePreprocessingResults:
     collection_names: List[str]
     full: Dict[str, Dict[str, PreprocessingData]] = field(init=False, default_factory=dict)              # [author][collection]
     chunks: Dict[str, Dict[str, List[PreprocessingData]]] = field(init=False, default_factory=dict)      # [author][collection][chunk_id]
-    all_words_counts: Dict[str, int] = field(init=False, default_factory=dict)                             # [word]
     
     def __post_init__(self) -> None:
         for author_name in self.author_names:   

@@ -43,9 +43,15 @@ class ChunkSequenceEntropyData:
     match_lengths: List[float]
 
 @dataclass
+class ChunkWSWordsEntropyData:
+    entropy: float = None
+    words_probabilities: Dict[str, float] = field(default_factory=dict)
+
+@dataclass
 class CollectionEntropyData:
     chunks_features_entropies: Dict[str, ChunkFeaturesEntropyData] = field(default_factory=dict)
     chunks_sequence_entropy: Dict[str, ChunkSequenceEntropyData] = field(default_factory=dict)
+    chunks_ws_words_entropy: Dict[str, ChunkWSWordsEntropyData] = field(default_factory=dict)
     average_data: Dict[str, CollectionEntropyAverageData] = field(default_factory=dict)
     average_chunk_id: str = ""
 
@@ -54,6 +60,7 @@ class EntropyResults:
     collection_names: List[str]
 
     features_distributions: Dict[str, FeatureDistributionData] = field(default_factory=dict)  # [feature_name]
+    words_probability_distributions: Dict[str, float] = field(default_factory=dict)                       # [word_name]
     collections_entropies: Dict[str, CollectionEntropyData] = field(default_factory=dict)     # [collection_name]
 
     def __post_init__(self) -> None:

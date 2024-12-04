@@ -35,12 +35,4 @@ class WritingStylePreprocessing(Preprocessing):
                 preprocessing_results.chunks[author.name][collection.name] = preprocessed_chunks
                 preprocessing_results.full[author.name][collection.name] = preprocessed_full
         
-        preprocessing_results.all_words_counts = self._get_all_words_distribution(preprocessing_results)
         return preprocessing_results
-    
-    def _get_all_words_distribution(self, preprocessing_results: WritingStylePreprocessingResults) -> List[str]:
-        """Get all words distribution"""
-        all_words = preprocessing_results.get_all_words()
-        all_lower_words = [word.lower() for word in all_words]
-        all_words_counts = Counter(all_lower_words)
-        return all_words_counts
