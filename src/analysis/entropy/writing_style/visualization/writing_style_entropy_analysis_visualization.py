@@ -125,7 +125,19 @@ class WritingStyleEntropyAnalysisVisualizationDashApp(AnalysisVisualization):
                     boxmean='sd'
                 )
             )
-            
+
+            sequence_entropies = np.array([
+                sequence_entropy.entropy 
+                for sequence_entropy in collection_entropies.chunks_ws_words_entropy.values()
+            ])
+            fig.add_trace(
+                go.Box(
+                    y=sequence_entropies, 
+                    name="ws_words", 
+                    boxmean='sd'
+                )
+            )
+
             fig.update_layout(title=f'Box Plots of {collection_name} entropies', yaxis_title='Value', showlegend=False)
             return fig
         
