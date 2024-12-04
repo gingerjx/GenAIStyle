@@ -232,11 +232,12 @@ class WritingStyleEntropyAnalysis:
             collection_entropies = entropy_results.collections_entropies[collection_name] 
             collection_entropies, feature_entropies, feature_averages, feature_std_errors = self._calculate_feature_entropies_average_data(collection_entropies)
             collection_entropies, sequence_entropies, sequence_average, sequence_std_error = self._calculate_sequence_entropies_average_data(collection_entropies)
+            collection_entropies, ws_words_entropies, ws_words_average, ws_words_std_error = self._calculate_ws_words_entropies_average_data(collection_entropies)
 
             N = feature_entropies.shape[0]
-            data = np.hstack((feature_entropies, sequence_entropies.reshape(N, 1)))
-            averages = np.append(feature_averages, sequence_average)
-            std_errors = np.append(feature_std_errors, sequence_std_error)
+            data = np.hstack((feature_entropies, sequence_entropies.reshape(N, 1), ws_words_entropies.reshape(N, 1)))
+            averages = np.hstack((feature_averages, sequence_average, ws_words_average))
+            std_errors = np.hstack((feature_std_errors, sequence_std_error, ws_words_std_error))
             average_chunk_index = self._find_collections_average_chunk(data, averages, std_errors)
             average_chunk_id = list(collection_entropies.chunks_features_entropies.keys())[average_chunk_index]
             collection_entropies.average_chunk_id = average_chunk_id
@@ -275,6 +276,23 @@ class WritingStyleEntropyAnalysis:
         sequence_std_error = np.sqrt(sequence_std_dev ** 2 / sequence_entropies.shape[0]) ## FIX THIS 
 
         collection_entropies.average_data["sequence"] = CollectionEntropyAverageData(
+            average=sequence_average,
+            average_uncertainty=sequence_std_error,
+            std=sequence_std_dev
+        )
+
+        return collection_entropies, sequence_entropies, sequence_average, sequence_std_error
+    
+    def _calculate_ws_words_entropies_average_data(self, collection_entropies: CollectionEntropyData
+        ) -> Tuple[CollectionEntropyData, np.ndarray, float, float]:
+        sequence_entropies = [entropy.entropy for entropy in collection_entropies.chunks_ws_words_entropy.values()]
+        sequence_entropies = np.array(sequence_entropies)
+
+        sequence_average = np.mean(sequence_entropies)
+        sequence_std_dev = np.std(sequence_entropies, ddof=1)
+        sequence_std_error = np.sqrt(sequence_std_dev ** 2 / sequence_entropies.shape[0]) ## FIX THIS 
+
+        collection_entropies.average_data["ws_words"] = CollectionEntropyAverageData(
             average=sequence_average,
             average_uncertainty=sequence_std_error,
             std=sequence_std_dev
