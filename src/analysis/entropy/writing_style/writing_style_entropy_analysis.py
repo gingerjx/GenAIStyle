@@ -220,7 +220,7 @@ class WritingStyleEntropyAnalysis:
         feature_entropies = np.array(feature_entropies)
         feature_averages = np.mean(feature_entropies, axis=0)
         feature_std_devs = np.std(feature_entropies, axis=0, ddof=1)
-        feature_std_errors = feature_std_devs / np.sqrt(feature_entropies.shape[0])  
+        feature_std_errors = np.sqrt(feature_std_devs**2 / feature_entropies.shape[0])  
 
         for i, feature_name in enumerate(feature_names):
             feature_entropy_average_data = CollectionEntropyAverageData(
@@ -239,7 +239,7 @@ class WritingStyleEntropyAnalysis:
 
         sequence_average = np.mean(sequence_entropies)
         sequence_std_dev = np.std(sequence_entropies, ddof=1)
-        sequence_std_error = sequence_std_dev / np.sqrt(sequence_entropies.shape[0])
+        sequence_std_error = np.sqrt(sequence_std_dev ** 2 / sequence_entropies.shape[0]) ## FIX THIS 
 
         collection_entropies.average_data["sequence"] = CollectionEntropyAverageData(
             average=sequence_average,
