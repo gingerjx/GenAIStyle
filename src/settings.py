@@ -53,7 +53,28 @@ class Settings:
 
         daigt_dataset_dump_file = sessions_dir / "daigt_dataset.db"
         daigt_pca_classificaiton_dump_file = sessions_dir / "daigt_pca_classification.db"
-          
+
+        # Twitter and Reddit Dataset
+
+        tr_dir: Path = res_dir / "datasets/twitter_reddit"
+
+        tr_raw_dir: Path = tr_dir / "raw"
+        twitter_raw_dataset_filepath: Path = tr_raw_dir / "Twitter_Data.csv"
+        reddit_raw_dataset_filepath: Path = tr_raw_dir / "Reddit_Data.csv"
+
+        # News Dataset
+
+        news_dir: Path = res_dir / "datasets/news"
+
+        news_raw_dir: Path = news_dir / "raw"
+        news_raw_dataset_filepath: Path = news_raw_dir / "data.csv"
+
+        # Legal Dataset
+
+        legal_dir: Path = res_dir / "datasets/legal"
+
+        legal_raw_dir: Path = legal_dir / "raw"
+
     class Configuration:
 
         seed: int = 42                                                                              # Seed for random state
