@@ -34,4 +34,4 @@ from src.classification.all_features.daigt.daigt_all_features_classification imp
 from src.analysis.entropy.writing_style.writing_style_entropy_analysis import WritingStyleEntropyAnalysis
 from src.analysis.entropy.writing_style.visualization.writing_style_entropy_analysis_visualization import WritingStyleEntropyAnalysisVisualization
 
-from src.analysis.words_distribution.datasets import *
+from src.analysis.words_distribution.datasets import TwitterDataset, RedditDataset, NewsDataset, LegalDataset, DaigtDataset as WordsDistributionDaigtDataset, WritingStyleDataset as WordsDistributionWritingStyleDataset

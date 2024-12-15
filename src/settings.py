@@ -18,6 +18,8 @@ class Settings:
         res_dir: Path = Path("res")
         sessions_dir: Path = res_dir / "sessions"
 
+        all_word_distribution_dumo_file = sessions_dir / "all_word_distribution.db"
+        
         # Writing Style Dataset
         
         ws_dir: Path = res_dir / "datasets/writing_style"
