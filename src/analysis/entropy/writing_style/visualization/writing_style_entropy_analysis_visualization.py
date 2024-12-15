@@ -138,6 +138,18 @@ class WritingStyleEntropyAnalysisVisualizationDashApp(AnalysisVisualization):
                 )
             )
 
+            sequence_entropies = np.array([
+                sequence_entropy.entropy 
+                for sequence_entropy in collection_entropies.chunks_all_words_entropy.values()
+            ])
+            fig.add_trace(
+                go.Box(
+                    y=sequence_entropies, 
+                    name="all_words", 
+                    boxmean='sd'
+                )
+            )
+
             fig.update_layout(title=f'Box Plots of {collection_name} entropies', yaxis_title='Value', showlegend=False)
             return fig
         
@@ -324,11 +336,12 @@ class WritingStyleEntropyAnalysisVisualization(AnalysisVisualization):
             collection_chunks_entropies = list(collections_entropies.chunks_features_entropies[average_chunk_id].features_entropy.values())
             collection_chunks_entropies.append(collections_entropies.chunks_sequence_entropy[average_chunk_id].entropy)
             collection_chunks_entropies.append(collections_entropies.chunks_ws_words_entropy[average_chunk_id].entropy)
+            collection_chunks_entropies.append(collections_entropies.chunks_all_words_entropy[average_chunk_id].entropy)
             data.append(collection_chunks_entropies)
 
         fig = go.Figure(data=go.Heatmap(
             z=data,
-            x=self.feature_extractor.get_feature_names_without_metadata() + ["sequence", "ws_words"],
+            x=self.feature_extractor.get_feature_names_without_metadata() + ["sequence", "ws_words", "all_words"],
             y=self.entropy_analysis_results.collection_names,
             colorscale='Viridis',
         ))

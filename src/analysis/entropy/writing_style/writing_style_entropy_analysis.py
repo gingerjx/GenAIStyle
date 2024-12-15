@@ -74,12 +74,15 @@ class WritingStyleEntropyAnalysis:
     def analyze(self, 
         preprocessing_results: WritingStylePreprocessingResults,
         metrics_analysis_results: WritingStyleMetricsAnalysisResults, 
+        all_words_distribution: Dict[str, float]
     ) -> EntropyResults:
         entropy_results = EntropyResults(
             collection_names=preprocessing_results.collection_names
         )
-
-        entropy_results.words_probability_distributions = self._get_ws_words_probability_distributions(preprocessing_results)
+        
+        entropy_results.all_words_probability_distribution = all_words_distribution
+        entropy_results = self._get_chunks_all_words_entropies(preprocessing_results, entropy_results)
+        entropy_results.words_probability_distribution = self._get_ws_words_probability_distribution(preprocessing_results)
         entropy_results = self._get_chunks_ws_words_entropies(preprocessing_results, entropy_results)
         entropy_results.features_distributions = self._get_features_distributions(metrics_analysis_results)
         entropy_results = self._get_chunks_features_entropies(
@@ -94,7 +97,24 @@ class WritingStyleEntropyAnalysis:
         
         return entropy_results
     
-    def _get_ws_words_probability_distributions(self, preprocessing_results: WritingStylePreprocessingResults) -> Dict[str, float]:
+    def _get_chunks_all_words_entropies(self, preprocessing_results: WritingStylePreprocessingResults, entropy_results = EntropyResults) -> Dict[str, float]:
+        for chunk_metrics in preprocessing_results.get_all_chunks_preprocessing_data():
+            chunk_ws_words_entropy = ChunkWordsEntropyData()
+            total_probability = 0
+
+            for word in chunk_metrics.words:
+                word_probability = entropy_results.all_words_probability_distribution.get(word.lower(), 0)
+                chunk_ws_words_entropy.words_probabilities[word] = word_probability
+                total_probability += word_probability
+
+            final_probability = total_probability / len(chunk_metrics.words)
+            chunk_ws_words_entropy.entropy = self._calculate_entropy(final_probability)
+            entropy_results.collections_entropies[chunk_metrics.collection_name] \
+                .chunks_all_words_entropy[chunk_metrics.chunk_id] = chunk_ws_words_entropy
+        
+        return entropy_results
+    
+    def _get_ws_words_probability_distribution(self, preprocessing_results: WritingStylePreprocessingResults) -> Dict[str, float]:
         all_words = preprocessing_results.get_all_words()
         all_lower_words = [word.lower() for word in all_words]
         all_words_counts = Counter(all_lower_words)
@@ -107,13 +127,13 @@ class WritingStyleEntropyAnalysis:
 
         return words_probability_distributions
     
-    def _get_chunks_ws_words_entropies(self, preprocessing_results: WritingStylePreprocessingResults, entropy_results = EntropyResults) -> Dict[str, float]:
+    def _get_chunks_ws_words_entropies(self, preprocessing_results: WritingStylePreprocessingResults, entropy_results: EntropyResults) -> Dict[str, float]:
         for chunk_metrics in preprocessing_results.get_all_chunks_preprocessing_data():
-            chunk_ws_words_entropy = ChunkWSWordsEntropyData()
+            chunk_ws_words_entropy = ChunkWordsEntropyData()
             total_probability = 0
 
             for word in chunk_metrics.words:
-                word_probability = entropy_results.words_probability_distributions[word.lower()]
+                word_probability = entropy_results.words_probability_distribution[word.lower()]
                 chunk_ws_words_entropy.words_probabilities[word] = word_probability
                 total_probability += word_probability
 
