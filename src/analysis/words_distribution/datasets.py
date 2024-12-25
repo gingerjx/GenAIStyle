@@ -43,8 +43,8 @@ class NewsDataset(Dataset):
     # https://www.kaggle.com/datasets/everydaycodings/global-news-dataset
     def load(self) -> "NewsDataset":
         df = pd.read_csv(self.settings.paths.news_raw_dataset_filepath)
-        df['content'] = df['content'].astype(str)
-        self.corpus = df['content'].str.cat(sep=' ')
+        df['full_content'] = df['full_content'].astype(str)
+        self.corpus = df['full_content'].str.cat(sep=' ')
         return self
 
 class LegalDataset(Dataset):
