@@ -136,12 +136,12 @@ class MetricsAnalysis:
     @staticmethod
     def _herdans_c(num_of_words: int, num_of_unique_words: int) -> float:
         """Get the Herdan's C score"""
-        return num_of_unique_words / num_of_words
+        return math.log(num_of_unique_words, 10) / math.log(num_of_words, 10)
     
     @staticmethod
     def _maas(num_of_words: int, vocabulary_size: int) -> float:
         """Get the Maas score"""
-        return (math.log(num_of_words) - math.log(vocabulary_size)) / math.log(num_of_words**2)
+        return (math.log(num_of_words, 10) - math.log(vocabulary_size, 10)) / math.log(num_of_words**2, 10)
 
     @staticmethod
     def _simpsons_index(words: List[str]) -> float:
