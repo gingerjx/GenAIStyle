@@ -133,7 +133,7 @@ class WritingStyleEntropyAnalysisVisualizationDashApp(AnalysisVisualization):
             fig.add_trace(
                 go.Box(
                     y=sequence_entropies, 
-                    name="ws_words", 
+                    name="local_word_distribution", 
                     boxmean='sd'
                 )
             )
@@ -145,12 +145,12 @@ class WritingStyleEntropyAnalysisVisualizationDashApp(AnalysisVisualization):
             fig.add_trace(
                 go.Box(
                     y=sequence_entropies, 
-                    name="all_words", 
+                    name="global_word_distribution", 
                     boxmean='sd'
                 )
             )
 
-            fig.update_layout(title=f'Box Plots of {collection_name} entropies', yaxis_title='Value', showlegend=False)
+            fig.update_layout(title=f"Box Plots of {collection_name}' attributes IC", yaxis_title='Value', showlegend=False)
             return fig
         
         # Visualization 1
@@ -289,7 +289,7 @@ class WritingStyleEntropyAnalysisVisualizationDashApp(AnalysisVisualization):
             background_color = f'rgb({int(color[0]*255)}, {int(color[1]*255)}, {int(color[2]*255)})'
         else:
             background_color = "#FFFFFF"  # Default to white if index is out of range
-
+        background_color = "#FFFFFF"
         return html.Span(token, style={"background-color": background_color, "color": "black"})
 
     def _neutral_style_token(self, token: str) -> html.Span:
@@ -341,9 +341,9 @@ class WritingStyleEntropyAnalysisVisualization(AnalysisVisualization):
 
         fig = go.Figure(data=go.Heatmap(
             z=data,
-            x=self.feature_extractor.get_feature_names_without_metadata() + ["sequence", "ws_words", "all_words"],
+            x=self.feature_extractor.get_feature_names_without_metadata() + ["sequence", "local_word_distribution", "global_word_distribution"],
             y=self.entropy_analysis_results.collection_names,
             colorscale='Viridis',
         ))
-        fig.update_layout(title='Heatmap of average chunks entropies', xaxis_title='Feature', yaxis_title='Collection')
+        fig.update_layout(title="Heatmap of average chunks' attributes IC values", xaxis_title='Feature', yaxis_title='Collection')
         fig.show()
