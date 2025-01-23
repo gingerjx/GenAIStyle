@@ -15,6 +15,7 @@ class DaigtMetricsAnalysis(MetricsAnalysis):
         for collection_name in preprocessing_results.collection_names:
             for preprocessing_chunk_data in preprocessing_results.chunks[collection_name]:
                 metrics_analysis = MetricData(
+                    chunk_id=None,
                     author_name=None,
                     collection_name=collection_name,
                     **MetricsAnalysis._analyze(preprocessing_chunk_data)
@@ -23,6 +24,7 @@ class DaigtMetricsAnalysis(MetricsAnalysis):
                 
             preprocessing_data = preprocessing_results.full[collection_name]
             metrics_analysis = MetricData(
+                chunk_id=None,
                 author_name=None,
                 collection_name=collection_name,
                 **MetricsAnalysis._analyze(preprocessing_data)

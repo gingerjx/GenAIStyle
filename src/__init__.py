@@ -2,7 +2,7 @@ from src.file_utils import FileUtils
 from src.datasets.writing_style.author import Author
 from src.datasets.common.collections.collection import Collection
 
-from src.settings import Settings
+from src.settings import Settings, Secrets
 from src.generation.text_generator import TextGenerator
 from src.generation.generated_text import GeneratedText
 from src.datasets.common.cleaner import Cleaner
