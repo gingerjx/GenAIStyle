@@ -125,8 +125,32 @@ class WritingStyleEntropyAnalysisVisualizationDashApp(AnalysisVisualization):
                     boxmean='sd'
                 )
             )
-            
-            fig.update_layout(title=f'Box Plots of {collection_name} entropies', yaxis_title='Value', showlegend=False)
+
+            sequence_entropies = np.array([
+                sequence_entropy.entropy 
+                for sequence_entropy in collection_entropies.chunks_ws_words_entropy.values()
+            ])
+            fig.add_trace(
+                go.Box(
+                    y=sequence_entropies, 
+                    name="local_word_distribution", 
+                    boxmean='sd'
+                )
+            )
+
+            sequence_entropies = np.array([
+                sequence_entropy.entropy 
+                for sequence_entropy in collection_entropies.chunks_all_words_entropy.values()
+            ])
+            fig.add_trace(
+                go.Box(
+                    y=sequence_entropies, 
+                    name="global_word_distribution", 
+                    boxmean='sd'
+                )
+            )
+
+            fig.update_layout(title=f"Box Plots of {collection_name}' attributes IC", yaxis_title='Value', showlegend=False)
             return fig
         
         # Visualization 1
@@ -265,7 +289,7 @@ class WritingStyleEntropyAnalysisVisualizationDashApp(AnalysisVisualization):
             background_color = f'rgb({int(color[0]*255)}, {int(color[1]*255)}, {int(color[2]*255)})'
         else:
             background_color = "#FFFFFF"  # Default to white if index is out of range
-
+        background_color = "#FFFFFF"
         return html.Span(token, style={"background-color": background_color, "color": "black"})
 
     def _neutral_style_token(self, token: str) -> html.Span:
@@ -301,9 +325,7 @@ class WritingStyleEntropyAnalysisVisualization(AnalysisVisualization):
         )
 
     def visualize(self):
-        # self._visualize_average_chunks_entropies()
-        # self._vis()
-        pass
+        self._visualize_average_chunks_entropies()
     
     def _visualize_average_chunks_entropies(self):
         data = []
@@ -313,26 +335,15 @@ class WritingStyleEntropyAnalysisVisualization(AnalysisVisualization):
             average_chunk_id = collections_entropies.average_chunk_id
             collection_chunks_entropies = list(collections_entropies.chunks_features_entropies[average_chunk_id].features_entropy.values())
             collection_chunks_entropies.append(collections_entropies.chunks_sequence_entropy[average_chunk_id].entropy)
+            collection_chunks_entropies.append(collections_entropies.chunks_ws_words_entropy[average_chunk_id].entropy)
+            collection_chunks_entropies.append(collections_entropies.chunks_all_words_entropy[average_chunk_id].entropy)
             data.append(collection_chunks_entropies)
 
         fig = go.Figure(data=go.Heatmap(
             z=data,
-            x=self.feature_extractor.get_feature_names_without_metadata() + ["sequence"],
+            x=self.feature_extractor.get_feature_names_without_metadata() + ["sequence", "local_word_distribution", "global_word_distribution"],
             y=self.entropy_analysis_results.collection_names,
             colorscale='Viridis',
         ))
-        fig.update_layout(title='Heatmap of average chunks entropies', xaxis_title='Feature', yaxis_title='Collection')
+        fig.update_layout(title="Heatmap of average chunks' attributes IC values", xaxis_title='Feature', yaxis_title='Collection')
         fig.show()
-
-    def _vis(self):
-        collection_name = "books"
-        pass
-
-    def _find_top_entropy_features(self, collection_name: str) -> List[str]:
-        features = self.feature_extractor.get_top_punctuation_features() + self.feature_extractor.get_top_function_words_features()
-        collection_entropies = self.entropy_analysis_results.collections_entropies[collection_name]
-        collection_average_chunk_id = collection_entropies.average_chunk_id
-        collection_features_entropies = collection_entropies.chunks_features_entropies[collection_average_chunk_id].features_entropy
-        collection_selected_features_entropies = {key: collection_features_entropies[key] for key in features}
-        collection_selected_features_entropies = dict(sorted(collection_selected_features_entropies.items(), key=lambda item: item[1], reverse=True))
-        return list(collection_selected_features_entropies.keys())[:5]

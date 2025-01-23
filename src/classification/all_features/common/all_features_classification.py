@@ -45,7 +45,10 @@ class AllFeaturesXGBoostClassification(BaseClassification):
 
         X, y = transform_function(chunks_df)
 
-        y_pred = model.predict(X)
+        try:
+            y_pred = model.predict(X)
+        except Exception as e:
+            pass
 
         accuracy = accuracy_score(y, y_pred)
         report = classification_report(y, y_pred)

@@ -18,6 +18,8 @@ class Settings:
         res_dir: Path = Path("res")
         sessions_dir: Path = res_dir / "sessions"
 
+        all_word_distribution_dump_file = sessions_dir / "all_word_distribution.db"
+        
         # Writing Style Dataset
         
         ws_dir: Path = res_dir / "datasets/writing_style"
@@ -53,7 +55,28 @@ class Settings:
 
         daigt_dataset_dump_file = sessions_dir / "daigt_dataset.db"
         daigt_pca_classificaiton_dump_file = sessions_dir / "daigt_pca_classification.db"
-          
+
+        # Twitter and Reddit Dataset
+
+        tr_dir: Path = res_dir / "datasets/twitter_reddit"
+
+        tr_raw_dir: Path = tr_dir / "raw"
+        twitter_raw_dataset_filepath: Path = tr_raw_dir / "Twitter_Data.csv"
+        reddit_raw_dataset_filepath: Path = tr_raw_dir / "Reddit_Data.csv"
+
+        # News Dataset
+
+        news_dir: Path = res_dir / "datasets/news"
+
+        news_raw_dir: Path = news_dir / "raw"
+        news_raw_dataset_filepath: Path = news_raw_dir / "data.csv"
+
+        # Legal Dataset
+
+        legal_dir: Path = res_dir / "datasets/legal"
+
+        legal_raw_dir: Path = legal_dir / "raw"
+
     class Configuration:
 
         seed: int = 42                                                                              # Seed for random state
@@ -65,7 +88,7 @@ class Settings:
 
         # Writing Style Dataset Analysis
         ws_response_number_of_words: int = 3000                                                              # Expected number of words used during response generation
-        ws_extract_book_chunk_size: int = 5 * ws_response_number_of_words                                    # Number of characters used as a chunk size during preprocessing of the books. Average english word length * expected number of words used during response generation
+        ws_extract_book_chunk_size: int = 5 * 5000                                                           # Number of characters used as a chunk size during preprocessing of the books. Average english word length * expected number of words used during response generation
         ws_analysis_chunk_number_of_words: int = 5000                                                        # Number of words used as a chunk size during analysis. Has to be divisor of `ws_analysis_number_of_words`
         ws_analysis_number_of_words: int = 200000                                                            # Number of words used during analysis   
         ws_analysis_number_of_chunks: int = ws_analysis_number_of_words // ws_analysis_chunk_number_of_words # Number of chunks used during analysis

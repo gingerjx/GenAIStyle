@@ -1,3 +1,4 @@
+from collections import Counter
 from dataclasses import dataclass
 from typing import List
 
@@ -33,5 +34,5 @@ class WritingStylePreprocessing(Preprocessing):
                 preprocessed_chunks, preprocessed_full = super().preprocess(collection)
                 preprocessing_results.chunks[author.name][collection.name] = preprocessed_chunks
                 preprocessing_results.full[author.name][collection.name] = preprocessed_full
-
+        
         return preprocessing_results

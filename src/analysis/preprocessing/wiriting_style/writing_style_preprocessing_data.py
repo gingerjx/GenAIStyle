@@ -14,7 +14,7 @@ class WritingStylePreprocessingResults:
     collection_names: List[str]
     full: Dict[str, Dict[str, PreprocessingData]] = field(init=False, default_factory=dict)              # [author][collection]
     chunks: Dict[str, Dict[str, List[PreprocessingData]]] = field(init=False, default_factory=dict)      # [author][collection][chunk_id]
-
+    
     def __post_init__(self) -> None:
         for author_name in self.author_names:   
             self.chunks[author_name] = {}
@@ -40,3 +40,6 @@ class WritingStylePreprocessingResults:
     
     def get_all_chunks_preprocessing_data(self) -> List[PreprocessingData]:
         return [chunk_data for author_name in self.author_names for collection_name in self.collection_names for chunk_data in self.chunks[author_name][collection_name]]
+    
+    def get_all_words(self) -> List[str]:
+        return [word for chunk_data in self.get_all_chunks_preprocessing_data() for word in chunk_data.words]

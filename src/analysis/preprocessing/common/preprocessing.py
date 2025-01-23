@@ -92,6 +92,7 @@ class Preprocessing:
                     chunk_split_size = 0
 
                 sentence_split = nltk.word_tokenize(sentence)
+                sentence_split = self._clean_tokenization_errors(sentence_split)
                 total_split_size += len(sentence_split)
                 chunk_split_size += len(sentence_split)
                 current_chunk_splits.extend(sentence_split)
@@ -129,3 +130,7 @@ class Preprocessing:
                 complex_words.append(word)
             num_of_syllabes += number
         return num_of_syllabes, complex_words
+    
+    def _clean_tokenization_errors(self, split: List[str]) -> List[str]:
+        """Clean the tokenization errors"""
+        return [token.replace("``", '"').replace("''", '"') for token in split]

@@ -135,7 +135,7 @@ class WritingStyleBaseClassification(BaseClassification):
     @staticmethod
     def _transform_data_for_authors_classification(pca_analysis_results_data: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
         df = pca_analysis_results_data.copy()
-        df = df.drop(columns=['source_name', 'collection_name'])
+        df = df.drop(columns=['source_name', 'collection_name', "chunk_id"])
         X = df.drop(columns=['author_name'])
         y = df['author_name']
         return X, y

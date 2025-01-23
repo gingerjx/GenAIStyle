@@ -122,8 +122,8 @@ class DashApp:
                     DashApp.Helper._add_collection_trace(fig, pca, collection_name)
 
             fig.update_layout(
-                title=f'All Chunks PCA Analysis {marked_by}' ,
-                legend_title='Collection',
+                title=f'All Chunks PCA Analysis' ,
+                legend_title='Markers',
                 xaxis_title=f'PC1[{pca.pc_variance[0]:.2f}]',
                 yaxis_title=f'PC2[{pca.pc_variance[1]:.2f}]',
             )
